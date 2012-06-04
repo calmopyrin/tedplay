@@ -35,11 +35,16 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 
 	unsigned int defaultSampleRate = 0;
 	getRegistryValue(_T("SampleRate"), defaultSampleRate);
-	if (!defaultSampleRate || defaultSampleRate > 110860) defaultSampleRate = 110860;
+	if (!defaultSampleRate || defaultSampleRate > 110860) defaultSampleRate = 48000;
+
+	unsigned int bufferLengthInMsec = 0;
+	getRegistryValue(_T("BufferLengthInMsec"), bufferLengthInMsec);
+	if (!bufferLengthInMsec || bufferLengthInMsec > 1000) bufferLengthInMsec = 100;
 
 	try {
 #ifdef HAVE_SDL
-		int retval = tedplayMain( __argv[1], new AudioSDL(machineInit(defaultSampleRate), defaultSampleRate));
+		int retval = tedplayMain( __argv[1], new AudioSDL(machineInit(defaultSampleRate), defaultSampleRate,
+			bufferLengthInMsec));
 #else
 		int retval = tedplayMain( __argv[1], new AudioDirectSound(machineInit(), 110860));
 #endif
@@ -49,7 +54,10 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	int nRet = dlgMain.ShowWindow(SW_NORMAL);
 	nRet = theLoop.Run();
 	tedplayClose();
+	
+	// store settings
 	setRegistryValue(_T("SampleRate"), defaultSampleRate);
+	setRegistryValue(_T("BufferLengthInMsec"), bufferLengthInMsec);
 
 	_Module.RemoveMessageLoop();
 	return nRet;

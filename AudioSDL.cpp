@@ -79,7 +79,8 @@ void AudioSDL::setSampleRate(unsigned int newSampleRate)
 	Audio::setSampleRate(newSampleRate);
 }
 
-AudioSDL::AudioSDL(void *userData, unsigned int sampleFrq_ = 48000) : Audio(sampleFrq_), audiohwspec(0)
+AudioSDL::AudioSDL(void *userData, unsigned int sampleFrq_ = 48000, 
+				   unsigned int bufDurInMsec = 40) : Audio(sampleFrq_), audiohwspec(0)
 {
 	if (SDL_Init(SDL_INIT_AUDIO) < 0) { //  SDL_INIT_AUDIO|
 		std::cerr << "Unable to init SDL: " << SDL_GetError() << std::endl;
@@ -96,8 +97,6 @@ AudioSDL::AudioSDL(void *userData, unsigned int sampleFrq_ = 48000) : Audio(samp
 		std::cerr << "Exception occurred: " << txt << std::endl;
 	}
 
-	//sampleFrq = sampleFrq_;
-	unsigned int bufDurInMsec = 40;
 	unsigned int fragsPerSec = 1000 / bufDurInMsec;
 	unsigned int bufSize1kbChunk = (sampleFrq_ / fragsPerSec / 1024) * 1024;
 	if (!bufSize1kbChunk) bufSize1kbChunk = 512;

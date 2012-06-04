@@ -7,7 +7,7 @@ typedef void (*SdlCallbackFunc)(Uint8 *stream, int len);
 
 class AudioSDL : public Audio {
 public:
-	AudioSDL(void *userData, unsigned int sampleFrq_);
+	AudioSDL(void *userData, unsigned int sampleFrq_, unsigned int bufDurInMsec);
 	virtual ~AudioSDL();
 	virtual void play();
 	virtual void pause();
