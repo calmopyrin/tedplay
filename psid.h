@@ -24,7 +24,7 @@ enum {
 
 struct PsidHeader {
 	std::string fileName;
-	int tracks;
+	unsigned int tracks;
 	unsigned int initAddress;
 	unsigned int replayAddress;
 	unsigned int defaultTune;
