@@ -95,7 +95,8 @@ class TED : public MemoryHandler {
 	}
 	unsigned int getSampleRate() { return sampleRate; };
 	void injectCodeToRAM(unsigned int address, unsigned char *from, size_t len);
-	void oscillatorInit(unsigned int mixingFreq);
+	void oscillatorInit();
+	void oscillatorReset();
 	void setPsidPlayAddress(unsigned int addr) { psidReplayAddr = addr; };
 	unsigned int getPsidPlayAddress() { return psidReplayAddr; };
 	void setPsid(bool isPsidFormat) { psidFormat = isPsidFormat; };

@@ -32,7 +32,7 @@ inline void TED::setFreq(unsigned int channel, int freq)
 	OscReload[channel] = ((freq + 1)&0x3FF) << PRECISION;
 }
 
-void TED::oscillatorInit(unsigned int mixingFreq)
+void TED::oscillatorReset()
 {
 	FlipFlop[0] = 0;
 	FlipFlop[1] = 0;
@@ -41,6 +41,11 @@ void TED::oscillatorInit(unsigned int mixingFreq)
 	NoiseCounter = 0;
 	Freq1 = Freq2 = 0;
 	DAStatus = 0;
+}
+
+void TED::oscillatorInit()
+{
+	oscillatorReset();
 	/* initialise im with 0xa8 */
 	int im = 0xa8;
     for (unsigned int i = 0; i<256; i++) {
@@ -48,7 +53,7 @@ void TED::oscillatorInit(unsigned int mixingFreq)
 		im = (im<<1)+(1^((im>>7)&1)^((im>>5)&1)^((im>>4)&1)^((im>>1)&1));
     }
 	oscStep = (1 << PRECISION) << 0;
-	
+
 	// set player specific parameters
 	waveForm = 0;
 	masterVolume = 8;

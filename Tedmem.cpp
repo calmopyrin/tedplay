@@ -114,7 +114,7 @@ TED::TED()
 
 	BadLine = 0;
 	CycleCounter = 0;
-	oscillatorInit(0);
+	oscillatorInit();
 	memset(protectedPlayerMemory, 0xfe, sizeof(protectedPlayerMemory));
 }
 
@@ -122,6 +122,8 @@ void TED::Reset()
 {
 	// clear RAM with powerup pattern
 	for (int i=0;i<RAMSIZE;Ram[i++] = (i>>1)<<1==i ? 0 : 0xFF);
+	// reset oscillators
+	oscillatorReset();
 }
 
 void TED::forcedReset()
