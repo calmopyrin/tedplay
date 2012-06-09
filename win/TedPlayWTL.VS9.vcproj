@@ -509,6 +509,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Filter.h"
+				>
+			</File>
+			<File
 				RelativePath=".\MainFrm.h"
 				>
 			</File>
@@ -559,11 +563,31 @@
 				>
 			</File>
 			<File
+				RelativePath=".\next.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\open.ico"
 				>
 			</File>
 			<File
+				RelativePath=".\pause.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\play.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\prev.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\save.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\stop.ico"
 				>
 			</File>
 			<File
@@ -590,6 +614,10 @@
 			</File>
 			<File
 				RelativePath="..\Cpu.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Filter.cpp"
 				>
 			</File>
 			<File

@@ -41,6 +41,7 @@ void TED::oscillatorReset()
 	NoiseCounter = 0;
 	Freq1 = Freq2 = 0;
 	DAStatus = 0;
+	masterVolume = 8;
 }
 
 // call only once!
@@ -63,12 +64,12 @@ void TED::oscillatorInit()
 	enableChannel(1, true);
 }
 
-void TED::writeSoundReg(ClockCycle cycle, unsigned int reg, unsigned char value)
+void TED::writeSoundReg(unsigned int reg, unsigned char value)
 {
 #if defined(_DEBUG) && 1
 	static FILE *f = std::fopen("freqlog.txt", "a");
 	if (f)
-		std::fprintf(f, "%04X <- %02X in cycle %u", 0xff0e + reg, value, cycle);
+		std::fprintf(f, "%04X <- %02X in cycle %u", 0xff0e + reg, value, CycleCounter);
 	fprintf(f, "\n");
 #endif
 
@@ -91,7 +92,7 @@ void TED::writeSoundReg(ClockCycle cycle, unsigned int reg, unsigned char value)
 				FlipFlop[1] = 1;
 				oscCount1 = OscReload[0];
 				oscCount2 = OscReload[1];
-				NoiseCounter = 0x100;
+				NoiseCounter = 0xFF;
 			}
 			Volume = value & 0x0F;
 			if (Volume > 8) Volume = 8;
@@ -117,7 +118,7 @@ inline void TED::storeToBuffer(short *buffer, short sample)
 	const double hpc=1.0/(hptc * sampleRate * 2.0);	// 2*pi*fc=1/tau..
 	
 	// TODO: a proper windowed lowpass FIR filter
-#if 1
+#if 0
 	const double lpc = 1.0 - exp( - double(sampleRate) / 2.0 / double(TED_SOUND_CLOCK));
 	double accu = (double) sample;
 	// apply low pass filter -> lp_accu = lpc*accu + (1-lpc)*lp_accu
@@ -184,6 +185,7 @@ void TED::renderSound(unsigned int nrsamples, short *buffer)
 				FlipFlop[1] = 1;
 			} else if ((oscCount2 += oscStep) >= OSCRELOADVAL) {
 				NoiseCounter = (NoiseCounter + 1) & 0xFF;
+				FlipFlop[1] ^= 1;
 				oscCount2 = OscReload[1] + (oscCount2 - OSCRELOADVAL);
 			}
 			result = (FlipFlop[0] && Snd1Status) ? Volume & mod1 : 0;
@@ -227,9 +229,7 @@ void TED::setSampleRate(unsigned int value)
 	if (value != sampleRate) {
 		if (filter)
 			delete filter;
-		filter = new Filter(value / 2, TED_SOUND_CLOCK, 24);
-		//filter = new Filter(TED_SOUND_CLOCK / 16, TED_SOUND_CLOCK, 16);
-		//filter = new Filter(460, 2000, 20);
+		filter = new Filter(value / 2, TED_SOUND_CLOCK, 12);
 		filter->reCalcWindowTable();
 		sampleRate = value;
 	}

@@ -17,6 +17,7 @@
 #include "Tedmem.h"
 #include "Cpu.h"
 #include "roms.h"
+#include "Filter.h"
 
 #define TEXTMODE	0x00000000
 #define MULTICOLOR	0x00000010
@@ -580,33 +581,25 @@ void TED::Write(unsigned int addr, unsigned char value)
 							crsrpos=value|(crsrpos&0xFF00);
 							return;
 						case 0xFF0E :
-							if (value != Ram[0xFF0E]) {
-								writeSoundReg(CycleCounter, 0, value);
-								Ram[0xFF0E]=value;
-							}
+							writeSoundReg(0, value);
+							Ram[0xFF0E]=value;
 							return;
 						case 0xFF0F :
-							if (value != Ram[0xFF0F]) {
-								writeSoundReg(CycleCounter, 1, value);
-								Ram[0xFF0F]=value;
-							}
+							writeSoundReg(1, value);
+							Ram[0xFF0F]=value;
 							return;
 						case 0xFF10 :
-							if (value != Ram[0xFF10]) {
-								writeSoundReg(CycleCounter, 2, value & 3);
-								Ram[0xFF10]=value;
-							}
+							writeSoundReg(2, value & 3);
+							Ram[0xFF10]=value;
 							return;
 						case 0xFF11 :
-							if (value != Ram[0xFF11]) {
-								Ram[0xFF11]=value;
-								writeSoundReg(CycleCounter, 3, value);
-							}
+							Ram[0xFF11]=value;
+							writeSoundReg(3, value);
 							return;
 						case 0xFF12:
 							grbank=Ram+((value&0x38)<<10);
 							if ((value ^ Ram[0xFF12]) & 3)
-								writeSoundReg(CycleCounter, 4, value & 3);
+								writeSoundReg(4, value & 3);
 							// if the 2nd bit is set the chars are read from ROM
 							charrom=(value&0x04)>0;
 							if (charrom && Ram[0xFF13]<0x80)
@@ -801,7 +794,7 @@ void TED::memin(void *img)
 	fread(&framecol,sizeof(framecol),1, (FILE *) img);
 
 	for (int i=0; i<5; i++)
-		writeSoundReg(0, i, Ram[0xFF0E + i]);
+		writeSoundReg(i, Ram[0xFF0E + i]);
 	beamy=0;
 	beamx=0;
 	scrptr=&(screen[0]);

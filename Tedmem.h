@@ -166,7 +166,7 @@ class TED : public MemoryHandler {
 	void DoDMA( unsigned char *Buf, unsigned int Offset  );
 	//
 	void setFreq(unsigned int channel, int freq);
-	void writeSoundReg(ClockCycle cycle, unsigned int reg, unsigned char value);
+	void writeSoundReg(unsigned int reg, unsigned char value);
 	void renderSound(unsigned int nrsamples, short *buffer);
 	unsigned int psidReplayAddr;
 	bool psidFormat;

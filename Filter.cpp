@@ -6,7 +6,7 @@ Filter::Filter(unsigned int cutoffFrq, unsigned int sampleFrq, unsigned int orde
 	sampleFrq_(sampleFrq),
 	windowTable_(0),
 	sampleHistory_(0),
-	precision_(10)
+	precision_(12)
 {
 #if 1
 	setCutoffFrq(double(cutoffFrq)/double(sampleFrq));
@@ -65,7 +65,7 @@ void Filter::reCalcWindowTable()
 		double hamming = 0.54 - 0.46 * cos( 2*pi*i/(double)(order_ - 1) ) ;
 		// von Hann is in between
 		double vonHann = 0.5 * (1.0 - cos((2*pi*i/(double)(order_ - 1))));
-		// Blackman–Harris window
+		// Blackman-Harris window
 		double a0 = 0.35875, a1 = 0.48229, a2 = 0.14128, a3 = 0.01168;
 		double blackmanHarris = a0 - a1 * cos( 2*pi*i/(double)(order_ - 1) ) 
 			+ a2 * cos( 4*pi*i/(double)(order_ - 1) )

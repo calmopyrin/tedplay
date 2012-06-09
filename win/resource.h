@@ -14,6 +14,13 @@
 #define IDI_ICON_OPEN                   108
 #define IDI_ICONSAVE                    110
 #define IDI_ICON_SAVE                   110
+#define IDI_ICON1                       112
+#define IDI_ICON_PLAY                   112
+#define IDI_ICON_PAUSE                  113
+#define IDI_ICON_PREV                   114
+#define IDI_ICON_NEXT                   115
+#define IDI_ICON2                       116
+#define IDI_ICON_STOP                   116
 #define IDR_MAINFRAME                   1000
 #define IDC_BUTTON_PREV                 1000
 #define IDR_MENU                        1000
@@ -38,6 +45,7 @@
 #define IDC_CHECK2                      1015
 #define IDC_BTN_REMOVE2                 1016
 #define IDC_BTN_LOADPL                  1016
+#define IDC_BUTTON_TEST                 1016
 #define IDC_BTN_SAVEPL                  1017
 #define IDM_FILE_OPEN                   40000
 #define IDM_FILE_PROPERTIES             40001
@@ -61,9 +69,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        111
+#define _APS_NEXT_RESOURCE_VALUE        117
 #define _APS_NEXT_COMMAND_VALUE         40020
-#define _APS_NEXT_CONTROL_VALUE         1015
+#define _APS_NEXT_CONTROL_VALUE         1017
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
