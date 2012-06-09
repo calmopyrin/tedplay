@@ -57,7 +57,7 @@ enum {
 	TDMA = 1 << 7
 };
 
-TED::TED()
+TED::TED() : filter(0)
 {
 	register unsigned int	i;
 

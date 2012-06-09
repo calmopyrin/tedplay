@@ -25,7 +25,7 @@
 class CPU;
 class KEYS;
 class TAP;
-class CTCBM;
+class Filter;
 
 class TED : public MemoryHandler {
   public:

@@ -1,5 +1,6 @@
 #include "Audio.h"
 #include "Tedmem.h"
+#include "Filter.h"
 #include <math.h>
 #ifdef _DEBUG
 #include <cstdio>
