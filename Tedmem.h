@@ -25,7 +25,7 @@
 class CPU;
 class KEYS;
 class TAP;
-class CTCBM;
+class Filter;
 
 class TED : public MemoryHandler {
   public:
@@ -84,15 +84,12 @@ class TED : public MemoryHandler {
 	bool t1on, t2on, t3on;
 	unsigned int timer1, timer2, timer3, t1start;
 
-	void HookTCBM(CTCBM *pTcbmbus) { tcbmbus = pTcbmbus; };
 	ClockCycle GetClockCount();
 	static TED *instance() { return instance_; };
 	void forcedReset();
 	// PSID support
 	void setMasterVolume(unsigned int shift);
-	void setSampleRate(unsigned int value) {
-		sampleRate = value;
-	}
+	void setSampleRate(unsigned int value);
 	unsigned int getSampleRate() { return sampleRate; };
 	void injectCodeToRAM(unsigned int address, unsigned char *from, size_t len);
 	void oscillatorInit();
@@ -115,11 +112,12 @@ class TED : public MemoryHandler {
 	}
 	void storeToBuffer(short *buffer, short sample);
 	void copyToKbBuffer(char *bufferString, unsigned int bufferLength = -1);
+	void getTimeSinceLastReset(int hour, int min, int sec);
 	//void getSoundData(unsigned int nrsamples, short *buffer);
 
   private:
 	static TED *instance_;
-    CTCBM *tcbmbus;
+    Filter *filter;
 	// memory variables
   	unsigned char RomLo[4][ROMSIZE];
 	unsigned char *actromlo, *actromhi;
@@ -163,6 +161,7 @@ class TED : public MemoryHandler {
 	unsigned int fastmode, irqline;
 	unsigned char hcol[2], mcol[4], ecol[4], bmmcol[4], *cset;
 	static ClockCycle CycleCounter;
+	ClockCycle lastResetCycle;
 	//
 	void DoDMA( unsigned char *Buf, unsigned int Offset  );
 	//

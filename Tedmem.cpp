@@ -57,7 +57,7 @@ enum {
 	TDMA = 1 << 7
 };
 
-TED::TED()
+TED::TED() : filter(0)
 {
 	register unsigned int	i;
 
@@ -124,6 +124,7 @@ void TED::Reset()
 	for (int i=0;i<RAMSIZE;Ram[i++] = (i>>1)<<1==i ? 0 : 0xFF);
 	// reset oscillators
 	oscillatorReset();
+	lastResetCycle = CycleCounter;
 }
 
 void TED::forcedReset()
@@ -1299,6 +1300,18 @@ void TED::ted_process(short *buffer, unsigned int count)
 					*((int*)scrptr) = framecol;
 				}
 			}
+
+			CycleCounter++;
+			if (!(CycleCounter & 0x03) && buffer && int(count) > 0) {
+				static unsigned int remainder = 0;
+				unsigned int samples = (playbackSpeed + remainder) / 4;
+				if (samples) {
+					renderSound(samples, buffer);
+				}
+				remainder = (playbackSpeed + remainder) % 4;
+				count -= samples;
+				buffer += samples;
+			}
 		}
 		if (aligned_write) {
 			*aw_addr_ptr = aw_value;
@@ -1319,27 +1332,15 @@ void TED::ted_process(short *buffer, unsigned int count)
             	break;
 		}
 
-		CycleCounter++;
-		if (!(CycleCounter & 0x07) && buffer && int(count) > 0) {
-			static unsigned int remainder = 0;
-			unsigned int samples = (playbackSpeed + remainder) / 4;
-			if (samples) {
-				renderSound(samples, buffer);
-			}
-			remainder = (playbackSpeed + remainder) % 4;
-			count -= samples;
-			buffer += samples;
-		}
-
 	} while (int(count) > 0 && buffer);
 
 	render_ok = false;
-};
+}
 
 TED::~TED()
 {
-//	delete keys;
-	//delete tap;
-};
+	if (filter)
+		delete filter;
+}
 //--------------------------------------------------------------
 

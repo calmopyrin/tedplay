@@ -1,5 +1,6 @@
 #include "Audio.h"
 #include "Tedmem.h"
+#include "Filter.h"
 #include <math.h>
 #ifdef _DEBUG
 #include <cstdio>
@@ -18,6 +19,7 @@ static unsigned short  Freq1;
 static unsigned short  Freq2;
 static int             NoiseCounter;
 static int             FlipFlop[2];
+static int             dcOutput[2];
 static int             oscCount1;
 static int             oscCount2;
 static int             OscReload[2];
@@ -26,16 +28,14 @@ static unsigned char   noise[256]; // 0-8
 
 inline void TED::setFreq(unsigned int channel, int freq)
 {
-	if (freq == 0x3FE) {
-		FlipFlop[channel] = 1;
-	}
+	dcOutput[channel] = (freq == 0x3FE) ? 1 : 0;
 	OscReload[channel] = ((freq + 1)&0x3FF) << PRECISION;
 }
 
 void TED::oscillatorReset()
 {
-	FlipFlop[0] = 0;
-	FlipFlop[1] = 0;
+	FlipFlop[0] = dcOutput[0] = 0;
+	FlipFlop[1] = dcOutput[1] = 0;
 	oscCount1 = 0;
 	oscCount2 = 0;
 	NoiseCounter = 0;
@@ -43,6 +43,7 @@ void TED::oscillatorReset()
 	DAStatus = 0;
 }
 
+// call only once!
 void TED::oscillatorInit()
 {
 	oscillatorReset();
@@ -112,11 +113,12 @@ inline void TED::storeToBuffer(short *buffer, short sample)
 	static double			lp_accu = 0;
 	static double			hp_accu = 0;
 
+	const double hptc=4000.0/1000000;		// 6000us (est) maybe 7000 ?
+	const double hpc=1.0/(hptc * sampleRate * 2.0);	// 2*pi*fc=1/tau..
+	
 	// TODO: a proper windowed lowpass FIR filter
 #if 1
 	const double lpc = 1.0 - exp( - double(sampleRate) / 2.0 / double(TED_SOUND_CLOCK));
-	const double hptc=4000.0/1000000;		// 6000us (est) maybe 7000 ?
-	const double hpc=1.0/(hptc * sampleRate * 2.0);	// 2*pi*fc=1/tau..
 	double accu = (double) sample;
 	// apply low pass filter -> lp_accu = lpc*accu + (1-lpc)*lp_accu
 	lp_accu += lpc * (accu - lp_accu);
@@ -126,7 +128,13 @@ inline void TED::storeToBuffer(short *buffer, short sample)
 	// fill the buffer
 	*buffer = ((short)accu);
 #else
-	*buffer = sample;
+	//*buffer = sample;
+	double accu = (double) filter->lowPass(sample);
+	accu = accu - hp_accu;
+	// update hp filter pole
+	hp_accu +=  hpc * accu;
+	// fill the buffer
+	*buffer = ((short)accu);
 #endif
 }
 
@@ -160,24 +168,22 @@ void TED::renderSound(unsigned int nrsamples, short *buffer)
 		if (Snd2Status) sample += Volume & mod2;
 		for (;nrsamples--;) {
 			storeToBuffer(buffer++, sample);
-			//*buffer++ = sample;
 		}
 	} else {
 		unsigned int result;
 		for (;nrsamples--;) {
 			// Channel 1
-			if ((oscCount1 += oscStep) >= OSCRELOADVAL) {
-				if (OscReload[0] != (0x3FE << PRECISION)) 
-					FlipFlop[0] ^= 1;
+			if (dcOutput[0]) {
+				FlipFlop[0] = 1;
+			} else if ((oscCount1 += oscStep) >= OSCRELOADVAL) {
+				FlipFlop[0] ^= 1;
 				oscCount1 = OscReload[0] + (oscCount1 - OSCRELOADVAL);
 			}
 			// Channel 2
-			if ((oscCount2 += oscStep) >= OSCRELOADVAL) {
-				if (OscReload[1] != (0x3FE << PRECISION)) {
-					FlipFlop[1] ^= 1;
-					if (NoiseCounter++==256) 
-						NoiseCounter=0;
-				}
+			if (dcOutput[1]) {
+				FlipFlop[1] = 1;
+			} else if ((oscCount2 += oscStep) >= OSCRELOADVAL) {
+				NoiseCounter = (NoiseCounter + 1) & 0xFF;
 				oscCount2 = OscReload[1] + (oscCount2 - OSCRELOADVAL);
 			}
 			result = (FlipFlop[0] && Snd1Status) ? Volume & mod1 : 0;
@@ -187,7 +193,6 @@ void TED::renderSound(unsigned int nrsamples, short *buffer)
 				result += Volume;
 			}
 			storeToBuffer(buffer++, result);
-			//*buffer++ = result;
 		}   // for
 	}
 }
@@ -209,4 +214,23 @@ void TED::setplaybackSpeed(unsigned int speed)
 {
 	unsigned int speeds[] = { 16, 8, 4, 3, 2 };
 	playbackSpeed = speeds[(speed - 1) % 5];
+}
+
+void TED::getTimeSinceLastReset(int hour, int min, int sec)
+{
+	ClockCycle elapsedCycles = CycleCounter - lastResetCycle;
+	int secondsPlayed = int(double(elapsedCycles) / double(TED_SOUND_CLOCK * 4) + 0.5);
+}
+
+void TED::setSampleRate(unsigned int value)
+{
+	if (value != sampleRate) {
+		if (filter)
+			delete filter;
+		filter = new Filter(value / 2, TED_SOUND_CLOCK, 24);
+		//filter = new Filter(TED_SOUND_CLOCK / 16, TED_SOUND_CLOCK, 16);
+		//filter = new Filter(460, 2000, 20);
+		filter->reCalcWindowTable();
+		sampleRate = value;
+	}
 }
