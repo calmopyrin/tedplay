@@ -1,0 +1,21 @@
+#pragma once
+
+class Filter
+{
+public:
+	Filter(unsigned int cutoffFrq, unsigned int inputFrq, unsigned int order);
+	virtual ~Filter();
+	void setCutoffFrq(double fc);
+	void setFilterOrder(unsigned int order);
+	void reCalcWindowTable();
+	short lowPass(short from);
+protected:
+	int order_;
+	int *windowTable_;
+	int *sampleHistory_;
+	unsigned int sampleBufPtr_;
+	unsigned int sampleBufMask_;
+	double fc_;
+	unsigned int sampleFrq_;
+	const unsigned int precision_;
+};
