@@ -204,10 +204,14 @@ int CPlayList::loadPlaylist(_TCHAR * plName)
 	int index = 0;
 	try {
 		while (!feof(fp)) {
+			_TCHAR line[MAX_PATH] = { 0 };
 			_TCHAR name[MAX_PATH] = { 0 };
-			if (_fgetts(name, MAX_PATH, fp) && _tcslen(name)) {
+			_fgetts(line, MAX_PATH, fp);
+			int s = _stscanf(line, "%[^,\n,\r]", name);
+			if (s == 1 && _tcslen(name)) {
 				AddFileToPlaylist(name);
-				playListView.AddItem(index, LV_FIELD_STATUS, ::PathFileExists(name) ? _T("OK") : _T("Error!"));
+				BOOL status = ::PathFileExists(name);
+				playListView.AddItem(index, LV_FIELD_STATUS, status ? _T("OK") : _T("Error!"));
 			}
 			index++;
 		}
