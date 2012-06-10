@@ -7,7 +7,6 @@
 
 #include <string>
 #include "Aboutdlg.h"
-#include "WtlTedPlay.h"
 #include "MainFrm.h"
 #include "PlayList.h"
 #include "CFileOpenDialog.h"
@@ -50,17 +49,25 @@ LRESULT CMainFrame::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	//
 	SetWindowText(APPNAME);
 	CenterWindow();
-	// set icons
-	HICON hIcon = (HICON)::LoadImage(_Module.GetResourceInstance(), MAKEINTRESOURCE(IDI_APPICON), 
+	//
+	HINSTANCE inst = _Module.GetResourceInstance();
+	// load application icons
+	HICON hIcon = (HICON)::LoadImage(inst, MAKEINTRESOURCE(IDI_APPICON), 
 		IMAGE_ICON, ::GetSystemMetrics(SM_CXICON), ::GetSystemMetrics(SM_CYICON), LR_DEFAULTCOLOR);
 	SetIcon(hIcon, TRUE);
-	HICON hIconSmall = (HICON)::LoadImage(_Module.GetResourceInstance(), MAKEINTRESOURCE(IDI_APPICON), 
+	HICON hIconSmall = (HICON)::LoadImage(inst, MAKEINTRESOURCE(IDI_APPICON), 
 		IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
 	SetIcon(hIconSmall, FALSE);
-	HINSTANCE inst = _Module.GetResourceInstance();
+	// load menu
 	HMENU hmenu = ::LoadMenu(inst, MAKEINTRESOURCE(IDR_MENU));
 	menu.Attach(hmenu);
 	SetMenu(menu);
+
+	// set icons
+	//HICON hicon = (HICON) ::LoadImage(inst, MAKEINTRESOURCE(IDI_ICON_PLAY), 
+	//	IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_LOADTRANSPARENT);
+	//btnTemp.Attach(GetDlgItem(IDC_BUTTON_TEST));
+	//btnTemp.SetIcon(hicon);
 
 	// Edit controls
 	stTitle.Attach(GetDlgItem(IDC_EDIT_MODULE));

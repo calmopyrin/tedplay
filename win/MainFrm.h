@@ -5,13 +5,13 @@
 
 #include <atldlgs.h>
 #include <atlddx.h>
-#include "ddxext.h"
+//#include "ddxext.h"
 
 #include "PlayList.h"
 
 class CMainFrame : public CDialogImpl<CMainFrame>, public CUpdateUI<CMainFrame>,
 	public CMessageFilter, public CIdleHandler
-	,public CWinDataExchangeEx<CMainFrame>
+	//,public CWinDataExchangeEx<CMainFrame>
 {
 public:
 
@@ -102,7 +102,7 @@ public:
 protected:
 	CMenu menu;
 	CEdit stAuthor, stTitle, stCopyright, stSubsong; // CContainedWindowT<CStatic>
-	CButton btnPrev, btnNext, btnPlay, btnPause, btnStop; // CContainedWindowT<CButton> 
+	CButton btnPrev, btnNext, btnPlay, btnPause, btnStop, btnTemp; // CContainedWindowT<CButton> 
 	enum { TB_VOLUME = 0, TB_SPEED, TB_COUNT };
 	CTrackBarCtrl trackBars[2];
 	CButton cbChannels[2];

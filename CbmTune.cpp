@@ -1,7 +1,6 @@
 #include <string>
 #include <cstring>
 #include <cstdio>
-#include <stdint.h>
 #include <iostream>
 #include "psid.h"
 #include "CbmTune.h"

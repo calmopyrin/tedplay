@@ -2,12 +2,12 @@
 
 #include <atldlgs.h>
 #include <atlddx.h>
-#include "ddxext.h"
+//#include "ddxext.h"
 
 class CPlayList :
 	public CDialogImpl<CPlayList>, public CUpdateUI<CPlayList>,
 	public CMessageFilter, public CIdleHandler
-	,public CWinDataExchangeEx<CPlayList>
+	//,public CWinDataExchangeEx<CPlayList>
 	,public CDialogResize<CPlayList>
 {
 public:
@@ -75,6 +75,12 @@ public:
 	void setParent(HWND parent) { m_hwndParent = parent; };
 
 protected:
+	enum {
+		LV_FIELD_FILENAME = 0,
+		LV_FIELD_PATH,
+		LV_FIELD_STATUS,
+		LV_FIELD_INDEX
+	};
 	CListViewCtrl playListView;
 	HWND m_hwndParent;
 	CButton btnAdd, btnRemove, btnAddFolder, btnLoadPlayList, btnSavePlayList;
@@ -85,6 +91,7 @@ protected:
 	int m_iSortColumn; //initialize this to -1
 	bool m_bSortDescending; //initialize this to false
 	BOOL SortList(int iColumn, bool bDescending = false);
+	void reIndex(int fromCol, int toCol);
 	// this is called by SortList
 	int GetColumnCount() { return playListView.GetHeader() ? playListView.GetHeader().GetItemCount() : 0; }
 	//

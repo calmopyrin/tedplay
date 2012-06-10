@@ -63,10 +63,12 @@ LRESULT CPlayList::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	btnAddFolder.Attach(GetDlgItem(IDC_BTN_ADDFOLDER));
 	btnLoadPlayList.Attach(GetDlgItem(IDC_BTN_LOADPL));
 	btnSavePlayList.Attach(GetDlgItem(IDC_BTN_SAVEPL));
-	HICON icon = (HICON) ::LoadImage(_Module.get_m_hInst(), MAKEINTRESOURCE(IDI_ICON_OPEN),
+	HINSTANCE inst = _Module.GetResourceInstance();
+	// load & set button icons
+	HICON icon = (HICON) ::LoadImage(inst, MAKEINTRESOURCE(IDI_ICON_OPEN),
 		IMAGE_ICON, 16, 16, LR_SHARED);
 	btnLoadPlayList.SetIcon(icon);
-	icon = (HICON) ::LoadImage(_Module.get_m_hInst(), MAKEINTRESOURCE(IDI_ICON_SAVE),
+	icon = (HICON) ::LoadImage(inst, MAKEINTRESOURCE(IDI_ICON_SAVE),
 		IMAGE_ICON, 16, 16, LR_SHARED);
 	btnSavePlayList.SetIcon(icon);
 	//
@@ -90,21 +92,23 @@ LRESULT CPlayList::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	m_wndToolTip[2].AddTool(&toolInfo);
 	m_wndToolTip[2].Activate(TRUE);
 	
-	//
+	// Create the listview columns
 	playListView.Attach(GetDlgItem(IDC_LSV1));
 	playListView.SetView(LV_VIEW_DETAILS);
 	// FIXME doesnt work
 	//playListView.SetExtendedListViewStyle(LVS_SHOWSELALWAYS);
-	playListView.AddColumn(_T("Filename"), 0);
-	// FIXME
-	playListView.SetColumnWidth(0, 150);
-	playListView.AddColumn(_T("Path"), 1);
-	// FIXME
-	playListView.SetColumnWidth(1, 300);
+	playListView.AddColumn(_T("Filename"), LV_FIELD_FILENAME);
+	playListView.SetColumnWidth(LV_FIELD_FILENAME, 150);
 	//
-	playListView.AddColumn(_T("Status"), 2);
-	playListView.SetColumnWidth(2, 50);
-
+	playListView.AddColumn(_T("Path"), LV_FIELD_PATH);
+	playListView.SetColumnWidth(LV_FIELD_PATH, 300);
+	//
+	playListView.AddColumn(_T("Status"), LV_FIELD_STATUS);
+	playListView.SetColumnWidth(LV_FIELD_STATUS, 50);
+	//
+	playListView.AddColumn(_T("#"), LV_FIELD_INDEX);
+	playListView.SetColumnWidth(LV_FIELD_INDEX, 32);
+	
 	//
 	// register object for message filtering and idle updates    
     CMessageLoop* pLoop = _Module.GetMessageLoop();
@@ -131,8 +135,13 @@ BOOL CPlayList::AddFileToPlaylist(_TCHAR *fullPath)
 	PathStripPath(tmp);
 	PathRemoveExtension(tmp);
 	UINT index = playListView.GetItemCount();
-	playListView.AddItem(index, 0, tmp);
-	playListView.AddItem(index, 1, fullPath);
+	//
+	_TCHAR indexText[16];
+	_stprintf(indexText, _T("%i"), index + 1);
+	playListView.AddItem(index, LV_FIELD_FILENAME, tmp);
+	playListView.AddItem(index, LV_FIELD_PATH, fullPath);
+	playListView.AddItem(index, LV_FIELD_STATUS, _T("OK"));
+	playListView.AddItem(index, LV_FIELD_INDEX, indexText);
 	return TRUE;
 }
 
@@ -153,16 +162,6 @@ LRESULT CPlayList::OnDropFiles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, 
 
 LRESULT CPlayList::OnGetMinMaxInfo(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
-	RECT rc;
-	LPMINMAXINFO pMinMax = (MINMAXINFO *)lParam;
-
-	GetWindowRect(&rc);
-	// Fix the size of the window to original size
-	//pMinMax->ptMinTrackSize.x = rc.right - rc.left;
-	//pMinMax->ptMinTrackSize.y = rc.bottom - rc.top;
-
-	//pMinMax->ptMaxTrackSize.x = pMinMax->ptMinTrackSize.x;
-	//pMinMax->ptMaxTrackSize.y = pMinMax->ptMinTrackSize.y;
 	return 0L;
 }
 
@@ -185,8 +184,9 @@ int CPlayList::savePlaylist(_TCHAR * plName)
 	try {
 		for(int i = 0; i < playListView.GetItemCount(); i++) {
 			_TCHAR name[MAX_PATH];
-			if (playListView.GetItemText(i, 1, name, MAX_PATH)) {
-				fprintf(fp, _T("%s\n"), name);
+			if (playListView.GetItemText(i, LV_FIELD_PATH, name, MAX_PATH)) {
+				fgets(name, MAX_PATH, fp);
+				fprintf(fp, _T("\n"));
 			}
 		}
 	} catch(_TCHAR *str) {
@@ -205,9 +205,9 @@ int CPlayList::loadPlaylist(_TCHAR * plName)
 	try {
 		while (!feof(fp)) {
 			_TCHAR name[MAX_PATH] = { 0 };
-			if (fscanf(fp, _T("%s\n"), name) && _tcslen(name)) {
+			if (fgets(name, MAX_PATH, fp) && _tcslen(name)) {
 				AddFileToPlaylist(name);
-				playListView.AddItem(index, 2, ::PathFileExists(name) ? _T("OK") : _T("Error!"));
+				playListView.AddItem(index, LV_FIELD_STATUS, ::PathFileExists(name) ? _T("OK") : _T("Error!"));
 			}
 			index++;
 		}
@@ -265,16 +265,30 @@ BOOL CPlayList::SortList(int iColumn, bool bDescending)
 	}
 	// ... end Sort as text
 	// Sort as integer, double, or other type
+	reIndex(0, 0);
 
 //	UpdateSortIcons(iColumn, bDescending);
 	return TRUE;
 }
 
+void CPlayList::reIndex(int fromCol, int toCol)
+{
+	int items = playListView.GetItemCount();
+
+	for(int i = 0; i < playListView.GetItemCount(); i++) {
+		_TCHAR indexText[16];
+		_stprintf(indexText, _T("%i"), i + 1);
+		playListView.SetItem(i, LV_FIELD_INDEX, LVIF_TEXT, indexText, 0, 0, 0, 0);
+	}
+}
+
 LRESULT CPlayList::OnLvnColumnclickLsv(int /*idCtrl*/, LPNMHDR pNMHDR, BOOL& /*bHandled*/)
 {
 	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
-	// TODO: Add your control notification handler code here
 
+	// no sorting for index column
+	if (pNMLV->iSubItem == LV_FIELD_INDEX)
+		return 0;
 	// if the same columns is clicked, sort descending
 	m_bSortDescending = (m_iSortColumn == pNMLV->iSubItem) ? !m_bSortDescending : false;
 	SortList(pNMLV->iSubItem, m_bSortDescending);
@@ -288,12 +302,12 @@ LRESULT CPlayList::OnNMDblclkLsv(int idCtrl, LPNMHDR pNMHDR, BOOL& /*bHandled*/)
 	UINT index = playListView.GetSelectionMark();
 	_TCHAR namebuffer[MAX_PATH];
 
-	if (playListView.GetItemText(index, 1, namebuffer, MAX_PATH)) {
+	if (playListView.GetItemText(index, LV_FIELD_PATH, namebuffer, MAX_PATH)) {
 		if (::PathFileExists(namebuffer) && !tedplayMain(namebuffer, NULL)) {
 			::PostMessage(m_hwndParent, WM_USER + 1, 0, 0);
-			playListView.AddItem(index, 2, _T("OK"));
+			playListView.AddItem(index, LV_FIELD_STATUS, _T("OK"));
 		} else {
-			playListView.AddItem(index, 2, _T("Error!"));
+			playListView.AddItem(index, LV_FIELD_STATUS, _T("Error!"));
 		}
 	}
 	return 0;
@@ -356,21 +370,23 @@ LRESULT CPlayList::OnBnClickedBtnRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 	 for(int j = nSelRows - 1; j >= 0; j--) {
 		 playListView.DeleteItem(pnArrayOfSelRows[j]);
 	 }
-	 // select the 
+	 // select the proper item
 	 int index = playListView.GetItemCount();
 	 if (index) {
 		 int newsel;
 		 if (index != pnArrayOfSelRows[0])
-			newsel = pnArrayOfSelRows[0];
+			 newsel = pnArrayOfSelRows[0];
 		 else
-			newsel = index - 1;
+			 newsel = index - 1;
 		 playListView.SetFocus();
 		 playListView.SetItemState(newsel, LVIS_SELECTED, LVIS_SELECTED);
 	 }
 	 delete(pnArrayOfSelRows);
 	 pnArrayOfSelRows = NULL;
 
-	return 0;
+	 reIndex(0, 0);
+
+	 return 0;
 }
 
 LRESULT CPlayList::OnLvnKeydownLsv1(int /*idCtrl*/, LPNMHDR pNMHDR, BOOL& bHandled)
