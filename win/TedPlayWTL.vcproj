@@ -191,6 +191,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Filter.h"
+				>
+			</File>
+			<File
 				RelativePath=".\MainFrm.h"
 				>
 			</File>
@@ -252,6 +256,10 @@
 			</File>
 			<File
 				RelativePath="..\cpu.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Filter.cpp"
 				>
 			</File>
 			<File
