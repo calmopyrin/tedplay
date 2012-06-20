@@ -155,7 +155,20 @@ void AudioSDL::stop()
 {
 	SDL_PauseAudio(1);
 	paused = true;
-	///
+}
+
+void AudioSDL::sleep(unsigned int msec)
+{
+	SDL_Delay(msec);
+}
+
+void AudioSDL::lock()
+{
+	SDL_LockAudio();
+}
+void AudioSDL::unlock()
+{
+	SDL_UnlockAudio();
 }
 
 AudioSDL::~AudioSDL()

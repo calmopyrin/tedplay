@@ -12,6 +12,9 @@ public:
 	virtual void play();
 	virtual void pause();
 	virtual void stop();
+	virtual void sleep(unsigned int msec);
+	virtual void lock();
+	virtual void unlock();
 	virtual void setSampleRate(unsigned int newSampleRate);
 	static void setCallback(SdlCallbackFunc);
 protected:

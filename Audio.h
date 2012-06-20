@@ -8,6 +8,13 @@ public:
 	virtual void play() = 0;
 	virtual void pause() = 0;
 	virtual void stop() = 0;
+	virtual void sleep(unsigned int msec) = 0;
+	virtual void flush() {
+		unsigned int msec = (unsigned int)(1000.f * double(bufferLength)/double(sampleFrq) + 1);
+		sleep(msec);
+	}
+	virtual void lock() = 0;
+	virtual void unlock() = 0;
 	virtual void setSampleRate(unsigned int newSampleRate) {
 		sampleFrq = newSampleRate;
 	}
