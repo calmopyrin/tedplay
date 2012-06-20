@@ -6,7 +6,8 @@ Filter::Filter(unsigned int cutoffFrq, unsigned int sampleFrq, unsigned int orde
 	sampleFrq_(sampleFrq),
 	windowTable_(0),
 	sampleHistory_(0),
-	precision_(12)
+	precision_(12),
+	mixingVolume(10)
 {
 #if 1
 	setCutoffFrq(double(cutoffFrq)/double(sampleFrq));
@@ -76,29 +77,43 @@ void Filter::reCalcWindowTable()
 		kernelSum += c;
 	}
 	for (i = 0; i < (int)order_; i++) {
-		double rebasedCoeff = dblCoeffs[i] / kernelSum * gain;
+		double rebasedCoeff = dblCoeffs[i] / kernelSum * gain * (mixingVolume / 10.0);
 		windowTable_[i] = (int)(rebasedCoeff + 0.5);
 		sampleHistory_[i] = 0;
 	}
-	// Now decrease filter order if last coeffs are zero...
-	/*
+	// Now decrease filter order if side coeffs are zero...
 	i = 0;
 	while (0 == windowTable_[i] && i < midorder) i++;
 	if (i) {
-		order_ = i;
+		int k;
+		int drop = i;
+
 		i = 0;
-		for(int k = order_; k<=midorder; k++, i++)
-			windowTable_[i] = windowTable_[order_ - i] = windowTable_[k];
-		order_ = (midorder - i) * 2 + 1;
+		for(k = drop; k <= midorder; k++, i++)
+			windowTable_[i] = windowTable_[k];
+		order_ = order_ - drop * 2;
+
+		if (i > 1) {
+			int *b = windowTable_ + i - 2;
+			do {
+				windowTable_[i] = *b--;
+			} while (++i < order_);
+		}
 		midorder = (order_ - 1) / 2;
 	}
-	*/
 
 	sampleBufPtr_ = 0;
 	sampleBufMask_ = (midorder << 1) + 1;
 
 	delete [] dblCoeffs;
 }
+
+void Filter::setMixingVolume(unsigned int vol)
+{
+	mixingVolume = vol;
+	// FIXME?
+	reCalcWindowTable();
+};
 
 short Filter::lowPass(short from)
 {

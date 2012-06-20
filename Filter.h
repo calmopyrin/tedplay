@@ -9,6 +9,7 @@ public:
 	void setFilterOrder(unsigned int order);
 	void reCalcWindowTable();
 	short lowPass(short from);
+	void setMixingVolume(unsigned int vol);
 protected:
 	int order_;
 	int *windowTable_;
@@ -18,4 +19,5 @@ protected:
 	double fc_;
 	unsigned int sampleFrq_;
 	const unsigned int precision_;
+	unsigned int mixingVolume;
 };
