@@ -246,11 +246,15 @@ int tedplayMain(char *fileName, Audio *player_)
 		if (!player)
 			return 1;
 	}
-	player->stop();
+
 	if (!readFile(fileName, &buf, &bufLength)) {
 		
+		player->lock();
 		machineReset();
-		machineDoSomeFrames(STARTUP);
+		player->unlock();
+		player->sleep(200); // some SIDs want 0 delay... who knows why
+		player->lock();
+
 		psidHdr.fileName = fileName;
 
 		unsigned short addr;
