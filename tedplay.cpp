@@ -356,9 +356,8 @@ int tedplayMain(char *fileName, Audio *player_)
 		ted->copyToKbBuffer(start);
 #endif
 		try {
-			//if (player_)
-			{// autostart
-				//player->play();
+			player->unlock();
+			{
 				tedplayPlay();
 			}
 		} catch (char *txt) {
