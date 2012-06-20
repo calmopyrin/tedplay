@@ -9,7 +9,7 @@
 #define PRECISION 0
 #define OSCRELOADVAL (0x3FF << PRECISION)
 
-static unsigned int		masterVolume;
+unsigned int		   TED::masterVolume;
 static int             Volume;
 static int             Snd1Status;
 static int             Snd2Status;
@@ -40,8 +40,7 @@ void TED::oscillatorReset()
 	oscCount2 = 0;
 	NoiseCounter = 0;
 	Freq1 = Freq2 = 0;
-	DAStatus = 0;
-	masterVolume = 8;
+	DAStatus = Snd1Status = Snd2Status = 0;
 }
 
 // call only once!
@@ -62,6 +61,7 @@ void TED::oscillatorInit()
 	setplaybackSpeed(3);
 	enableChannel(0, true);
 	enableChannel(1, true);
+	enableChannel(2, true);
 }
 
 void TED::writeSoundReg(unsigned int reg, unsigned char value)
@@ -97,7 +97,6 @@ void TED::writeSoundReg(unsigned int reg, unsigned char value)
 			Volume = value & 0x0F;
 			if (Volume > 8) Volume = 8;
 			Volume = (Volume << 10) * masterVolume / 10;
-			setMasterVolume(masterVolume);
 			Snd1Status = value & 0x10;
 			Snd2Status = value & 0x20;
 			SndNoiseStatus = value & 0x40;
@@ -109,7 +108,7 @@ void TED::writeSoundReg(unsigned int reg, unsigned char value)
 	}
 }
 
-inline void TED::storeToBuffer(short *buffer, short sample)
+void TED::storeToBuffer(short *buffer, unsigned int count)
 {
 	static double			lp_accu = 0;
 	static double			hp_accu = 0;
@@ -129,13 +128,14 @@ inline void TED::storeToBuffer(short *buffer, short sample)
 	// fill the buffer
 	*buffer = ((short)accu);
 #else
-	//*buffer = sample;
-	double accu = (double) filter->lowPass(sample);
-	accu = accu - hp_accu;
-	// update hp filter pole
-	hp_accu +=  hpc * accu;
-	// fill the buffer
-	*buffer = ((short)accu);
+	do {
+		double accu = (double) filter->lowPass(*buffer);
+		accu = accu - hp_accu;
+		// update hp filter pole
+		hp_accu +=  hpc * accu;
+		// fill the buffer
+		*buffer++ = (short)accu;
+	} while(--count);
 #endif
 }
 
@@ -168,7 +168,7 @@ void TED::renderSound(unsigned int nrsamples, short *buffer)
 		if (Snd1Status) sample = Volume & mod1;
 		if (Snd2Status) sample += Volume & mod2;
 		for (;nrsamples--;) {
-			storeToBuffer(buffer++, sample);
+			*buffer++ = sample & channelMask[2];
 		}
 	} else {
 		unsigned int result;
@@ -191,10 +191,10 @@ void TED::renderSound(unsigned int nrsamples, short *buffer)
 			result = (FlipFlop[0] && Snd1Status) ? Volume & mod1 : 0;
 			if (Snd2Status && FlipFlop[1]) {
 				result += Volume & mod2;
-			} else if (SndNoiseStatus && noise[NoiseCounter]) {
+			} else if (SndNoiseStatus && noise[NoiseCounter] & channelMask[2]) {
 				result += Volume;
 			}
-			storeToBuffer(buffer++, result);
+			*buffer++ = result;
 		}   // for
 	}
 }

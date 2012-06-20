@@ -26,6 +26,7 @@ class CPU;
 class KEYS;
 class TAP;
 class Filter;
+class SIDsound;
 
 class TED : public MemoryHandler {
   public:
@@ -105,15 +106,17 @@ class TED : public MemoryHandler {
 	}
 	void setplaybackSpeed(unsigned int speed);
 	void enableChannel(unsigned int channel, unsigned int enable) {
-		channelMask[channel & 1] = enable ? -1 : 0;
+		channelMask[channel % 3] = enable ? -1 : 0;
 	}
 	bool isChannelEnabled(unsigned int channel) {
-		return channelMask[channel & 1] != 0;
+		return channelMask[channel % 3] != 0;
 	}
-	void storeToBuffer(short *buffer, short sample);
+	void storeToBuffer(short *buffer,unsigned int count = 1);
 	void copyToKbBuffer(char *bufferString, unsigned int bufferLength = -1);
 	void getTimeSinceLastReset(int hour, int min, int sec);
-	//void getSoundData(unsigned int nrsamples, short *buffer);
+	SIDsound *getSidCard() { return sidCard; };
+	void enableSidCard(bool enable);
+	static unsigned int masterVolume;
 
   private:
 	static TED *instance_;
@@ -173,11 +176,10 @@ class TED : public MemoryHandler {
 	unsigned int waveForm;
 	unsigned char protectedPlayerMemory[0x1000];
 	unsigned int playbackSpeed;
-	unsigned int channelMask[2];
+	unsigned int channelMask[3];
 	unsigned int sampleRate;
+	SIDsound *sidCard;
 };
-
-#define theTed TED::instance()
 
 const short HUE[16] = { 0, 0,
 /*RED*/	103, /*CYAN	*/ 283,

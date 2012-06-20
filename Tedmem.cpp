@@ -1300,6 +1300,7 @@ void TED::ted_process(short *buffer, unsigned int count)
 				unsigned int samples = (playbackSpeed + remainder) / 4;
 				if (samples) {
 					renderSound(samples, buffer);
+					storeToBuffer(buffer, samples);
 				}
 				remainder = (playbackSpeed + remainder) % 4;
 				count -= samples;
