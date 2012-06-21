@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include "Tedmem.h"
+#include "Sid.h"
 #include "Cpu.h"
 #include "roms.h"
 #include "Filter.h"
@@ -58,7 +59,7 @@ enum {
 	TDMA = 1 << 7
 };
 
-TED::TED() : filter(0)
+TED::TED() : filter(0), sidCard(0)
 {
 	register unsigned int	i;
 
@@ -117,6 +118,7 @@ TED::TED() : filter(0)
 	CycleCounter = 0;
 	oscillatorInit();
 	memset(protectedPlayerMemory, 0xfe, sizeof(protectedPlayerMemory));
+	enableSidCard(true);
 }
 
 void TED::Reset()
@@ -125,6 +127,7 @@ void TED::Reset()
 	for (int i=0;i<RAMSIZE;Ram[i++] = (i>>1)<<1==i ? 0 : 0xFF);
 	// reset oscillators
 	oscillatorReset();
+	if (sidCard) sidCard->reset();
 	lastResetCycle = CycleCounter;
 }
 
@@ -358,6 +361,9 @@ unsigned char TED::Read(unsigned int addr)
 						case 0xFD2: // Speech hardware
 						case 0xFD4: // SID Card
 						case 0xFD5:
+							if (sidCard) {
+								return sidCard->read(addr & 0x1f);
+							}
 							return 0xFD;
 						case 0xFD3:
 							return Ram[0xFD30];
@@ -408,6 +414,10 @@ void TED::Write(unsigned int addr, unsigned char value)
 			actram[addr&0xFFFF] = value;
 			return;
 		case 0xD000:
+			if (sidCard) {
+				sidCard->write(addr & 0x1f, value);
+				sidCard->setFrequency(1);
+			}
 		case 0x4000:
 		case 0x5000:
 		case 0x6000:
@@ -707,6 +717,10 @@ void TED::Write(unsigned int addr, unsigned char value)
 							return;
 						case 0xFD4: // SID Card
 						case 0xFD5:
+							if (sidCard) {
+								sidCard->setFrequency(0);
+								sidCard->write(addr & 0x1f, value);
+							}
 							return;
 						case 0xFDD:
 							actromlo=&(RomLo[addr&0x03][0]);
@@ -1300,6 +1314,14 @@ void TED::ted_process(short *buffer, unsigned int count)
 				unsigned int samples = (playbackSpeed + remainder) / 4;
 				if (samples) {
 					renderSound(samples, buffer);
+					if (sidCard) {
+						short imBuf[128];
+						sidCard->calcSamples(imBuf, samples);
+						unsigned int i = samples - 1;
+						do {
+							buffer[i] += (short)(int(imBuf[i]) * int(masterVolume) / 10);
+						}while (i--);
+					}
 					storeToBuffer(buffer, samples);
 				}
 				remainder = (playbackSpeed + remainder) % 4;
@@ -1329,6 +1351,21 @@ void TED::ted_process(short *buffer, unsigned int count)
 	} while (int(count) > 0 && buffer);
 
 	render_ok = false;
+}
+
+void TED::enableSidCard(bool enable)
+{
+	if (enable) {
+		if (sidCard)
+			return;
+		sidCard = new SIDsound(SID8580);
+		sidCard->setSampleRate(TED_SOUND_CLOCK);
+	} else {
+		if (!sidCard)
+			return;
+		delete sidCard;
+		sidCard = 0;
+	}
 }
 
 TED::~TED()

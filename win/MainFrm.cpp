@@ -6,6 +6,7 @@
 #include "resource.h"
 
 #include <string>
+#include <sstream>
 #include "Aboutdlg.h"
 #include "MainFrm.h"
 #include "PlayList.h"
@@ -94,19 +95,13 @@ LRESULT CMainFrame::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	// checkboxes
 	cbChannels[0].Attach(GetDlgItem(IDC_CHECK1));
 	cbChannels[1].Attach(GetDlgItem(IDC_CHECK2));
-	cbChannels[0].SetCheck(1); // tedPlayIsChannelEnabled(0)
+	cbChannels[2].Attach(GetDlgItem(IDC_CHECK3));
+	cbChannels[0].SetCheck(1);
 	cbChannels[1].SetCheck(1);
+	cbChannels[2].SetCheck(1);
 
 	// fire up the playlist
-#if 1 // _DEBUG
 	EnableMenuItem(GetMenu(), IDM_VIEW_PLAYLIST, MF_ENABLED);
-#endif
-	// put the playlist window right below the main one
-	//RECT rc;
-	//GetWindowRect(&rc);
-	//rc.top += (rc.bottom - rc.top + 1);
-	//rc.bottom = rc.top + 159;
-	//rc.right = rc.left + 357;
 	playListViewDialog.Create(m_hWnd); //, rc, 0);
 	// I needed this because GetParent wouldn't work...
 	playListViewDialog.setParent(m_hWnd);
@@ -151,6 +146,8 @@ LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	// save settings
 	LONG regVal = playListViewDialog.IsWindowVisible();
 	setRegistryValue(_T("ShowPlayList"), regVal);
+	regVal = GetMenuState(GetMenu(), ID_TOOLS_DISABLESID, MF_BYCOMMAND);
+	setRegistryValue(_T("DisableSID"), regVal);
 	//
 	bHandled = FALSE;
 	DestroyWindow();
@@ -243,23 +240,27 @@ LRESULT CMainFrame::OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 
 LRESULT CMainFrame::OnFileNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	_TCHAR szFilter[] = _T("TED tunes (*.c8m;*.ted;*.prg)\0"
-						   "*.c8m;*.ted;*.prg\0"
+	static unsigned int selFilter = 0;
+	_TCHAR szFilter[] = _T("TED tunes (*.c8m;*.prg)\0"
+						   "*.c8m;*.prg\0"
+						   "SID tunes (*.sid)\0*.sid\0"
 						   "All Files (*.*)\0*.*\0\0");
 	WTL::CFileDialog wndFileDialog ( TRUE, NULL, NULL, 
 		OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_EXPLORER, 
 		szFilter, m_hWnd );
 
-	tedplayPause();
-	::Sleep(10);
+	wndFileDialog.m_ofn.nFilterIndex = selFilter;
 	if (IDOK == wndFileDialog.DoModal() ) {
 		_TCHAR tmp[MAX_PATH];
 
 		_tcscpy(tmp, wndFileDialog.m_szFileName);
+		selFilter = wndFileDialog.m_ofn.nFilterIndex;
+		tedplayPause();
+		::Sleep(10);
 		tedplayMain(tmp, NULL);
+		tedplayPlay();
 		UpdateSubsong();
 	}
-	tedplayPlay();
 
 	//CFileOpenDialog dialog;
 	//if (IDOK == dialog.DoModal()) {
@@ -428,11 +429,19 @@ LRESULT CMainFrame::OnCheckBox2Clicked(WORD wNotifyCode, WORD /*wID*/, HWND hWnd
 	return 0L;
 }
 
+LRESULT CMainFrame::OnBnClickedCheck3(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled)
+{
+	unsigned int enabled = cbChannels[2].GetCheck();
+	tedPlayChannelEnable(2, enabled);
+	bHandled = TRUE;
+	return 0;
+}
+
 LRESULT CMainFrame::OnFileMemDump(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	static unsigned int s = 0;
-	char name[256];
-	sprintf(name, "dump%04X.bin", s++);
+	_TCHAR name[256];
+	_stprintf(name, _T("dump%04X.bin"), s++);
 	dumpMem(name);
 	return 0L;
 }
@@ -442,8 +451,22 @@ LRESULT CMainFrame::OnToolsResetplayer(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 	OnClickedStop(0, 0, 0, bHandled);
 	//tedplayStop();
 	machineReset();
-	machineDoSomeFrames(2 * 800000);
+	machineDoSomeFrames(10 * 800000);
 	UpdateSubsong();
 	//tedplayPlay();
+	return 0;
+}
+
+LRESULT CMainFrame::OnToolsDisablesid(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	tedplayPause();
+	if (!GetMenuState(GetMenu(), ID_TOOLS_DISABLESID, MF_BYCOMMAND)) {
+		tedPlaySidEnable(false);
+		::CheckMenuItem(GetMenu(), ID_TOOLS_DISABLESID, MF_CHECKED);
+	} else {
+		tedPlaySidEnable(true);
+		::CheckMenuItem(GetMenu(), ID_TOOLS_DISABLESID, MF_UNCHECKED);
+	}
+	tedplayPlay();
 	return 0;
 }

@@ -72,6 +72,8 @@ public:
 		COMMAND_ID_HANDLER(IDM_VIEW_PLAYLIST, OnViewPlaylist)
 		COMMAND_ID_HANDLER(IDM_HELP_ABOUT, OnAppAbout)
 		COMMAND_ID_HANDLER(ID_TOOLS_RESETPLAYER, OnToolsResetplayer)
+		COMMAND_HANDLER(IDC_CHECK3, BN_CLICKED, OnBnClickedCheck3)
+		COMMAND_ID_HANDLER(ID_TOOLS_DISABLESID, OnToolsDisablesid)
 		CHAIN_MSG_MAP(CUpdateUI<CMainFrame>)
 	END_MSG_MAP()
 
@@ -98,6 +100,7 @@ public:
 	LRESULT OnClickedStop(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnCheckBox1Clicked(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnCheckBox2Clicked(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	void UpdateSubsong();
 
 protected:
 	CMenu menu;
@@ -105,9 +108,7 @@ protected:
 	CButton btnPrev, btnNext, btnPlay, btnPause, btnStop, btnTemp; // CContainedWindowT<CButton> 
 	enum { TB_VOLUME = 0, TB_SPEED, TB_COUNT };
 	CTrackBarCtrl trackBars[2];
-	CButton cbChannels[2];
-	//bool channelOn[2];
-	void UpdateSubsong();
+	CButton cbChannels[3];
 	void enableButtons(unsigned int mask);
 	unsigned int getButtonStates();
 	CPlayList playListViewDialog;
@@ -119,4 +120,6 @@ public:
 	//Get EXE directory.
 	static void MakePathName(LPTSTR lpFileName);
 	static void getDefaultPlayListPath(_TCHAR *sFullPath);
+	LRESULT OnBnClickedCheck3(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnToolsDisablesid(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 };

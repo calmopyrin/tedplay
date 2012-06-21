@@ -63,6 +63,9 @@ LRESULT CPlayList::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	btnAddFolder.Attach(GetDlgItem(IDC_BTN_ADDFOLDER));
 	btnLoadPlayList.Attach(GetDlgItem(IDC_BTN_LOADPL));
 	btnSavePlayList.Attach(GetDlgItem(IDC_BTN_SAVEPL));
+	btnPrevMod.Attach(GetDlgItem(IDC_BTN_PREVMODULE));
+	btnPlayMod.Attach(GetDlgItem(IDC_BTN_PLAYSELECTION));
+	btnNextMod.Attach(GetDlgItem(IDC_BTN_NEXTMODULE));
 	HINSTANCE inst = _Module.GetResourceInstance();
 	// load & set button icons
 	HICON icon = (HICON) ::LoadImage(inst, MAKEINTRESOURCE(IDI_ICON_OPEN),
@@ -71,6 +74,15 @@ LRESULT CPlayList::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	icon = (HICON) ::LoadImage(inst, MAKEINTRESOURCE(IDI_ICON_SAVE),
 		IMAGE_ICON, 16, 16, LR_SHARED);
 	btnSavePlayList.SetIcon(icon);
+	icon = (HICON) ::LoadImage(inst, MAKEINTRESOURCE(IDI_ICON_PREV),
+		IMAGE_ICON, 16, 16, LR_SHARED);
+	btnPrevMod.SetIcon(icon);
+	icon = (HICON) ::LoadImage(inst, MAKEINTRESOURCE(IDI_ICON_PLAY),
+		IMAGE_ICON, 16, 16, LR_SHARED);
+	btnPlayMod.SetIcon(icon);
+	icon = (HICON) ::LoadImage(inst, MAKEINTRESOURCE(IDI_ICON_NEXT),
+		IMAGE_ICON, 16, 16, LR_SHARED);
+	btnNextMod.SetIcon(icon);
 	//
 	UINT uCToolTipCtrlStyle = TTS_NOPREFIX |TTS_NOFADE | TTS_NOANIMATE; // | TTS_BALLOON
 	UINT uToolFlags = TTF_IDISHWND | TTF_SUBCLASS;
@@ -109,6 +121,9 @@ LRESULT CPlayList::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	playListView.AddColumn(_T("#"), LV_FIELD_INDEX);
 	playListView.SetColumnWidth(LV_FIELD_INDEX, 32);
 	
+	// register hotkeys for the playlist
+	::RegisterHotKey(m_hWnd, 1, MOD_ALT | MOD_CONTROL, VK_RIGHT);
+	::RegisterHotKey(m_hWnd, 2, MOD_ALT | MOD_CONTROL, VK_LEFT);
 	//
 	// register object for message filtering and idle updates    
     CMessageLoop* pLoop = _Module.GetMessageLoop();
@@ -124,6 +139,8 @@ LRESULT CPlayList::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	HMENU hmenu = ::GetMenu(m_hwndParent);
 	ShowWindow(SW_HIDE);
 	CheckMenuItem(hmenu, IDM_VIEW_PLAYLIST, MF_UNCHECKED);
+	::UnregisterHotKey(m_hWnd, 1);
+	::UnregisterHotKey(m_hWnd, 2);
 	return 0;
 }
 
@@ -167,6 +184,23 @@ LRESULT CPlayList::OnGetMinMaxInfo(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 
 LRESULT CPlayList::OnResizing(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
+	return 0L;
+}
+
+LRESULT CPlayList::OnHotkey(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	switch (wParam) {
+		case 1:
+			stepPlayList(+1);
+			OnNMDblclkLsv(0, 0, bHandled);
+			break;
+		case 2:
+			stepPlayList(-1);
+			OnNMDblclkLsv(0, 0, bHandled);
+			break;
+		default:
+			;
+	}
 	return 0L;
 }
 
@@ -326,9 +360,11 @@ LRESULT CPlayList::OnPlayTune(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 LRESULT CPlayList::OnBnClickedBtnAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	const int FILENAMES_BUFFER_SIZE = 32048;
+	static unsigned int selFilter = 0;
 	_TCHAR szFileNamesBuffer[FILENAMES_BUFFER_SIZE] = {0};
-	_TCHAR szFilter[] = _T("TED tunes (*.c8m;*.ted;*.prg)\0"
-											"*.c8m;*.ted;*.prg\0"
+	_TCHAR szFilter[] = _T("TED tunes (*.c8m;*.prg)\0"
+											"*.c8m;*.prg\0"
+											"SID tunes (*.sid)\0*.sid\0"
 								"All Files (*.*)\0*.*\0\0");
 	WTL::CFileDialog wndFileDialog ( TRUE, NULL, NULL, 
 		OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT, 
@@ -336,11 +372,13 @@ LRESULT CPlayList::OnBnClickedBtnAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	wndFileDialog.m_ofn.lpstrFile = szFileNamesBuffer;
 	wndFileDialog.m_ofn.nMaxFile = FILENAMES_BUFFER_SIZE;
 
+	wndFileDialog.m_ofn.nFilterIndex = selFilter;
 	if (IDOK == wndFileDialog.DoModal() ) {
 		_TCHAR sDirectory[MAX_PATH];
 		_TCHAR sFullPath[MAX_PATH];
 
-		::GetCurrentDirectory(MAX_PATH, sDirectory);//wndFileDialog.m_ofn.lpstrFile);
+		::GetCurrentDirectory(MAX_PATH, sDirectory);
+		selFilter = wndFileDialog.m_ofn.nFilterIndex;
 		//PathStripToRoot(sDirectory);
 		LPTSTR sFileName = wndFileDialog.m_ofn.lpstrFile + wndFileDialog.m_ofn.nFileOffset;
 
@@ -400,12 +438,9 @@ LRESULT CPlayList::OnLvnKeydownLsv1(int /*idCtrl*/, LPNMHDR pNMHDR, BOOL& bHandl
 	if (pLVKeyDow->wVKey == VK_DELETE) {
 		OnBnClickedBtnRemove(0, 0, m_hWnd, bHandled);
 	} else if (pLVKeyDow->wVKey == VK_ADD) {
-		//if (::GetAsyncKeyState(VK_CONTROL) & 0x8000) 
-		{
-			OnSelectAll(0, 0, 0, bHandled);
-		}
+		OnSelectAll(0, 0, 0, bHandled);
 	} else if (pLVKeyDow->wVKey == VK_SPACE) {
-		stepPlayList(+1);
+		OnNMDblclkLsv(0, 0, bHandled);
 	}
 	return 0;
 }
@@ -417,10 +452,15 @@ int CPlayList::stepPlayList(int direction)
 		return 1;
 	int sel = playListView.GetSelectionMark();
 	playListView.SetItemState(-1, 0, LVIS_SELECTED | LVIS_FOCUSED);
-	if (sel + 1 < items) {
-		playListView.SetItemState(sel + 1, LVIS_SELECTED, LVIS_SELECTED);
+	if (sel + direction < 0) {
+		playListView.SetItemState(items - 1, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+		playListView.SetSelectionMark(items - 1);
+	} else if (sel + direction >= items) {
+		playListView.SetItemState(0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+		playListView.SetSelectionMark(0);
 	} else {
-		playListView.SetItemState(0, LVIS_SELECTED, LVIS_SELECTED);
+		playListView.SetItemState(sel + direction, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+		playListView.SetSelectionMark(sel + direction);
 	}
 	return 0;
 }
@@ -432,7 +472,6 @@ LRESULT CPlayList::OnMouseMessage(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&
 	for(unsigned int i = 0; i < 3; i++) {
 		if (m_wndToolTip[i].IsWindow()) {
 			m_wndToolTip[0].RelayEvent(&msg);
-			//m_wndToolTip[i].RelayEvent((LPMSG) GetCurrentMessage());
 		}
 	}
 	bHandled = FALSE;
@@ -441,12 +480,13 @@ LRESULT CPlayList::OnMouseMessage(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&
 
 LRESULT CPlayList::OnBnClickedBtnAddfolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	_TCHAR strFolderPath[MAX_PATH];
+	static _TCHAR strFolderPath[MAX_PATH] = { 0 };
 	// TODO: Add your control notification handler code here
 	CFolderDialog dlgFolder(m_hWnd, _T("Add files recoursively from folder..."),
 		BIF_NEWDIALOGSTYLE | BIF_RETURNONLYFSDIRS);
 
-	::GetCurrentDirectory(MAX_PATH, strFolderPath);
+	if (!::PathIsDirectory(strFolderPath))
+		::GetCurrentDirectory(MAX_PATH, strFolderPath);
 	dlgFolder.SetInitialFolder(strFolderPath);
 	if ( IDOK == dlgFolder.DoModal()) {
 		_tcscpy(strFolderPath, dlgFolder.GetFolderPath());
@@ -501,13 +541,13 @@ LRESULT CPlayList::OnRootOpenfilelocation(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 			return 1;
 		}
 	}
-	// TODO: Add your command handler code here
 	HINSTANCE hinst = ::ShellExecute(m_hWnd, _T("open"), _T("explorer.exe"), namebuffer, NULL, SW_SHOWNORMAL);
 	return 0;
 }
 
 LRESULT CPlayList::OnBnClickedBtnLoadpl(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
+	unsigned int selFilter = 0;
 	_TCHAR szFilter[] = _T("Tedplay playlists (*.pls)\0"
 											"*.pls\0"
 								"All Files (*.*)\0*.*\0\0");
@@ -515,8 +555,10 @@ LRESULT CPlayList::OnBnClickedBtnLoadpl(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 		OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_EXPLORER, 
 		szFilter, m_hWnd );
 
+	wndFileDialog.m_ofn.nFilterIndex = selFilter;
 	if (IDOK == wndFileDialog.DoModal() ) {
 		LPTSTR sFileName = wndFileDialog.m_ofn.lpstrFile;
+		selFilter = wndFileDialog.m_ofn.nFilterIndex;
 		playListView.DeleteAllItems();
 		loadPlaylist(sFileName);
 	}
@@ -525,15 +567,39 @@ LRESULT CPlayList::OnBnClickedBtnLoadpl(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 
 LRESULT CPlayList::OnBnClickedBtnSavepl(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
+	unsigned int selFilter = 0;
 	_TCHAR szFilter[] = _T("Tedplay playlists (*.pls)\0"
 											"*.pls\0"
 								"All Files (*.*)\0*.*\0\0");
 	WTL::CFileDialog wndFileDialog(FALSE, NULL, NULL, 
 		OFN_PATHMUSTEXIST | OFN_EXPLORER, szFilter, m_hWnd);
 
+	wndFileDialog.m_ofn.nFilterIndex = selFilter;
 	if (IDOK == wndFileDialog.DoModal() ) {
 		LPTSTR sFileName = wndFileDialog.m_ofn.lpstrFile;
+		selFilter = wndFileDialog.m_ofn.nFilterIndex;
 		savePlaylist(sFileName);
 	}
+	return 0;
+}
+
+LRESULT CPlayList::OnBnClickedBtnPrevModule(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled)
+{
+	// step forward one module in the playlist
+	OnHotkey(0, 1, 0, bHandled);
+	return 0;
+}
+
+LRESULT CPlayList::OnBnClickedBtnPlayselection(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled)
+{
+	// play the current selection
+	OnNMDblclkLsv(0, 0, bHandled);
+	return 0;
+}
+
+LRESULT CPlayList::OnBnClickedBtnPrevmodule(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled)
+{
+	// step back one module in the playlist
+	OnHotkey(0, 2, 0, bHandled);
 	return 0;
 }

@@ -17,6 +17,7 @@ extern void tedPlayGetSongs(unsigned int &current, unsigned int &total);
 extern bool tedPlayIsChannelEnabled(unsigned int channel);
 extern void tedPlayChannelEnable(unsigned int channel, unsigned int enable);
 extern int tedPlayGetState();
+extern void tedPlaySidEnable(bool enable);
 //
 extern void machineReset();
 extern void machineDoSomeFrames(unsigned int count);

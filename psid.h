@@ -31,7 +31,9 @@ struct PsidHeader {
 	char title[512];
 	char author[512];
 	char copyright[512];
+	char model[32];
 	unsigned int type;
+	unsigned int version;
 	unsigned int current;
 };
 
@@ -50,4 +52,4 @@ inline unsigned int readPsid32(const unsigned char *p, int offset)
 extern bool psidChangeTrack(int direction);
 extern void printPsidInfo(PsidHeader &psidHdr_);
 extern PsidHeader &getPsidHeader();
-extern void getPsidProperties(std::string &text);
+extern void getPsidProperties(PsidHeader &psidHdr_, char *text);

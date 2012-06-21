@@ -35,7 +35,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 
 	unsigned int defaultSampleRate = 0;
 	getRegistryValue(_T("SampleRate"), defaultSampleRate);
-	if (!defaultSampleRate || defaultSampleRate > 110860) defaultSampleRate = 48000;
+	if (!defaultSampleRate || defaultSampleRate > 192000) defaultSampleRate = 48000;
 
 	unsigned int bufferLengthInMsec = 0;
 	getRegistryValue(_T("BufferLengthInMsec"), bufferLengthInMsec);
@@ -48,6 +48,17 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 #else
 		int retval = tedplayMain( __argv[1], new AudioDirectSound(machineInit(), 110860));
 #endif
+		// Read settings
+		// probably no race condition yet...
+		unsigned int regVal = 0;
+		if (getRegistryValue(_T("DisableSID"), regVal) && regVal) {
+			tedPlaySidEnable(false);
+			::CheckMenuItem(dlgMain.GetMenu(), ID_TOOLS_DISABLESID, MF_CHECKED);
+		}
+		// if playing a song specified in the command line, update the window title
+		if (::PathFileExists(__argv[1])) {
+			dlgMain.UpdateSubsong();
+		}
 	} catch (_TCHAR *str) {
 		MessageBox(NULL, str, _T("Exception occured."), MB_OK | MB_ICONERROR);
 	}

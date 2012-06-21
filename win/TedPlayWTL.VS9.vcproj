@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="TedPlayWTL"
 	ProjectGUID="{98F8E553-2072-4A34-8152-D73A149331D1}"
 	RootNamespace="TedPlayWTL"
@@ -533,6 +533,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Sid.h"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.h"
 				>
 			</File>
@@ -626,6 +630,10 @@
 			</File>
 			<File
 				RelativePath=".\registry.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Sid.cpp"
 				>
 			</File>
 			<File

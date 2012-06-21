@@ -1,11 +1,13 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include "Audio.h"
 #include "psid.h"
 #include "CbmTune.h"
 #include "Tedmem.h"
 #include "Cpu.h"
+#include "Sid.h"
 
 #define MAX_BUFFER_SIZE 0x10000
 
@@ -60,13 +62,14 @@ unsigned int parsePsid(uint8_t *buf, PsidHeader &psidHdr_)
 	return 0;
 }
 
-void getPsidProperties(PsidHeader &psidHdr_, std::string &text)
+void getPsidProperties(PsidHeader &psidHdr_, char *os)
 {
-	text = "Filename:\t\t";// + psidHdr_.fileName;
-}
+	char temp[256];
 
-void printPsidInfo(PsidHeader &psidHdr_)
-{
+	if (!psidHdr_.tracks) {
+		strcat(os, "");
+		return;
+	}
 	std::string mType;
 	switch (psidHdr_.type) {
 		default:
@@ -82,12 +85,30 @@ void printPsidInfo(PsidHeader &psidHdr_)
 			mType = "CBM8M";
 			break;
 	}
-	std::cout << "Type:\t\t" << mType.c_str() << std::endl;
-	std::cout << "Module:\t\t" << psidHdr_.title << std::endl;
-	std::cout << "Author:\t\t" << psidHdr_.author << std::endl;
-	std::cout << "Copyright:\t" << psidHdr_.copyright << std::endl;
-	std::cout << "Total tunes:\t" << psidHdr_.tracks << std::endl;
-	std::cout << "Default tune:\t" << (psidHdr_.defaultTune + 1) << std::endl;
+	sprintf(os,   "Type:         %s\r\n", mType.c_str());
+	sprintf(temp, "Chip:         %s\r\n", psidHdr_.model);
+	strcat(os, temp);
+	sprintf(temp, "Module:       %s\r\n", psidHdr_.title);
+	strcat(os, temp);
+	sprintf(temp, "Author:       %s\r\n", psidHdr_.author);
+	strcat(os, temp);
+	sprintf(temp, "Released:     %s\r\n", psidHdr_.copyright);
+	strcat(os, temp);
+	sprintf(temp, "Total tunes:  %u\r\n", psidHdr_.tracks);
+	strcat(os, temp);
+	sprintf(temp, "Default tune: %u\r\n", psidHdr_.defaultTune);
+	strcat(os, temp);
+	sprintf(temp, "Init        : $%04X\r\n", psidHdr_.initAddress);
+	strcat(os, temp);
+	sprintf(temp, "Play address: $%04X\r\n", psidHdr_.replayAddress);
+	strcat(os, temp);
+}
+
+void printPsidInfo(PsidHeader &psidHdr_)
+{
+	char output[1024];
+	getPsidProperties(psidHdr_, output);
+	std::cout << std::string(output) << std::endl;
 }
 
 unsigned int readFile(char *fName, uint8_t **bufferPtr, size_t *bLen)
@@ -199,6 +220,7 @@ void tedplayPause()
 {
 	if (player) {
 		player->pause();
+		player->lock();
 	}
 	playState = 0;
 }
@@ -207,6 +229,7 @@ void tedplayPlay()
 {
 	if (player) {
 		player->play();
+		player->unlock();
 		playState = 1;
 	}
 }
@@ -248,12 +271,13 @@ int tedplayMain(char *fileName, Audio *player_)
 	}
 
 	if (!readFile(fileName, &buf, &bufLength)) {
-		
+
 		player->lock();
 		machineReset();
 		player->unlock();
 		player->sleep(200); // some SIDs want 0 delay... who knows why
 		player->lock();
+		machineDoSomeFrames(STARTUP);
 
 		psidHdr.fileName = fileName;
 
@@ -272,9 +296,28 @@ int tedplayMain(char *fileName, Audio *player_)
 			psidHdr.replayAddress = replayAddr;
 			psidHdr.defaultTune = readPsid16(buf, PSID_DEFSONG);
 			psidHdr.current = psidHdr.defaultTune;
+			psidHdr.version = readPsid16(buf, PSID_VERSION);
 			parsePsid(buf, psidHdr);
 			ted->injectCodeToRAM(addr, buf + PSID_MAX_HEADER_LENGTH + corr,
 				bufLength - PSID_MAX_HEADER_LENGTH - corr);
+			// Disable the ROM, so almost the entire memory is RAM
+			// more SID's are likely to play
+			ted->ChangeMemBankSetup(true);
+
+			// setup the SID card
+			SIDsound *sid = ted->getSidCard();
+			if (sid) {
+				// v2 SID files have flags
+				if (psidHdr.version == 2 && (readPsid16(buf, PSID_FLAGS) & 0x20)) {
+					sid->setModel(SID8580);
+					strcpy(psidHdr.model, "SID8580");
+				} else {
+					sid->setModel(SID6581);
+					strcpy(psidHdr.model, "SID6581");
+				}
+			} else {
+				strcpy(psidHdr.model, "TED8360?");
+			}
 			psidHdr.tracks = readPsid16(buf, PSID_NUMBER);
 			if (buf[0] == 'P') { // PSID
 				psidHdr.type = 0;
@@ -313,9 +356,11 @@ int tedplayMain(char *fileName, Audio *player_)
 			unsigned short replayAddr = tune.getPlayAddress(0);
 			unsigned char *playerData;
 			unsigned int playerLength;
+			psidHdr.version = 1;
 			psidHdr.tracks = tune.getNrOfSubtunes() + 1;
-			psidHdr.defaultTune = tune.getDefaultSubtune();
-			psidHdr.current = psidHdr.defaultTune + 1;
+			psidHdr.defaultTune = tune.getDefaultSubtune() + 1;
+			psidHdr.current = psidHdr.defaultTune;
+			psidHdr.initAddress = initAddr;
 			psidHdr.replayAddress = replayAddr;
 			if (replayAddr) {
 				psidPlayer[1] = psidHdr.defaultTune;
@@ -333,15 +378,19 @@ int tedplayMain(char *fileName, Audio *player_)
 				playerLength = 8;
 				playerData = rsidPlayer;
 			}
+			strcpy(psidHdr.model, "TED8360");
 			ted->injectCodeToRAM(loadAddr, tune.getBinaryData(0), dataLen - 2);
 			ted->writeProtectedPlayerMemory(playerStartAddress, playerData, playerLength);
 		} else { // PRG
 			psidHdr.type = -1;
+			psidHdr.version = 0;
 			psidHdr.tracks = psidHdr.defaultTune = 1;
 			psidHdr.current = 1;
+			psidHdr.replayAddress = playerStartAddress;
 			strcpy(psidHdr.title, fileName);
 			strcpy(psidHdr.author, "Unknown");
 			strcpy(psidHdr.copyright, "Unknown");
+			strcpy(psidHdr.model, "Unknown");
 			addr = buf[0] + (buf[1] << 8);
 			ted->injectCodeToRAM(addr, buf + 2, bufLength - 2);
 			ted->writeProtectedPlayerMemory(playerStartAddress, prgPlayer, 8);
@@ -408,4 +457,8 @@ void tedPlayChannelEnable(unsigned int channel, unsigned int enable)
 	ted->enableChannel(channel, enable);
 }
 
+void tedPlaySidEnable(bool enable)
+{
+	ted->enableSidCard(enable);
+}
 

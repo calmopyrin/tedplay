@@ -33,6 +33,7 @@
 #define IDC_EDIT_COPYRIGHT              1006
 #define IDC_EDIT_AUTHOR3                1007
 #define IDC_EDIT1                       1007
+#define IDC_EDIT_PROPERTIES             1007
 #define IDC_EDIT_SUBSONG                1008
 #define IDC_SLIDER_VOLUME               1009
 #define IDC_SLIDER_SPEED                1010
@@ -43,10 +44,12 @@
 #define IDC_CHECK1                      1014
 #define IDC_BTN_ADDFOLDER               1014
 #define IDC_CHECK2                      1015
-#define IDC_BTN_REMOVE2                 1016
 #define IDC_BTN_LOADPL                  1016
-#define IDC_BUTTON_TEST                 1016
+#define IDC_CHECK3                      1016
 #define IDC_BTN_SAVEPL                  1017
+#define IDC_BTN_PREVMODULE              1018
+#define IDC_BTN_PLAYSELECTION           1019
+#define IDC_BTN_NEXTMODULE              1020
 #define IDM_FILE_OPEN                   40000
 #define IDM_FILE_PROPERTIES             40001
 #define IDM_FILE_EXIT                   40002
@@ -64,14 +67,15 @@
 #define ID_PLAYLIST_SELECTALL           40015
 #define IDC_PLAY_TUNE                   40018
 #define ID_ROOT_OPENFILELOCATION        40019
+#define ID_TOOLS_DISABLESID             40020
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        117
-#define _APS_NEXT_COMMAND_VALUE         40020
-#define _APS_NEXT_CONTROL_VALUE         1017
+#define _APS_NEXT_COMMAND_VALUE         40021
+#define _APS_NEXT_CONTROL_VALUE         1018
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
