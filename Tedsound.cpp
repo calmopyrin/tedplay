@@ -96,7 +96,7 @@ void TED::writeSoundReg(unsigned int reg, unsigned char value)
 			}
 			Volume = value & 0x0F;
 			if (Volume > 8) Volume = 8;
-			Volume = (Volume << 10) * masterVolume / 10;
+			Volume = (Volume << 8) * masterVolume / 10;
 			Snd1Status = value & 0x10;
 			Snd2Status = value & 0x20;
 			SndNoiseStatus = value & 0x40;
@@ -203,7 +203,7 @@ void TED::setMasterVolume(unsigned int shift)
 {
 	unsigned int vol = Ram[0xFF11] & 0x0f;
 	if (vol > 8) vol = 8;
-	Volume = (vol << 10) * shift / 10;
+	Volume = (vol << 8) * shift / 10;
 	masterVolume = shift;
 }
 
