@@ -119,14 +119,16 @@ void TED::storeToBuffer(short *buffer, unsigned int count)
 	// TODO: a proper windowed lowpass FIR filter
 #if 0
 	const double lpc = 1.0 - exp( - double(sampleRate) / 2.0 / double(TED_SOUND_CLOCK));
-	double accu = (double) sample;
-	// apply low pass filter -> lp_accu = lpc*accu + (1-lpc)*lp_accu
-	lp_accu += lpc * (accu - lp_accu);
-	accu = lp_accu - hp_accu;
-	// update hp filter pole
-	hp_accu +=  hpc * accu;
-	// fill the buffer
-	*buffer = ((short)accu);
+	do {
+		double accu = (double) *buffer;
+		// apply low pass filter -> lp_accu = lpc*accu + (1-lpc)*lp_accu
+		lp_accu += lpc * (accu - lp_accu);
+		accu = lp_accu - hp_accu;
+		// update hp filter pole
+		hp_accu +=  hpc * accu;
+		// fill the buffer
+		*buffer++ = ((short)accu);
+	} while(--count);
 #else
 	do {
 		double accu = (double) filter->lowPass(*buffer);
