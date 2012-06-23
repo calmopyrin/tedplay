@@ -228,17 +228,19 @@ void tedplayPause()
 void tedplayPlay()
 {
 	if (player) {
-		player->play();
 		player->unlock();
+		player->play();
 		playState = 1;
 	}
 }
 
 void tedplayStop()
 {
-	if (player)
+	if (player) {
 		player->pause();
-	cpu->setPC(playerStartAddress);
+		player->lock();
+	}
+	//cpu->setPC(playerStartAddress);
 	playState = 0;
 }
 
@@ -257,7 +259,7 @@ void tedplayClose()
 	machineShutDown();
 }
 
-#define STARTUP (10 * 1775000 / 8)
+#define STARTUP (15 * 1775000 / 8)
 
 int tedplayMain(char *fileName, Audio *player_)
 {
@@ -272,11 +274,11 @@ int tedplayMain(char *fileName, Audio *player_)
 
 	if (!readFile(fileName, &buf, &bufLength)) {
 
-		player->lock();
+		tedplayPause();
 		machineReset();
-		player->unlock();
-		player->sleep(200); // some SIDs want 0 delay... who knows why
-		player->lock();
+		tedplayPlay();
+		player->sleep(100);
+		tedplayStop();
 		machineDoSomeFrames(STARTUP);
 
 		psidHdr.fileName = fileName;
@@ -300,13 +302,14 @@ int tedplayMain(char *fileName, Audio *player_)
 			parsePsid(buf, psidHdr);
 			ted->injectCodeToRAM(addr, buf + PSID_MAX_HEADER_LENGTH + corr,
 				bufLength - PSID_MAX_HEADER_LENGTH - corr);
-			// Disable the ROM, so almost the entire memory is RAM
-			// more SID's are likely to play
-			ted->ChangeMemBankSetup(true);
 
 			// setup the SID card
 			SIDsound *sid = ted->getSidCard();
 			if (sid) {
+				// Disable the ROM, so almost the entire memory is RAM
+				// more SID's are likely to play
+				ted->cpuptr->setST(ted->cpuptr->getST() | 4);
+				ted->ChangeMemBankSetup(true);
 				// v2 SID files have flags
 				if (psidHdr.version == 2 && (readPsid16(buf, PSID_FLAGS) & 0x20)) {
 					sid->setModel(SID8580);
@@ -394,6 +397,9 @@ int tedplayMain(char *fileName, Audio *player_)
 			addr = buf[0] + (buf[1] << 8);
 			ted->injectCodeToRAM(addr, buf + 2, bufLength - 2);
 			ted->writeProtectedPlayerMemory(playerStartAddress, prgPlayer, 8);
+			SIDsound *sid = ted->getSidCard();
+			if (sid)
+				sid->setModel(SID8580);
 		}
 #if 1
 		cpu->setPC(playerStartAddress);
@@ -405,10 +411,7 @@ int tedplayMain(char *fileName, Audio *player_)
 		ted->copyToKbBuffer(start);
 #endif
 		try {
-			player->unlock();
-			{
-				tedplayPlay();
-			}
+			tedplayPlay();
 		} catch (char *txt) {
 			std::cerr << "Exception: " << txt << std::endl;
 			exit(2);

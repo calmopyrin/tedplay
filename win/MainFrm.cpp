@@ -449,11 +449,11 @@ LRESULT CMainFrame::OnFileMemDump(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 LRESULT CMainFrame::OnToolsResetplayer(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled)
 {
 	OnClickedStop(0, 0, 0, bHandled);
-	//tedplayStop();
+	//tedplayPause();
 	machineReset();
-	machineDoSomeFrames(10 * 800000);
+	machineDoSomeFrames(1 * 800000);
 	UpdateSubsong();
-	//tedplayPlay();
+	tedplayPlay();
 	return 0;
 }
 
