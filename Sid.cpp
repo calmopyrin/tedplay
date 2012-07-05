@@ -65,10 +65,14 @@ void SIDsound::setModel(unsigned int model)
 		case SID8580DB:
 		case SID8580:
 			for ( i=0; i<2048; i++) {
-				//cutOffFreq[i] = 12500.0*i/2048.0; // specs and YAPE
+				double x = i / 8.0;
+				//double cf = 12500.0 * i / 2048.0; // specs and YAPE
+				// approximate with a 3-degree polynomial
+				//double cf = 0.0003*x*x*x + 0.0882*x*x + 44.49*x - 38.409;
 				// approximate with a 2-degree polynomial
-				double cf = -0.0177*i*i + 55.261*i - 55.518; // CSG 8580R4
-				cutOffFreq[i] = cf < 0 ? 0 : cf;
+				//double cf = -0.0177*x*x + 55.261*x - 55.518; // CSG 8580R4
+				double cf = -0.0156*x*x + 48.473*x - 45.074; // 8580R5
+				cutOffFreq[i] = cf <= 0 ? 0 : cf;
 			}
 			dcWave = 0x800;
 			dcMixer = 0;

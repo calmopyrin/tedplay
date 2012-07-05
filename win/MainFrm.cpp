@@ -12,6 +12,8 @@
 #include "PlayList.h"
 #include "CFileOpenDialog.h"
 #include "PropertiesDlg.h"
+#include "PropSheet.h"
+
 #include "Audio.h"
 #include "Psid.h"
 #include "TedPlay.h"
@@ -407,8 +409,8 @@ LRESULT CMainFrame::OnClickedPause(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 
 LRESULT CMainFrame::OnClickedStop(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	tedplayPause();
-	unsigned int bmask = getButtonStates() & ~(4 + 8);
+	tedplayStop();
+	unsigned int bmask = getButtonStates() & ~(4 + 8 + 0x10);
 	enableButtons(bmask | 4);
 	return 0L;
 }
@@ -470,3 +472,13 @@ LRESULT CMainFrame::OnToolsDisablesid(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 	tedplayPlay();
 	return 0;
 }
+
+LRESULT CMainFrame::OnToolsOptions(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	static unsigned int lastPage = 0;
+	CPropSheet cos(_T("Options"), lastPage);
+	if (IDOK == cos.DoModal()) {
+	}
+	return 0L;
+}
+

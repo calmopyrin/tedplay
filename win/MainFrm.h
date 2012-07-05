@@ -64,15 +64,16 @@ public:
 		COMMAND_ID_HANDLER(ID_CONTROL_PLAY, OnClickedPlay)
 		COMMAND_ID_HANDLER(ID_CONTROL_PAUSE, OnClickedPause)
 		COMMAND_ID_HANDLER(ID_CONTROL_STOP, OnClickedStop)
-
+		COMMAND_HANDLER(IDC_CHECK3, BN_CLICKED, OnBnClickedCheck3)
+		
 		COMMAND_ID_HANDLER(IDM_FILE_EXIT, OnFileExit)
 		COMMAND_ID_HANDLER(IDM_FILE_OPEN, OnFileNew)
-		COMMAND_ID_HANDLER(ID_FILE_MEMORYDUMP, OnFileMemDump);
+		COMMAND_ID_HANDLER(ID_FILE_MEMORYDUMP, OnFileMemDump)
 		COMMAND_ID_HANDLER(IDM_FILE_PROPERTIES, OnFileProperties)
 		COMMAND_ID_HANDLER(IDM_VIEW_PLAYLIST, OnViewPlaylist)
 		COMMAND_ID_HANDLER(IDM_HELP_ABOUT, OnAppAbout)
+		COMMAND_ID_HANDLER(IDM_TOOLS_OPTIONS, OnToolsOptions)
 		COMMAND_ID_HANDLER(ID_TOOLS_RESETPLAYER, OnToolsResetplayer)
-		COMMAND_HANDLER(IDC_CHECK3, BN_CLICKED, OnBnClickedCheck3)
 		COMMAND_ID_HANDLER(ID_TOOLS_DISABLESID, OnToolsDisablesid)
 		CHAIN_MSG_MAP(CUpdateUI<CMainFrame>)
 	END_MSG_MAP()
@@ -92,6 +93,7 @@ public:
 	LRESULT OnFileProperties(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnViewPlaylist(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnToolsOptions(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT OnClickedPrev(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnClickedNext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);

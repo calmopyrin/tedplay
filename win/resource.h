@@ -21,6 +21,8 @@
 #define IDI_ICON_NEXT                   115
 #define IDI_ICON2                       116
 #define IDI_ICON_STOP                   116
+#define IDD_TOOLS_OPTIONS_AUDIO         117
+#define IDI_PROPPAGEAUDIO               120
 #define IDR_MAINFRAME                   1000
 #define IDC_BUTTON_PREV                 1000
 #define IDR_MENU                        1000
@@ -48,8 +50,15 @@
 #define IDC_CHECK3                      1016
 #define IDC_BTN_SAVEPL                  1017
 #define IDC_BTN_PREVMODULE              1018
+#define IDDEFAULT                       1018
 #define IDC_BTN_PLAYSELECTION           1019
 #define IDC_BTN_NEXTMODULE              1020
+#define IDC_COMBO1                      1020
+#define IDC_COMBO_SAMPLEFREQ            1020
+#define IDC_EDIT_FILTERORDER            1021
+#define IDC_SPIN_FILTERORDER            1022
+#define IDC_EDIT_BUFLEN                 1024
+#define IDC_SPIN_BUFLEN                 1025
 #define IDM_FILE_OPEN                   40000
 #define IDM_FILE_PROPERTIES             40001
 #define IDM_FILE_EXIT                   40002
@@ -73,9 +82,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        117
+#define _APS_NEXT_RESOURCE_VALUE        121
 #define _APS_NEXT_COMMAND_VALUE         40021
-#define _APS_NEXT_CONTROL_VALUE         1018
+#define _APS_NEXT_CONTROL_VALUE         1024
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

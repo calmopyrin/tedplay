@@ -78,6 +78,58 @@ END
 
 
 /////////////////////////////////////////////////////////////////////////////
+// Dutch (Netherlands) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NLD)
+#ifdef _WIN32
+LANGUAGE LANG_DUTCH, SUBLANG_DUTCH
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_TOOLS_OPTIONS_AUDIO DIALOGEX 0, 0, 192, 183
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_SYSMENU
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "&Default",IDDEFAULT,135,162,50,14
+    LTEXT           "Replay frequency",IDC_STATIC,7,8,127,11
+    COMBOBOX        IDC_COMBO_SAMPLEFREQ,137,8,48,30,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Resampling filter order",IDC_STATIC,7,27,127,11
+    EDITTEXT        IDC_EDIT_FILTERORDER,137,26,37,14,ES_AUTOHSCROLL
+    CONTROL         "",IDC_SPIN_FILTERORDER,"msctls_updown32",UDS_AUTOBUDDY | UDS_ARROWKEYS,173,26,12,14
+    LTEXT           "Playback buffer length (in millisec)",IDC_STATIC,7,47,127,11
+    EDITTEXT        IDC_EDIT_BUFLEN,137,45,38,14,ES_AUTOHSCROLL
+    CONTROL         "",IDC_SPIN_BUFLEN,"msctls_updown32",UDS_AUTOBUDDY | UDS_ARROWKEYS,174,45,11,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_TOOLS_OPTIONS_AUDIO, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 185
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 176
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Dutch (Netherlands) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
 // English (Ireland) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENI)
@@ -262,6 +314,7 @@ IDI_ICON_PAUSE          ICON                    "pause.ico"
 IDI_ICON_PREV           ICON                    "prev.ico"
 IDI_ICON_NEXT           ICON                    "next.ico"
 IDI_ICON_STOP           ICON                    "stop.ico"
+IDI_PROPPAGEAUDIO       ICON                    "audio.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

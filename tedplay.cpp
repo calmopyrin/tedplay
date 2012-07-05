@@ -240,7 +240,7 @@ void tedplayStop()
 		player->pause();
 		player->lock();
 	}
-	//cpu->setPC(playerStartAddress);
+	cpu->setPC(playerStartAddress);
 	playState = 0;
 }
 
@@ -434,7 +434,7 @@ void tedPlaySetVolume(unsigned int masterVolume)
 		player->pause();
 	if (ted)
 		ted->setMasterVolume(masterVolume);
-	if (player && playState)
+	if (player && tedPlayGetState() == 1)
 		player->play();
 }
 

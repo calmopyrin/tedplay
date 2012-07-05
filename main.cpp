@@ -74,7 +74,7 @@ static void loop()
 
 static void printUsage()
 {
-    cout << "tedplay - a Commodore 264 family media player" << endl;
+    cout << "tedplay - a (mostly) Commodore 264 family media player" << endl;
     cout << "Copyright 2012 Attila Grosz" << endl;
     cout << "Usage:" << endl;
     cout << "tedplay filename" << endl;

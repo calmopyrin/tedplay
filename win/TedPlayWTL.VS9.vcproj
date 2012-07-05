@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="TedPlayWTL"
 	ProjectGUID="{98F8E553-2072-4A34-8152-D73A149331D1}"
 	RootNamespace="TedPlayWTL"
@@ -481,10 +481,6 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\Aboutdlg.h"
-				>
-			</File>
-			<File
 				RelativePath="..\Audio.h"
 				>
 			</File>
@@ -513,31 +509,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\MainFrm.h"
-				>
-			</File>
-			<File
-				RelativePath=".\PlayList.h"
-				>
-			</File>
-			<File
-				RelativePath=".\PropertiesDlg.h"
-				>
-			</File>
-			<File
 				RelativePath="..\psid.h"
 				>
 			</File>
 			<File
-				RelativePath=".\resource.h"
-				>
-			</File>
-			<File
 				RelativePath="..\Sid.h"
-				>
-			</File>
-			<File
-				RelativePath=".\stdafx.h"
 				>
 			</File>
 			<File
@@ -548,12 +524,52 @@
 				RelativePath="..\tedplay.h"
 				>
 			</File>
+			<Filter
+				Name="GUI"
+				>
+				<File
+					RelativePath=".\Aboutdlg.h"
+					>
+				</File>
+				<File
+					RelativePath=".\MainFrm.h"
+					>
+				</File>
+				<File
+					RelativePath=".\PlayList.h"
+					>
+				</File>
+				<File
+					RelativePath=".\PropertiesDlg.h"
+					>
+				</File>
+				<File
+					RelativePath=".\PropPageAudio.h"
+					>
+				</File>
+				<File
+					RelativePath=".\PropSheet.h"
+					>
+				</File>
+				<File
+					RelativePath=".\resource.h"
+					>
+				</File>
+				<File
+					RelativePath=".\stdafx.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
+			<File
+				RelativePath=".\audio.ico"
+				>
+			</File>
 			<File
 				RelativePath="..\cbm8m.txt"
 				>
@@ -626,6 +642,14 @@
 			</File>
 			<File
 				RelativePath=".\PlayList.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PropPageAudio.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PropSheet.cpp"
 				>
 			</File>
 			<File
