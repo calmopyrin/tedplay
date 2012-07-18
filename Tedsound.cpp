@@ -20,8 +20,7 @@ static unsigned short  Freq2;
 static int             NoiseCounter;
 static int             FlipFlop[2];
 static int             dcOutput[2];
-static int             oscCount1;
-static int             oscCount2;
+static int             oscCount[2];
 static int             OscReload[2];
 static int             oscStep;
 static unsigned char   noise[256]; // 0-8
@@ -36,8 +35,8 @@ void TED::oscillatorReset()
 {
 	FlipFlop[0] = dcOutput[0] = 0;
 	FlipFlop[1] = dcOutput[1] = 0;
-	oscCount1 = 0;
-	oscCount2 = 0;
+	oscCount[0] = 0;
+	oscCount[1] = 0;
 	NoiseCounter = 0;
 	Freq1 = Freq2 = 0;
 	DAStatus = Snd1Status = Snd2Status = 0;
@@ -56,7 +55,7 @@ void TED::oscillatorInit()
 	oscStep = (1 << PRECISION) << 0;
 
 	// set player specific parameters
-	waveForm = 0;
+	waveForm[0] = waveForm[1] = 1;
 	masterVolume = 8;
 	setplaybackSpeed(3);
 	enableChannel(0, true);
@@ -90,8 +89,8 @@ void TED::writeSoundReg(unsigned int reg, unsigned char value)
 			if (DAStatus = value & 0x80) {
 				FlipFlop[0] = 1;
 				FlipFlop[1] = 1;
-				oscCount1 = OscReload[0];
-				oscCount2 = OscReload[1];
+				oscCount[0] = OscReload[0];
+				oscCount[1] = OscReload[1];
 				NoiseCounter = 0xFF;
 			}
 			Volume = value & 0x0F;
@@ -141,34 +140,72 @@ void TED::storeToBuffer(short *buffer, unsigned int count)
 #endif
 }
 
+inline unsigned int TED::waveSquare(unsigned int channel)
+{
+	return Volume;
+}
+
+inline unsigned int TED::waveSawTooth(unsigned int channel)
+{
+	unsigned int mod;
+	int diff = int(oscCount[channel]) - int(OscReload[channel]);
+	if (diff < 0) diff = 0;
+	mod = (Volume * diff) / (OSCRELOADVAL + 1 - OscReload[channel]);
+	return mod;
+}
+
+inline unsigned int TED::waveTriangle(unsigned int channel)
+{
+	unsigned int mod;
+	int msb;
+
+	msb = (OscReload[channel] + OSCRELOADVAL) / 2;
+	mod = oscCount[channel] < msb ? oscCount[channel] : (oscCount[channel] - msb);
+	mod = (mod * Volume / msb);
+	return mod;
+}
+
+inline unsigned int TED::getWaveSample(unsigned int channel, unsigned int wave)
+{
+	unsigned int sm;
+
+	switch (wave) {
+		default:
+		case 1: // square
+			return waveSquare(channel);
+		case 2: // sawtooth
+			return waveSawTooth(channel);
+		case 4: // triangle
+			return waveTriangle(channel);
+
+		// combined waveforms á la SID
+		case 3: // square + sawtooth
+			sm = waveSawTooth(channel) + waveSquare(channel);
+			return sm /= 2;
+		case 5: // square + triangle
+			sm = waveTriangle(channel) + waveSquare(channel);
+			return sm /= 2;
+		case 6: // sawtooth + triangle
+			sm = waveTriangle(channel) + waveSawTooth(channel);
+			return sm /= 2;
+		case 7: // square + sawtooth + triangle
+			sm = waveTriangle(channel) + waveSawTooth(channel) + waveSquare(channel);
+			return sm /= 3;
+	}
+}
+
 void TED::renderSound(unsigned int nrsamples, short *buffer)
 {
-	unsigned int mod1, mod2, msb;
-	switch (waveForm) {
-		default:
-			mod1 = channelMask[0];
-			mod2 = channelMask[1];
-			break;
-		case 1: // sawtooth
-			mod1 = ((OscReload[0] - oscCount1) << 3) & channelMask[0];
-			mod2 = ((OscReload[1] - oscCount2) << 3) & channelMask[1];
-			break;
-		case 2: // triangle
-			msb = 1 << 9;
-			mod1 = (OscReload[0] - oscCount1) << 3;
-			if (mod1 & msb) mod1 = ~mod1;
-			mod2 = (OscReload[1] - oscCount2) << 3;
-			if (mod2 & msb) mod2 = ~mod2;
-			mod1 &= channelMask[0];
-			mod2 &= channelMask[1];
-			break;
-	}
+	unsigned int mod1, mod2;
+
+	mod1 = getWaveSample(0, waveForm[0]) & channelMask[0];
+	mod2 = getWaveSample(1, waveForm[1]) & channelMask[1];
 
 	// Calculate the buffer...
 	if (DAStatus) {// digi?
 		short sample = 0;//audiohwspec->silence;
-		if (Snd1Status) sample = Volume & mod1;
-		if (Snd2Status) sample += Volume & mod2;
+		if (Snd1Status) sample = Volume;
+		if (Snd2Status) sample += Volume;
 		for (;nrsamples--;) {
 			*buffer++ = sample & channelMask[2];
 		}
@@ -178,21 +215,21 @@ void TED::renderSound(unsigned int nrsamples, short *buffer)
 			// Channel 1
 			if (dcOutput[0]) {
 				FlipFlop[0] = 1;
-			} else if ((oscCount1 += oscStep) >= OSCRELOADVAL) {
+			} else if ((oscCount[0] += oscStep) >= OSCRELOADVAL) {
 				FlipFlop[0] ^= 1;
-				oscCount1 = OscReload[0] + (oscCount1 - OSCRELOADVAL);
+				oscCount[0] = OscReload[0] + (oscCount[0] - OSCRELOADVAL);
 			}
 			// Channel 2
 			if (dcOutput[1]) {
 				FlipFlop[1] = 1;
-			} else if ((oscCount2 += oscStep) >= OSCRELOADVAL) {
+			} else if ((oscCount[1] += oscStep) >= OSCRELOADVAL) {
 				NoiseCounter = (NoiseCounter + 1) & 0xFF;
 				FlipFlop[1] ^= 1;
-				oscCount2 = OscReload[1] + (oscCount2 - OSCRELOADVAL);
+				oscCount[1] = OscReload[1] + (oscCount[1] - OSCRELOADVAL);
 			}
-			result = (FlipFlop[0] && Snd1Status) ? Volume & mod1 : 0;
+			result = (FlipFlop[0] && Snd1Status) ? mod1 : 0;
 			if (Snd2Status && FlipFlop[1]) {
-				result += Volume & mod2;
+				result += mod2;
 			} else if (SndNoiseStatus && noise[NoiseCounter] & channelMask[2]) {
 				result += Volume;
 			}
@@ -209,9 +246,9 @@ void TED::setMasterVolume(unsigned int shift)
 	masterVolume = shift;
 }
 
-void TED::selectWaveForm(unsigned int wave)
+void TED::selectWaveForm(unsigned int channel, unsigned int wave)
 {
-	waveForm = wave;
+	waveForm[channel] = wave;
 }
 
 void TED::setplaybackSpeed(unsigned int speed)

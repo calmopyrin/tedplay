@@ -99,7 +99,8 @@ class TED : public MemoryHandler {
 	unsigned int getPsidPlayAddress() { return psidReplayAddr; };
 	void setPsid(bool isPsidFormat) { psidFormat = isPsidFormat; };
 	unsigned int isPsid() { return psidFormat; };
-	void selectWaveForm(unsigned int wave);
+	void selectWaveForm(unsigned int channel, unsigned int wave);
+	unsigned int getWaveForm(unsigned int channel) { return waveForm[channel]; }
 	void writeProtectedPlayerMemory(unsigned int addr, unsigned char *byte, unsigned int len) {
 		for(unsigned int i = 0; i < len; i++)
 			protectedPlayerMemory[(addr + i) & 0xfff] = *byte++;
@@ -173,11 +174,16 @@ class TED : public MemoryHandler {
 	void renderSound(unsigned int nrsamples, short *buffer);
 	unsigned int psidReplayAddr;
 	bool psidFormat;
-	unsigned int waveForm;
+	unsigned int waveForm[2];
+	unsigned int getWaveSample(unsigned int channel, unsigned int wave);
+	unsigned int waveSquare(unsigned int channel);
+	unsigned int waveSawTooth(unsigned int channel);
+	unsigned int waveTriangle(unsigned int channel);
 	unsigned char protectedPlayerMemory[0x1000];
 	unsigned int playbackSpeed;
 	unsigned int channelMask[3];
 	unsigned int sampleRate;
+	unsigned int filterOrder;
 	SIDsound *sidCard;
 };
 
