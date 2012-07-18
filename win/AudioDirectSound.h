@@ -15,7 +15,7 @@ class AudioDirectSound : public Audio
 {
 public:
 
-	AudioDirectSound(void *userData, unsigned int sampleFrq_);
+	AudioDirectSound(void *userData, unsigned int sampleFrq_, unsigned int bufDurInMsec);
 	virtual ~AudioDirectSound();
 
 	void SetFormat(WAVEFORMATEX WFE);
@@ -23,6 +23,9 @@ public:
 	virtual void play();
 	virtual void pause();
 	virtual void stop();
+	virtual void sleep(unsigned int msec) { ::Sleep(msec); };
+	virtual void lock();
+	virtual void unlock();
 	DWORD GetSamplesPlayed();	
 	void TimerCallback();
 

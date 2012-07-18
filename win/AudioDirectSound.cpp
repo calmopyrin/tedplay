@@ -15,17 +15,13 @@ void CALLBACK TimerProcess(UINT uTimerID, UINT uMsg, DWORD dwUser, DWORD dw1, DW
 
 HRESULT WINAPI AudioDirectSound::cb(LPBYTE lpDesBuf, const DWORD dwRequiredSamples, DWORD &dwRetSamples, LPVOID lpData)
 {
-	//EnterCriticalSection(&cs);
-	TED *ted = reinterpret_cast<TED *>(lpData);
-	if (ted) {
-		ted->ted_process((short*) lpDesBuf, dwRequiredSamples);
-	}
-	//LeaveCriticalSection(&cs);
-	dwRetSamples = dwRequiredSamples;
+	audioCallback(lpData, lpDesBuf, dwRequiredSamples);
+	dwRetSamples = dwRequiredSamples / 2;
 	return 0;
 }
 
-AudioDirectSound::AudioDirectSound(void *userData, unsigned int sampleFrq_) : Audio(sampleFrq_)
+AudioDirectSound::AudioDirectSound(void *userData, unsigned int sampleFrq_, 
+				   unsigned int bufDurInMsec = 40) : Audio(sampleFrq_)
 {
 	InitializeCriticalSection(&cs);
 	//<DirectSound>
@@ -46,6 +42,18 @@ AudioDirectSound::AudioDirectSound(void *userData, unsigned int sampleFrq_) : Au
 	m_dwCircles1 = 0;
 	m_dwCircles2 = 0;
 	//</Playing>
+
+	//
+	unsigned int fragsPerSec = 1000 / bufDurInMsec;
+	unsigned int bufSize1kbChunk = (sampleFrq_ / fragsPerSec / 1024) * 1024;
+	if (!bufSize1kbChunk) bufSize1kbChunk = 512;
+	bufferLength = bufSize1kbChunk;
+	unsigned int bfSize = TED_SOUND_CLOCK / fragsPerSec; //(bufferLength * TED_SOUND_CLOCK + sampleFrq_ / 2) / sampleFrq_;
+	// double length ring buffer, dividable by 8
+	ringBufferSize = (bfSize / 8 + 1) * 16;
+	ringBuffer = new short[ringBufferSize];
+	// trigger initial buffer fill
+	ringBufferIndex = ringBufferSize-1;
 
 	// Initialize
 	m_WFE.wFormatTag = WAVE_FORMAT_PCM;
@@ -116,8 +124,7 @@ void AudioDirectSound::SetFormat(WAVEFORMATEX WFE)
 
 	//Create Second Sound Buffer
 	dsbd.dwFlags = DSBCAPS_CTRLPOSITIONNOTIFY | DSBCAPS_GLOBALFOCUS;
-	//dsbd.dwBufferBytes = 2*m_WFE.nAvgBytesPerSec; //2 Seconds Buffer
-	dsbd.dwBufferBytes = 2 * m_WFE.nAvgBytesPerSec / DIVISOR; //2 Seconds Buffer
+	dsbd.dwBufferBytes = 2 * 2 * bufferLength; //2 bytes per sample twice
 	dsbd.lpwfxFormat = &m_WFE;
 
 	if ( FAILED(m_lpDS->CreateSoundBuffer(&dsbd, &m_lpDSB, NULL)) ) {
@@ -130,20 +137,20 @@ void AudioDirectSound::SetFormat(WAVEFORMATEX WFE)
 	LPDIRECTSOUNDNOTIFY lpDSBNotify;
 	if ( FAILED(m_lpDSB->QueryInterface(IID_IDirectSoundNotify, (LPVOID *)&lpDSBNotify)) ) {
 		OutputDebugString(_T("QueryInterface DirectSoundNotify Failed!"));
-		m_strLastError = _T("MyDirectSound SetFormat Failed!");
+		m_strLastError = _T("QueryInterface IID_IDirectSoundNotify Failed!");
 		return;
 	}
-
+	
 	//Set Direct Sound Buffer Notify Position
 	DSBPOSITIONNOTIFY pPosNotify[2];
-	pPosNotify[0].dwOffset = m_WFE.nAvgBytesPerSec/2 / DIVISOR - 1;
-	pPosNotify[1].dwOffset = 3 * m_WFE.nAvgBytesPerSec/2 / DIVISOR - 1;		
+	pPosNotify[0].dwOffset = bufferLength - 1;
+	pPosNotify[1].dwOffset = 3 * bufferLength - 1;		
 	pPosNotify[0].hEventNotify = m_pHEvent[0];
 	pPosNotify[1].hEventNotify = m_pHEvent[1];	
 
 	if ( FAILED(lpDSBNotify->SetNotificationPositions(2, pPosNotify)) ) {
 		OutputDebugString(_T("Set NotificationPosition Failed!"));
-		m_strLastError = _T("MyDirectSound SetFormat Failed!");
+		m_strLastError = _T("SetNotificationPositions Failed!");
 		return;
 	}	
 
@@ -152,10 +159,10 @@ void AudioDirectSound::SetFormat(WAVEFORMATEX WFE)
 		delete []m_lpAudioBuf;
 		m_lpAudioBuf = NULL;		
 	}
-	m_lpAudioBuf = new unsigned char[m_WFE.nAvgBytesPerSec];
+	m_lpAudioBuf = new unsigned char[bufferLength * 2 * 2];
 
 	//Init Audio Buffer
-	memset(m_lpAudioBuf, 0, m_WFE.nAvgBytesPerSec);
+	memset(m_lpAudioBuf, 0, bufferLength * 2 * 2);
 }
 //</SetFormat>
 
@@ -182,53 +189,9 @@ void AudioDirectSound::play()
 		return;
 	}
 
-	if (0 == m_dwCircles1) {
-
-		////Get audio data by callback function
-		//DWORD dwRetSamples = 0, dwRetBytes = 0;
-		//m_lpGETAUDIOSAMPLES(m_lpAudioBuf, m_WFE.nSamplesPerSec / DIVISOR, dwRetSamples, m_lpData);
-		//dwRetBytes = dwRetSamples*m_WFE.nBlockAlign;
-
-		////Write the audio data to DirectSoundBuffer
-		//LPVOID lpvAudio1 = NULL, lpvAudio2 = NULL;
-		//DWORD dwBytesAudio1 = 0, dwBytesAudio2 = 0;	
-
-		////Lock DirectSoundBuffer
-		//HRESULT hr = m_lpDSB->Lock(0, m_WFE.nAvgBytesPerSec / DIVISOR, &lpvAudio1, &dwBytesAudio1, &lpvAudio2, &dwBytesAudio2, 0);
-		//if ( FAILED(hr) ) {
-		//	m_strLastError = _T("Lock DirectSoundBuffer Failed!");
-		//	OutputDebugString(m_strLastError);
-		//	return;
-		//}
-
-		////Init lpvAudio1
-		//if (NULL != lpvAudio1) {			
-		//	memset(lpvAudio1, 0, dwBytesAudio1);			
-		//}
-
-		////Init lpvAudio2
-		//if (NULL != lpvAudio2) {			
-		//	memset(lpvAudio2, 0, dwBytesAudio2);			
-		//}
-
-		////Copy Audio Buffer to DirectSoundBuffer
-		//if (NULL == lpvAudio2) {
-		//	memcpy(lpvAudio1, m_lpAudioBuf, dwRetBytes);
-		//}
-		//else {
-		//	memcpy(lpvAudio1, m_lpAudioBuf, dwBytesAudio1);
-		//	memcpy(lpvAudio2, m_lpAudioBuf + dwBytesAudio1, dwBytesAudio2);
-		//}
-
-		////Unlock DirectSoundBuffer
-		//m_lpDSB->Unlock(lpvAudio1, dwBytesAudio1, lpvAudio2, dwBytesAudio2);
-	}
-
 	//Begin Play
 	m_lpDSB->Play(0, 0, DSBPLAY_LOOPING);
-
-	//timeSetEvent (300, 100)
-	m_timerID = timeSetEvent(200, 50, TimerProcess, (DWORD)this, TIME_PERIODIC | TIME_CALLBACK_FUNCTION);
+	m_timerID = timeSetEvent(20, 10, TimerProcess, (DWORD)this, TIME_PERIODIC | TIME_CALLBACK_FUNCTION);
 }
 //</Play>
 
@@ -236,7 +199,7 @@ void AudioDirectSound::pause()
 {
 	paused = true;
 	if (NULL != m_lpDSB) {
-		m_lpDSB->Stop();
+		m_lpDSB->Stop(); // FIXME clicks... :(
 		timeKillEvent(m_timerID);
 	}
 }
@@ -273,9 +236,17 @@ void AudioDirectSound::stop()
 		m_dwCircles1 = 0;
 		m_dwCircles2 = 0;
 	}
-	//::Sleep(500);
 }
 //</Stop>
+
+void AudioDirectSound::lock()
+{
+	//
+}
+void AudioDirectSound::unlock()
+{
+	//
+}
 
 DWORD AudioDirectSound::GetSamplesPlayed()
 {
@@ -294,19 +265,14 @@ DWORD AudioDirectSound::GetSamplesPlayed()
 		return dwCurPlaySample;
 	}
 
-	dwSamplesPlayed = (m_dwCircles2-1)*2*m_WFE.nSamplesPerSec + 3*m_WFE.nSamplesPerSec/2;		
-	if (dwCurPlaySample > (3*m_WFE.nSamplesPerSec/2)) {
-
+	dwSamplesPlayed = (m_dwCircles2 - 1) * bufferLength * 2 + 3 * bufferLength / 2;		
+	if (dwCurPlaySample > (3 * bufferLength / 2)) {
 		if (m_dwCircles2 < m_dwCircles1) {
-
-			dwSamplesPlayed = (m_dwCircles1-1)*2*m_WFE.nSamplesPerSec + 3*m_WFE.nSamplesPerSec/2;
+			dwSamplesPlayed = (m_dwCircles1-1) * 2 * bufferLength + 3 * bufferLength / 2;
 		}
-
-		dwSamplesPlayed += dwCurPlaySample - 3*m_WFE.nSamplesPerSec/2 + 1;				
-	}
-	else {
-
-		dwSamplesPlayed += dwCurPlaySample + m_WFE.nSamplesPerSec/2;
+		dwSamplesPlayed += dwCurPlaySample - 3 * bufferLength / 2 + 1;				
+	} else {
+		dwSamplesPlayed += dwCurPlaySample + bufferLength / 2;
 	}
 
 	CString strSamplesPlayed;
@@ -336,7 +302,7 @@ void AudioDirectSound::TimerCallback()
 		m_dwCircles1++;
 
 		//Lock DirectSoundBuffer Second Part
-		HRESULT hr = m_lpDSB->Lock(m_WFE.nAvgBytesPerSec / DIVISOR, m_WFE.nAvgBytesPerSec / DIVISOR, 
+		HRESULT hr = m_lpDSB->Lock(bufferLength * 2, bufferLength * 2, 
 			&lpvAudio1, &dwBytesAudio1, &lpvAudio2, &dwBytesAudio2, 0);
 		if ( FAILED(hr) ) {
 			m_strLastError = _T("Lock DirectSoundBuffer Failed!");
@@ -348,7 +314,7 @@ void AudioDirectSound::TimerCallback()
 		m_dwCircles2++;
 
 		//Lock DirectSoundBuffer First Part
-		HRESULT hr = m_lpDSB->Lock(0, m_WFE.nAvgBytesPerSec / DIVISOR, &lpvAudio1, &dwBytesAudio1, 
+		HRESULT hr = m_lpDSB->Lock(0, bufferLength * 2, &lpvAudio1, &dwBytesAudio1, 
 			&lpvAudio2, &dwBytesAudio2, 0);
 		if ( FAILED(hr) ) {
 			m_strLastError = _T("Lock DirectSoundBuffer Failed!");
@@ -359,21 +325,13 @@ void AudioDirectSound::TimerCallback()
 		return;
 	}
 
-	//Get 1 Second Audio Buffer 
-	m_lpGETAUDIOSAMPLES(m_lpAudioBuf, m_WFE.nSamplesPerSec / DIVISOR, dwRetSamples, m_lpData);
-	dwRetBytes = dwRetSamples*m_WFE.nBlockAlign;
-
-	//If near the end of the audio data
-	if (dwRetSamples < m_WFE.nSamplesPerSec / DIVISOR) {
-		DWORD dwRetBytes = dwRetSamples*m_WFE.nBlockAlign;
-		memset(m_lpAudioBuf+dwRetBytes, 0, m_WFE.nAvgBytesPerSec / DIVISOR - dwRetBytes);				
-	}
+	// Fill audio buffer via callback function
+	m_lpGETAUDIOSAMPLES(m_lpAudioBuf, bufferLength * 2, dwRetSamples, m_lpData);
 
 	//Copy AudioBuffer to DirectSoundBuffer
 	if (NULL == lpvAudio2) {
 		memcpy(lpvAudio1, m_lpAudioBuf, dwBytesAudio1);
-	}
-	else {
+	} else {
 		memcpy(lpvAudio1, m_lpAudioBuf, dwBytesAudio1);
 		memcpy(lpvAudio2, m_lpAudioBuf + dwBytesAudio1, dwBytesAudio2);
 	}

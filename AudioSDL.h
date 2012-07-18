@@ -1,9 +1,6 @@
 #pragma once
 
 #include "Audio.h"
-//#include <SDL.h>
-
-typedef void (*SdlCallbackFunc)(Uint8 *stream, int len);
 
 class AudioSDL : public Audio {
 public:
@@ -16,12 +13,8 @@ public:
 	virtual void lock();
 	virtual void unlock();
 	virtual void setSampleRate(unsigned int newSampleRate);
-	static void setCallback(SdlCallbackFunc);
+	static void setCallback(callbackFunc);
+	static bool hasSDL();
 protected:
 	SDL_AudioSpec *audiohwspec;
-	static SdlCallbackFunc callback;
-	static void audioCallback(void *userData, Uint8 *stream, int len);
-	static short *ringBuffer;
-	static size_t ringBufferSize;
-	static size_t ringBufferIndex;
 };

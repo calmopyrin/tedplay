@@ -1,5 +1,7 @@
 #pragma once
 
+typedef void (*callbackFunc)(unsigned char *stream, int len);
+
 class Audio {
 public:
 	Audio(unsigned int sampleFrq_) : bufferLength(4096) { // 2048
@@ -22,6 +24,11 @@ public:
 protected:
 	unsigned int bufferLength;
 	bool paused;
+	static callbackFunc callback;
+	static void audioCallback(void *userData, unsigned char *stream, int len);
+	static short *ringBuffer;
+	static size_t ringBufferSize;
+	static size_t ringBufferIndex;
 private:
 	unsigned int sampleFrq;
 };

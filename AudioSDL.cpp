@@ -3,50 +3,41 @@
 #include "AudioSDL.h"
 #include "Tedmem.h"
 
+#ifndef WIN32
 #pragma comment(lib, "SDL.lib")
 
-SdlCallbackFunc AudioSDL::callback;
-short *AudioSDL::ringBuffer;
-size_t AudioSDL::ringBufferSize;
-size_t AudioSDL::ringBufferIndex;
-
-void AudioSDL::audioCallback(void *userData, Uint8 *stream, int len)
+bool AudioSDL::hasSDL()
 {
-	TED *ted = reinterpret_cast<TED *>(userData);
-
-	if (ted) {
-
-		short *playerBuffer = (short*) stream;
-		unsigned int sampleRate = ted->getSampleRate();
-		unsigned int sampleCnt = len / 2;
-		static unsigned int remainder = 0;
-
-		do {
-			// since we double buffer, fill only the half if the one we're playing is depleted
-			if ((ringBufferIndex + 1) % (ringBufferSize / 2) == 0) {
-				unsigned int half = ringBufferIndex + 1 >= ringBufferSize ? 0 : ringBufferSize / 2;
-				ted->ted_process(ringBuffer + half, ringBufferSize / 2);
-			}
-			//
-			unsigned int newCount = remainder + sampleRate;
-			if ( newCount >= TED_SOUND_CLOCK) {
-				remainder = newCount - TED_SOUND_CLOCK;
-				double weightPrev = double(remainder)/double(TED_SOUND_CLOCK);
-				double weightCurr = 1.00 - weightPrev;
-				// interpolate sample
-				short sample = short(weightPrev * double(ringBuffer[ringBufferIndex]) + 
-						weightCurr * double(ringBuffer[(ringBufferIndex + 1) % ringBufferSize]) );
-				*playerBuffer++ = sample;
-				sampleCnt--;
-			} else {
-				remainder = newCount;
-			}
-			ringBufferIndex = (ringBufferIndex + 1) % ringBufferSize;
-		} while (sampleCnt);
-	}
+	return true;
 }
 
-void AudioSDL::setCallback(SdlCallbackFunc callback_)
+#else
+
+#define LOADFUNC(NAME) NAME = GetProcAddress(SDL_DLL, "NAME");
+#define EXTERN __declspec(dllimport)
+
+typedef int EXTERN (*_SDL_OpenAudio)(HWND hWnd, DWORD dwFlags);
+typedef _SDL_PauseAudio EXTERN (*_GXGetDisplayProperties)();
+typedef int EXTERN *(*_SDL_LockAudio)();
+typedef void EXTERN (*_SDL_UnlockAudio)();
+typedef void EXTERN (*_SDL_CloseAudio)();
+
+static _SDL_OpenAudio	SDL_OpenAudio;
+static _SDL_PauseAudio	SDL_PauseAudio;
+static _SDL_LockAudio	SDL_LockAudio;
+static _SDL_UnlockAudio SDL_UnlockAudio;
+static _SDL_Delay		SDL_Delay;
+static _SDL_CloseAudio	SDL_CloseAudio;
+
+bool AudioSDL::hasSDL()
+{
+	HINSTANCE sdlDll = LoadLibrary("SDL.DLL");
+	return sdlDll != 0;
+}
+
+#endif
+
+void AudioSDL::setCallback(callbackFunc callback_)
 {
 	SDL_LockAudio();
 	callback = callback_;
