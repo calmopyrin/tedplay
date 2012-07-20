@@ -489,10 +489,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\AudioSDL.h"
-				>
-			</File>
-			<File
 				RelativePath="..\CbmTune.h"
 				>
 			</File>
@@ -622,10 +618,6 @@
 			</File>
 			<File
 				RelativePath=".\AudioDirectSound.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\AudioSDL.cpp"
 				>
 			</File>
 			<File

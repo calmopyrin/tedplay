@@ -168,7 +168,6 @@ void AudioDirectSound::SetFormat(WAVEFORMATEX WFE)
 
 void AudioDirectSound::play()
 {
-	paused = false;
 	//Check if the DirectSound was created successfully
 	if (NULL == m_lpDS) {
 		m_strLastError = _T("DirectSound was not created!");
@@ -183,13 +182,13 @@ void AudioDirectSound::play()
 		return;
 	}
 
-	//Check if SetFormat successfully
+	//Check if SetFormat successful
 	if ( !m_strLastError.CompareNoCase(_T("MyDirectSound SetFormat Failed!")) ) {
 		OutputDebugString(m_strLastError);
 		return;
 	}
-
-	//Begin Play
+	paused = false;
+	// Start playing
 	m_lpDSB->Play(0, 0, DSBPLAY_LOOPING);
 	m_timerID = timeSetEvent(20, 10, TimerProcess, (DWORD)this, TIME_PERIODIC | TIME_CALLBACK_FUNCTION);
 }
