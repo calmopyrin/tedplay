@@ -57,7 +57,7 @@ public:
 		COMMAND_ID_HANDLER(ID_ROOT_OPENFILELOCATION, OnRootOpenfilelocation)
 		COMMAND_HANDLER(IDC_BTN_LOADPL, BN_CLICKED, OnBnClickedBtnLoadpl)
 		COMMAND_HANDLER(IDC_BTN_SAVEPL, BN_CLICKED, OnBnClickedBtnSavepl)
-		COMMAND_HANDLER(IDC_BTN_NEXTMODULE, BN_CLICKED, OnBnClickedBtnPrevModule)
+		COMMAND_HANDLER(IDC_BTN_NEXTMODULE, BN_CLICKED, OnBnClickedBtnNextModule)
 		COMMAND_HANDLER(IDC_BTN_PLAYSELECTION, BN_CLICKED, OnBnClickedBtnPlayselection)
 		COMMAND_HANDLER(IDC_BTN_PREVMODULE, BN_CLICKED, OnBnClickedBtnPrevmodule)
 		CHAIN_MSG_MAP(CDialogResize<CPlayList>)
@@ -128,7 +128,7 @@ public:
 	LRESULT OnRootOpenfilelocation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnBnClickedBtnLoadpl(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnBnClickedBtnSavepl(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT OnBnClickedBtnPrevModule(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled);
+	LRESULT OnBnClickedBtnNextModule(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled);
 	LRESULT OnBnClickedBtnPlayselection(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnBnClickedBtnPrevmodule(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 };

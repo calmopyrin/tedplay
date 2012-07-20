@@ -91,6 +91,8 @@ class TED : public MemoryHandler {
 	// PSID support
 	void setMasterVolume(unsigned int shift);
 	void setSampleRate(unsigned int value);
+	void setFilterOrder(unsigned int value);
+	void initFilter(unsigned int sampleRate_, unsigned int filterOrder_);
 	unsigned int getSampleRate() { return sampleRate; };
 	void injectCodeToRAM(unsigned int address, unsigned char *from, size_t len);
 	void oscillatorInit();

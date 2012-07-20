@@ -20,6 +20,7 @@ CPropSheet::CPropSheet (_U_STRINGorID title, UINT uStartPage,
 
 	//AddPage(propPageMachine);
 	AddPage(propPageAudio);
+	SendMessage(DM_SETDEFID, IDOK);
 }
 
 LRESULT CPropSheet::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)

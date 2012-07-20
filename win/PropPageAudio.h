@@ -17,7 +17,8 @@ public:
 
 	BEGIN_MSG_MAP(CPropPageAudio)
         MESSAGE_HANDLER(WM_SHOWWINDOW, OnInitDialog)
-		MESSAGE_HANDLER(WM_HSCROLL, OnTrackBar)
+		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
+		MESSAGE_HANDLER(WM_VSCROLL, OnSpinButton)
 		COMMAND_HANDLER(IDDEFAULT, BN_CLICKED, OnDefaultClick)
         CHAIN_MSG_MAP(CPropertyPageImpl<CPropPageAudio>)
     END_MSG_MAP()
@@ -27,9 +28,10 @@ public:
 	END_DDX_MAP()
 
     // Message handlers
-	LRESULT OnTrackBar(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
-    LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
-	LRESULT OnSelComboAudQual(WORD wNotifyCode, WORD wID, HWND hwndCtl, BOOL& bHandled);
+	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
+	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
+	LRESULT OnSpinButton(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+    LRESULT OnSelComboAudQual(WORD wNotifyCode, WORD wID, HWND hwndCtl, BOOL& bHandled);
 	LRESULT OnDefaultClick(WORD wNotifyCode, WORD wID, HWND hwndCtl, BOOL& bHandled);
 	//OnKillActivate()?
 
@@ -38,12 +40,17 @@ public:
 	//CComboBox cbAudioDriver;
 	CUpDownCtrl sbLatency;
 	CEdit ebLatency;
+	CUpDownCtrl sbFilterOrder;
+	CEdit ebFilterOrder;
 	CComboBox cbSamplingRate;
+	CEdit ebAutoSkip;
+	CUpDownCtrl sbAutoSkip;
 	//
 	CButton btnDefault;
 
 	// Override to get custom error handling
 	//virtual void OnDataExchangeError(UINT nCtrlID, BOOL what) {};
     // DDX variables
-	int vAudioDriver, vLatency, vSamplingRate, vFilterOrder;
+	int vAudioDriver;
+	unsigned int vSamplingRate, vFilterOrder, vLatency, vAutoSkipInterval;
 };

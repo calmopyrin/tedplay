@@ -142,15 +142,28 @@ void TED::storeToBuffer(short *buffer, unsigned int count)
 
 inline unsigned int TED::waveSquare(unsigned int channel)
 {
-	return Volume;
+	return FlipFlop[channel] ? Volume : 0;
 }
 
 inline unsigned int TED::waveSawTooth(unsigned int channel)
 {
 	unsigned int mod;
-	int diff = int(oscCount[channel]) - int(OscReload[channel]);
-	if (diff < 0) diff = 0;
-	mod = (Volume * diff) / (OSCRELOADVAL + 1 - OscReload[channel]);
+
+#if 0
+	int msb = OSCRELOADVAL + 1 - OscReload[channel];
+	int diff = 2 * msb - int(FlipFlop[channel]) * msb - int(oscCount[channel]) + int(OscReload[channel]);
+	//if (diff < 0) diff = 0;
+	//if (oscCount[channel] >= 0x3fa) diff = 0;
+	mod = (Volume * diff) / (2 * msb);
+#else
+	if (FlipFlop[channel]) {
+		int diff = int(oscCount[channel]) - int(OscReload[channel]);
+		if (diff < 0) diff = 0;
+		mod = (Volume * diff) / (OSCRELOADVAL + 1 - OscReload[channel]);
+	} else {
+		mod = 0;
+	}
+#endif
 	return mod;
 }
 
@@ -159,9 +172,22 @@ inline unsigned int TED::waveTriangle(unsigned int channel)
 	unsigned int mod;
 	int msb;
 
-	msb = (OscReload[channel] + OSCRELOADVAL) / 2;
-	mod = oscCount[channel] < msb ? oscCount[channel] : (oscCount[channel] - msb);
-	mod = (mod * Volume / msb);
+#if 0
+	msb = OSCRELOADVAL + 1 - OscReload[channel];
+	int diff = FlipFlop[channel] ? int(oscCount[channel]) - int(OscReload[channel]) 
+		: int(OSCRELOADVAL) - int(oscCount[channel]);
+	//if (diff < 0) diff = 0;
+	//if (oscCount[channel] >= 0x3fa) diff = 0;
+	mod = (3 * Volume * diff / msb / 2);
+#else
+	if (FlipFlop[channel]) {
+		msb = (OscReload[channel] + OSCRELOADVAL) / 2;
+		mod = oscCount[channel] < msb ? oscCount[channel] : (oscCount[channel] - msb);
+		mod = (mod * Volume / msb);
+	} else {
+		mod = 0;
+	}
+#endif
 	return mod;
 }
 
@@ -227,8 +253,8 @@ void TED::renderSound(unsigned int nrsamples, short *buffer)
 				FlipFlop[1] ^= 1;
 				oscCount[1] = OscReload[1] + (oscCount[1] - OSCRELOADVAL);
 			}
-			result = (FlipFlop[0] && Snd1Status) ? mod1 : 0;
-			if (Snd2Status && FlipFlop[1]) {
+			result = (Snd1Status) ? mod1 : 0;
+			if (Snd2Status) {
 				result += mod2;
 			} else if (SndNoiseStatus && noise[NoiseCounter] & channelMask[2]) {
 				result += Volume;
@@ -265,11 +291,20 @@ void TED::getTimeSinceLastReset(int hour, int min, int sec)
 
 void TED::setSampleRate(unsigned int value)
 {
-	if (value != sampleRate) {
-		if (filter)
-			delete filter;
-		filter = new Filter(value / 2, TED_SOUND_CLOCK, 12);
-		filter->reCalcWindowTable();
-		sampleRate = value;
-	}
+	initFilter(value, filterOrder);
+}
+
+void TED::setFilterOrder(unsigned int value)
+{
+	initFilter(sampleRate, value);
+}
+
+void TED::initFilter(unsigned int sampleRate_, unsigned int filterOrder_)
+{
+	if (filter)
+		delete filter;
+	filter = new Filter(sampleRate_ / 2, TED_SOUND_CLOCK, filterOrder_);
+	filter->reCalcWindowTable();
+	filterOrder = filterOrder_;
+	sampleRate = sampleRate_;
 }

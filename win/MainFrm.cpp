@@ -130,12 +130,21 @@ LRESULT CMainFrame::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 		playListViewDialog.ShowWindow(SW_NORMAL);
 		::CheckMenuItem(GetMenu(), IDM_VIEW_PLAYLIST, MF_CHECKED);
 	}
+	regVal = vAutoSkipInterval = 0;
+	if (getRegistryValue(_T("AutoSkipInterval"), regVal) && regVal) {
+		vAutoSkipInterval = regVal;
+		SetTimer(0, regVal * 1000);
+	}
 
 	return 0;
 }
 
 LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
+	// save waveforms
+	setRegistryValue(_T("TedChannel1WaveForm"), tedPlayGetWaveform(0));
+	setRegistryValue(_T("TedChannel2WaveForm"), tedPlayGetWaveform(1));
+	setRegistryValue(_T("AutoSkipInterval"), vAutoSkipInterval);
 	// save the playlist
 	_TCHAR plPath[MAX_PATH];
 	getDefaultPlayListPath(plPath);
@@ -233,11 +242,27 @@ LRESULT CMainFrame::OnTrackBar(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bH
 	return bHandled;
 }
 
+LRESULT CMainFrame::OnTimer(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	if (tedPlayGetState() == 1)
+		playListViewDialog.OnBnClickedBtnNextModule(0, 0, 0, bHandled);
+	return 0L;
+}
+
+LRESULT CMainFrame::OnResetAutoSkipTimerFromChildWnd(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	if (vAutoSkipInterval) {
+		KillTimer(0);
+		SetTimer(0, vAutoSkipInterval * 1000);
+	}
+	return 0L;
+}
+
 LRESULT CMainFrame::OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	DestroyWindow();
 	::PostQuitMessage(0);
-	return 0;
+	return 0L;
 }
 
 LRESULT CMainFrame::OnFileNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
@@ -262,6 +287,7 @@ LRESULT CMainFrame::OnFileNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 		tedplayMain(tmp, NULL);
 		tedplayPlay();
 		UpdateSubsong();
+		//KillTimer(0);
 	}
 
 	//CFileOpenDialog dialog;
@@ -372,21 +398,23 @@ void CMainFrame::UpdateSubsong()
 		enableButtons(0x1c - 4);
 }
 
-LRESULT CMainFrame::OnClickedPrev(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT CMainFrame::OnClickedPrev(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled)
 {
 	tedplayPause();
 	psidChangeTrack(-1);
 	UpdateSubsong();
 	tedplayPlay();
+	OnResetAutoSkipTimerFromChildWnd(0, 0, 0, bHandled);
 	return 0L;
 }
 
-LRESULT CMainFrame::OnClickedNext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT CMainFrame::OnClickedNext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled)
 {
 	tedplayPause();
 	psidChangeTrack(+1);
 	UpdateSubsong();
 	tedplayPlay();
+	OnResetAutoSkipTimerFromChildWnd(0, 0, 0, bHandled);
 	return 0L;
 }
 
@@ -396,6 +424,11 @@ LRESULT CMainFrame::OnClickedPlay(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	UpdateSubsong();
 	unsigned int bmask = getButtonStates() & ~(4 + 8);
 	enableButtons(bmask | 8);
+
+	// restart auto-skip timer
+	KillTimer(0);
+	if (vAutoSkipInterval)
+		SetTimer(0, vAutoSkipInterval * 1000);
 	return 0L;
 }
 
@@ -418,7 +451,10 @@ LRESULT CMainFrame::OnClickedStop(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 LRESULT CMainFrame::OnCheckBox1Clicked(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
 	unsigned int enabled = cbChannels[0].GetCheck();
+	bool wasPlaying = tedPlayGetState() == 1;
+	if (wasPlaying) tedplayPause();
 	tedPlayChannelEnable(0, enabled);
+	if (wasPlaying) tedplayPlay();
 	bHandled = TRUE;
 	return 0L;
 }
@@ -426,7 +462,10 @@ LRESULT CMainFrame::OnCheckBox1Clicked(WORD wNotifyCode, WORD wID, HWND hWndCtl,
 LRESULT CMainFrame::OnCheckBox2Clicked(WORD wNotifyCode, WORD /*wID*/, HWND hWndCtl, BOOL& bHandled)
 {
 	unsigned int enabled = cbChannels[1].GetCheck();
+	bool wasPlaying = tedPlayGetState() == 1;
+	if (wasPlaying) tedplayPause();
 	tedPlayChannelEnable(1, enabled);
+	if (wasPlaying) tedplayPlay();
 	bHandled = TRUE;
 	return 0L;
 }
@@ -434,7 +473,10 @@ LRESULT CMainFrame::OnCheckBox2Clicked(WORD wNotifyCode, WORD /*wID*/, HWND hWnd
 LRESULT CMainFrame::OnBnClickedCheck3(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled)
 {
 	unsigned int enabled = cbChannels[2].GetCheck();
+	bool wasPlaying = tedPlayGetState() == 1;
+	if (wasPlaying) tedplayPause();
 	tedPlayChannelEnable(2, enabled);
+	if (wasPlaying) tedplayPlay();
 	bHandled = TRUE;
 	return 0;
 }
@@ -450,18 +492,18 @@ LRESULT CMainFrame::OnFileMemDump(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 
 LRESULT CMainFrame::OnToolsResetplayer(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled)
 {
-	OnClickedStop(0, 0, 0, bHandled);
-	//tedplayPause();
-	machineReset();
-	machineDoSomeFrames(1 * 800000);
-	UpdateSubsong();
 	tedplayPlay();
+	machineReset();
+	machineDoSomeFrames(25);
+	OnClickedStop(0, 0, 0, bHandled);
+	UpdateSubsong();
 	return 0;
 }
 
 LRESULT CMainFrame::OnToolsDisablesid(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	tedplayPause();
+	bool wasPlaying = tedPlayGetState() == 1;
+	if (wasPlaying) tedplayPause();
 	if (!GetMenuState(GetMenu(), ID_TOOLS_DISABLESID, MF_BYCOMMAND)) {
 		tedPlaySidEnable(false);
 		::CheckMenuItem(GetMenu(), ID_TOOLS_DISABLESID, MF_CHECKED);
@@ -469,7 +511,7 @@ LRESULT CMainFrame::OnToolsDisablesid(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 		tedPlaySidEnable(true);
 		::CheckMenuItem(GetMenu(), ID_TOOLS_DISABLESID, MF_UNCHECKED);
 	}
-	tedplayPlay();
+	if (wasPlaying) tedplayPlay();
 	return 0;
 }
 
@@ -477,8 +519,67 @@ LRESULT CMainFrame::OnToolsOptions(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 {
 	static unsigned int lastPage = 0;
 	CPropSheet cos(_T("Options"), lastPage);
+	
+	unsigned int audioLatency = cos.propPageAudio.vLatency;
+	unsigned int audioSamplingRate = cos.propPageAudio.vSamplingRate;
+	unsigned int audioFilterOrder = cos.propPageAudio.vFilterOrder;
+
+	bool wasPlaying = tedPlayGetState() == 1;
+	if (wasPlaying) tedplayPause();
+
+	cos.propPageAudio.vAutoSkipInterval = vAutoSkipInterval;
 	if (IDOK == cos.DoModal()) {
+		bool restartReqd = (audioLatency != cos.propPageAudio.vLatency) 
+			|| (audioSamplingRate != cos.propPageAudio.vSamplingRate);
+		// filter order changed, update registry, reinit filter kernel
+		if (audioFilterOrder != cos.propPageAudio.vFilterOrder) {
+			audioFilterOrder = cos.propPageAudio.vFilterOrder;
+			setRegistryValue(_T("FilterOrder"), audioFilterOrder);
+			tedPlaySetFilterOrder(audioFilterOrder);
+		}
+		if (audioSamplingRate != cos.propPageAudio.vSamplingRate) {
+			audioSamplingRate = cos.propPageAudio.vSamplingRate;
+			setRegistryValue(_T("SampleRate"), audioSamplingRate);
+		}
+		if (audioLatency != cos.propPageAudio.vLatency) {
+			audioLatency = cos.propPageAudio.vLatency;
+			setRegistryValue(_T("BufferLengthInMsec"), audioLatency);
+		}
+		if (vAutoSkipInterval != cos.propPageAudio.vAutoSkipInterval) {
+			vAutoSkipInterval = cos.propPageAudio.vAutoSkipInterval;
+			KillTimer(0);
+			if (vAutoSkipInterval)
+				SetTimer(0, vAutoSkipInterval * 1000);
+		}
+		if (restartReqd) {
+			MessageBox(_T("For the changes to take effect you have restart the application!"), _T("Warning!"), 
+				MB_OK | MB_ICONINFORMATION);
+		} else {
+			//
+		}
 	}
+	if (wasPlaying) tedplayPlay();
 	return 0L;
 }
 
+LRESULT CMainFrame::OnTedchannel1waveformSquarewave(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	CheckMenuItem(GetMenu(), ID_TEDCHANNEL1_SQUAREWAVE + tedPlayGetWaveform(0) - 1, MF_UNCHECKED);
+	bool wasPlaying = tedPlayGetState() == 1;
+	if (wasPlaying) tedplayPause();
+	tedPlaySetWaveform(0, wID - ID_TEDCHANNEL1_SQUAREWAVE + 1);
+	if (wasPlaying) tedplayPlay();
+	CheckMenuItem(GetMenu(), wID, MF_CHECKED);
+	return 0;
+}
+
+LRESULT CMainFrame::OnTedchannel2Squarewave(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	CheckMenuItem(GetMenu(), ID_TEDCHANNEL2_SQUAREWAVE + tedPlayGetWaveform(1) - 1, MF_UNCHECKED);
+	bool wasPlaying = tedPlayGetState() == 1;
+	if (wasPlaying) tedplayPause();
+	tedPlaySetWaveform(1, wID - ID_TEDCHANNEL2_SQUAREWAVE + 1);
+	if (wasPlaying) tedplayPlay();
+	CheckMenuItem(GetMenu(), wID, MF_CHECKED);
+	return 0;
+}

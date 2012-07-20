@@ -47,8 +47,10 @@ public:
 		MESSAGE_HANDLER(WM_CLOSE, OnDestroy)
 		MESSAGE_HANDLER(WM_DROPFILES, OnDropFiles)
 		MESSAGE_HANDLER(WM_MOVING, OnMoving)
+		MESSAGE_HANDLER(WM_TIMER, OnTimer)
 		// user messages
 		MESSAGE_HANDLER(WM_USER + 1, OnUpdateSongFromChildWnd)
+		MESSAGE_HANDLER(WM_USER + 2, OnResetAutoSkipTimerFromChildWnd)
 		/*MESSAGE_HANDLER(WM_GETMINMAXINFO, OnGetMinMaxInfo)*/
         
 		COMMAND_HANDLER(IDC_CHECK1, BN_CLICKED, OnCheckBox1Clicked)
@@ -75,16 +77,22 @@ public:
 		COMMAND_ID_HANDLER(IDM_TOOLS_OPTIONS, OnToolsOptions)
 		COMMAND_ID_HANDLER(ID_TOOLS_RESETPLAYER, OnToolsResetplayer)
 		COMMAND_ID_HANDLER(ID_TOOLS_DISABLESID, OnToolsDisablesid)
-		CHAIN_MSG_MAP(CUpdateUI<CMainFrame>)
+		COMMAND_RANGE_HANDLER(ID_TEDCHANNEL1_SQUAREWAVE, ID_TEDCHANNEL1_SQUSAWTRIAN, 
+			OnTedchannel1waveformSquarewave)
+		COMMAND_RANGE_HANDLER(ID_TEDCHANNEL2_SQUAREWAVE, ID_TEDCHANNEL2_SQUSAWTRIAN, 
+			OnTedchannel2Squarewave)
+			CHAIN_MSG_MAP(CUpdateUI<CMainFrame>)
 	END_MSG_MAP()
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT OnDropFiles(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnMoving(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT OnTimer(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	//LRESULT OnGetMinMaxInfo(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnTrackBar(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnUpdateSongFromChildWnd(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT OnResetAutoSkipTimerFromChildWnd(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 
 	LRESULT OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnFileNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -114,6 +122,7 @@ protected:
 	void enableButtons(unsigned int mask);
 	unsigned int getButtonStates();
 	CPlayList playListViewDialog;
+	unsigned int vAutoSkipInterval;
 	
 private:
 	HACCEL    m_haccelerator;
@@ -124,4 +133,6 @@ public:
 	static void getDefaultPlayListPath(_TCHAR *sFullPath);
 	LRESULT OnBnClickedCheck3(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnToolsDisablesid(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnTedchannel1waveformSquarewave(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnTedchannel2Squarewave(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 };

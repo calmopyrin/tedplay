@@ -14,7 +14,7 @@
 #include "tedmem.h"
 #include "tedplay.h"
 
-#define HAVE_SDL
+//#define HAVE_SDL
 #ifdef HAVE_SDL
 #include <SDL.h>
 #include "AudioSDL.h"
@@ -35,26 +35,52 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 
 	unsigned int defaultSampleRate = 0;
 	getRegistryValue(_T("SampleRate"), defaultSampleRate);
-	if (!defaultSampleRate || defaultSampleRate > 192000) defaultSampleRate = 48000;
+	if (!defaultSampleRate || defaultSampleRate > 192000) {
+		defaultSampleRate = 48000;
+		setRegistryValue(_T("SampleRate"), defaultSampleRate);
+	}
 
 	unsigned int bufferLengthInMsec = 0;
 	getRegistryValue(_T("BufferLengthInMsec"), bufferLengthInMsec);
-	if (!bufferLengthInMsec || bufferLengthInMsec > 1000) bufferLengthInMsec = 100;
+	if (!bufferLengthInMsec || bufferLengthInMsec > 1000) {
+		bufferLengthInMsec = 200;
+		setRegistryValue(_T("BufferLengthInMsec"), bufferLengthInMsec);
+	}
+
+	unsigned int filterOrder = 0;
+	getRegistryValue(_T("FilterOrder"), filterOrder);
+	if (!filterOrder || filterOrder > 64 || filterOrder < 4) {
+		filterOrder = 12;
+		setRegistryValue(_T("FilterOrder"), filterOrder);
+	}
 
 	try {
 #ifdef HAVE_SDL
-		int retval = tedplayMain( __argv[1], new AudioSDL(machineInit(defaultSampleRate), defaultSampleRate,
+		int retval = tedplayMain( __argv[1], new AudioSDL(machineInit(defaultSampleRate, filterOrder), defaultSampleRate,
 			bufferLengthInMsec));
 #else
-		int retval = tedplayMain( __argv[1], new AudioDirectSound(machineInit(), 110860));
+		int retval = tedplayMain( __argv[1], 
+			new AudioDirectSound(machineInit(defaultSampleRate, filterOrder), defaultSampleRate, bufferLengthInMsec));
 #endif
 		// Read settings
 		// probably no race condition yet...
-		unsigned int regVal = 0;
-		if (getRegistryValue(_T("DisableSID"), regVal) && regVal) {
+		unsigned int regVal = 1;
+		if (getRegistryValue(_T("DisableSID"), regVal) && !regVal) {
 			tedPlaySidEnable(false);
 			::CheckMenuItem(dlgMain.GetMenu(), ID_TOOLS_DISABLESID, MF_CHECKED);
 		}
+		regVal = 0;
+		// read waveform settings
+		if (getRegistryValue(_T("TedChannel1WaveForm"), regVal) && regVal) {
+			tedPlaySetWaveform(0, regVal);
+		}
+		::CheckMenuItem(dlgMain.GetMenu(), ID_TEDCHANNEL1_SQUAREWAVE + regVal - 1, MF_CHECKED);
+		regVal = 0;
+		if (getRegistryValue(_T("TedChannel2WaveForm"), regVal) && regVal) {
+			tedPlaySetWaveform(1, regVal);
+		}
+		::CheckMenuItem(dlgMain.GetMenu(), ID_TEDCHANNEL2_SQUAREWAVE + regVal - 1, MF_CHECKED);
+		
 		// if playing a song specified in the command line, update the window title
 		if (::PathFileExists(__argv[1])) {
 			dlgMain.UpdateSubsong();
@@ -66,10 +92,6 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	nRet = theLoop.Run();
 	tedplayClose();
 	
-	// store settings
-	setRegistryValue(_T("SampleRate"), defaultSampleRate);
-	setRegistryValue(_T("BufferLengthInMsec"), bufferLengthInMsec);
-
 	_Module.RemoveMessageLoop();
 	return nRet;
 }

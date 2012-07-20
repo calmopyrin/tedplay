@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="TedPlayWTL"
 	ProjectGUID="{98F8E553-2072-4A34-8152-D73A149331D1}"
 	RootNamespace="TedPlayWTL"
@@ -617,6 +617,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\Audio.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\AudioDirectSound.cpp"
 				>
 			</File>
@@ -637,26 +641,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\MainFrm.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\PlayList.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\PropPageAudio.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\PropSheet.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\registry.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\Sid.cpp"
 				>
 			</File>
@@ -669,13 +653,37 @@
 				>
 			</File>
 			<File
-				RelativePath=".\TedPlayWTL.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\Tedsound.cpp"
 				>
 			</File>
+			<Filter
+				Name="GUI"
+				>
+				<File
+					RelativePath=".\MainFrm.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\PlayList.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\PropPageAudio.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\PropSheet.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\registry.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\TedPlayWTL.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>

@@ -193,10 +193,12 @@ LRESULT CPlayList::OnHotkey(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& b
 		case 1:
 			stepPlayList(+1);
 			OnNMDblclkLsv(0, 0, bHandled);
+			::PostMessage(m_hwndParent, WM_USER + 2, 0, 0);
 			break;
 		case 2:
 			stepPlayList(-1);
 			OnNMDblclkLsv(0, 0, bHandled);
+			::PostMessage(m_hwndParent, WM_USER + 2, 0, 0);
 			break;
 		default:
 			;
@@ -342,7 +344,10 @@ LRESULT CPlayList::OnNMDblclkLsv(int idCtrl, LPNMHDR pNMHDR, BOOL& /*bHandled*/)
 
 	if (playListView.GetItemText(index, LV_FIELD_PATH, namebuffer, MAX_PATH)) {
 		if (::PathFileExists(namebuffer) && !tedplayMain(namebuffer, NULL)) {
+			// update info
 			::PostMessage(m_hwndParent, WM_USER + 1, 0, 0);
+			// reset autoskip timer
+			::PostMessage(m_hwndParent, WM_USER + 2, 0, 0);
 			playListView.AddItem(index, LV_FIELD_STATUS, _T("OK"));
 		} else {
 			playListView.AddItem(index, LV_FIELD_STATUS, _T("Error!"));
@@ -583,7 +588,7 @@ LRESULT CPlayList::OnBnClickedBtnSavepl(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 	return 0;
 }
 
-LRESULT CPlayList::OnBnClickedBtnPrevModule(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled)
+LRESULT CPlayList::OnBnClickedBtnNextModule(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled)
 {
 	// step forward one module in the playlist
 	OnHotkey(0, 1, 0, bHandled);

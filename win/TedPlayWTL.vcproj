@@ -195,19 +195,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\MainFrm.h"
-				>
-			</File>
-			<File
-				RelativePath=".\PlayList.h"
-				>
-			</File>
-			<File
 				RelativePath="..\Psid.h"
-				>
-			</File>
-			<File
-				RelativePath=".\registry.h"
 				>
 			</File>
 			<File
@@ -227,9 +215,33 @@
 				>
 			</File>
 			<File
-				RelativePath=".\WtlTedPlay.h"
+				RelativePath="..\tedplay.h"
 				>
 			</File>
+			<Filter
+				Name="GUI"
+				>
+				<File
+					RelativePath=".\MainFrm.h"
+					>
+				</File>
+				<File
+					RelativePath=".\PlayList.h"
+					>
+				</File>
+				<File
+					RelativePath=".\PropPageAudio.h"
+					>
+				</File>
+				<File
+					RelativePath=".\PropSheet.h"
+					>
+				</File>
+				<File
+					RelativePath=".\registry.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -246,6 +258,10 @@
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
+			<File
+				RelativePath="..\Audio.cpp"
+				>
+			</File>
 			<File
 				RelativePath=".\AudioDirectSound.cpp"
 				>
@@ -267,18 +283,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\MainFrm.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\PlayList.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\registry.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\Sid.cpp"
 				>
 			</File>
@@ -291,13 +295,37 @@
 				>
 			</File>
 			<File
-				RelativePath=".\TedPlayWTL.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\Tedsound.cpp"
 				>
 			</File>
+			<Filter
+				Name="GUI"
+				>
+				<File
+					RelativePath=".\MainFrm.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\PlayList.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\PropPageAudio.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\PropSheet.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\registry.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\TedPlayWTL.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>
