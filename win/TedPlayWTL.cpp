@@ -73,11 +73,17 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 		// read waveform settings
 		if (getRegistryValue(_T("TedChannel1WaveForm"), regVal) && regVal) {
 			tedPlaySetWaveform(0, regVal);
+		} else {
+			regVal = 1;
+			tedPlaySetWaveform(0, 1);
 		}
 		::CheckMenuItem(dlgMain.GetMenu(), ID_TEDCHANNEL1_SQUAREWAVE + regVal - 1, MF_CHECKED);
 		regVal = 0;
 		if (getRegistryValue(_T("TedChannel2WaveForm"), regVal) && regVal) {
 			tedPlaySetWaveform(1, regVal);
+		} else {
+			regVal = 1;
+			tedPlaySetWaveform(1, 1);
 		}
 		::CheckMenuItem(dlgMain.GetMenu(), ID_TEDCHANNEL2_SQUAREWAVE + regVal - 1, MF_CHECKED);
 		
