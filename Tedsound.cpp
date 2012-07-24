@@ -142,7 +142,7 @@ void TED::storeToBuffer(short *buffer, unsigned int count)
 
 inline unsigned int TED::waveSquare(unsigned int channel)
 {
-	return FlipFlop[channel] ? Volume : 0;
+	return Volume;
 }
 
 inline unsigned int TED::waveSawTooth(unsigned int channel)
@@ -156,13 +156,9 @@ inline unsigned int TED::waveSawTooth(unsigned int channel)
 	//if (oscCount[channel] >= 0x3fa) diff = 0;
 	mod = (Volume * diff) / (2 * msb);
 #else
-	if (FlipFlop[channel]) {
-		int diff = int(oscCount[channel]) - int(OscReload[channel]);
-		if (diff < 0) diff = 0;
-		mod = (Volume * diff) / (OSCRELOADVAL + 1 - OscReload[channel]);
-	} else {
-		mod = 0;
-	}
+	int diff = int(oscCount[channel]) - int(OscReload[channel]);
+	if (diff < 0) diff = 0;
+	mod = (Volume * diff) / (OSCRELOADVAL + 1 - OscReload[channel]);
 #endif
 	return mod;
 }
@@ -180,13 +176,9 @@ inline unsigned int TED::waveTriangle(unsigned int channel)
 	//if (oscCount[channel] >= 0x3fa) diff = 0;
 	mod = (3 * Volume * diff / msb / 2);
 #else
-	if (FlipFlop[channel]) {
-		msb = (OscReload[channel] + OSCRELOADVAL) / 2;
-		mod = oscCount[channel] < msb ? oscCount[channel] : (oscCount[channel] - msb);
-		mod = (mod * Volume / msb);
-	} else {
-		mod = 0;
-	}
+	msb = (OscReload[channel] + OSCRELOADVAL) / 2;
+	mod = oscCount[channel] < msb ? oscCount[channel] : (oscCount[channel] - msb);
+	mod = (mod * Volume / msb);
 #endif
 	return mod;
 }
@@ -222,11 +214,6 @@ inline unsigned int TED::getWaveSample(unsigned int channel, unsigned int wave)
 
 void TED::renderSound(unsigned int nrsamples, short *buffer)
 {
-	unsigned int mod1, mod2;
-
-	mod1 = getWaveSample(0, waveForm[0]) & channelMask[0];
-	mod2 = getWaveSample(1, waveForm[1]) & channelMask[1];
-
 	// Calculate the buffer...
 	if (DAStatus) {// digi?
 		short sample = 0;//audiohwspec->silence;
@@ -253,9 +240,9 @@ void TED::renderSound(unsigned int nrsamples, short *buffer)
 				FlipFlop[1] ^= 1;
 				oscCount[1] = OscReload[1] + (oscCount[1] - OSCRELOADVAL);
 			}
-			result = (Snd1Status) ? mod1 : 0;
-			if (Snd2Status) {
-				result += mod2;
+			result = (Snd1Status && FlipFlop[0]) ? (getWaveSample(0, waveForm[0]) & channelMask[0]) : 0;
+			if (Snd2Status && FlipFlop[1]) {
+				result += getWaveSample(1, waveForm[1]) & channelMask[1];
 			} else if (SndNoiseStatus && noise[NoiseCounter] & channelMask[2]) {
 				result += Volume;
 			}
