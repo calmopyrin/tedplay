@@ -20,7 +20,6 @@ CPropSheet::CPropSheet (_U_STRINGorID title, UINT uStartPage,
 
 	//AddPage(propPageMachine);
 	AddPage(propPageAudio);
-	SendMessage(DM_SETDEFID, IDOK);
 }
 
 LRESULT CPropSheet::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
@@ -36,5 +35,6 @@ LRESULT CPropSheet::OnShowWindow(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/
 		m_bCentered = true;
 		CenterWindow(m_psh.hwndParent);
 	}
+	PostMessage(DM_SETDEFID, IDOK);
 	return 0;
 }

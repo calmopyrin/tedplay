@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <cstdio>
 #include "Audio.h"
 #include "psid.h"
 #include "CbmTune.h"
@@ -500,3 +501,13 @@ void tedPlaySidEnable(bool enable)
 	ted->enableSidCard(enable);
 }
 
+bool tedPlayCreateWav(const char *fileName)
+{
+	return player->createWav(fileName);
+}
+
+void tedPlayCloseWav()
+{
+	if (player)
+		player->closeWav();
+}

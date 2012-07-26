@@ -49,7 +49,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 
 	unsigned int filterOrder = 0;
 	getRegistryValue(_T("FilterOrder"), filterOrder);
-	if (!filterOrder || filterOrder > 64 || filterOrder < 4) {
+	if (!filterOrder || filterOrder > 1024 || filterOrder < 4) {
 		filterOrder = 12;
 		setRegistryValue(_T("FilterOrder"), filterOrder);
 	}
@@ -64,8 +64,8 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 #endif
 		// Read settings
 		// probably no race condition yet...
-		unsigned int regVal = 1;
-		if (getRegistryValue(_T("DisableSID"), regVal) && !regVal) {
+		unsigned int regVal = 0;
+		if (getRegistryValue(_T("DisableSID"), regVal) && regVal) {
 			tedPlaySidEnable(false);
 			::CheckMenuItem(dlgMain.GetMenu(), ID_TOOLS_DISABLESID, MF_CHECKED);
 		}

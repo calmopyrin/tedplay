@@ -70,6 +70,7 @@ public:
 		
 		COMMAND_ID_HANDLER(IDM_FILE_EXIT, OnFileExit)
 		COMMAND_ID_HANDLER(IDM_FILE_OPEN, OnFileNew)
+		COMMAND_ID_HANDLER(IDM_FILE_CREATEWAV, OnFileSaveToWav)
 		COMMAND_ID_HANDLER(ID_FILE_MEMORYDUMP, OnFileMemDump)
 		COMMAND_ID_HANDLER(IDM_FILE_PROPERTIES, OnFileProperties)
 		COMMAND_ID_HANDLER(IDM_VIEW_PLAYLIST, OnViewPlaylist)
@@ -96,6 +97,7 @@ public:
 
 	LRESULT OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnFileNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnFileSaveToWav(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnFileMemDump(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT OnFileProperties(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);

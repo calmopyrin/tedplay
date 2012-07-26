@@ -105,7 +105,7 @@ BEGIN
     LTEXT           "Playback buffer length (in millisec)",IDC_STATIC,7,47,127,12
     EDITTEXT        IDC_EDIT_BUFLEN,137,45,38,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_SPIN_BUFLEN,"msctls_updown32",UDS_SETBUDDYINT | UDS_AUTOBUDDY | UDS_ARROWKEYS,174,45,12,12
-	LTEXT           "Autoskip in seconds (0: none)",IDC_STATIC,7,67,127,12
+    LTEXT           "Autoskip in seconds (0: none)",IDC_STATIC,7,67,127,12
     EDITTEXT        IDC_EDIT_AUTOSKIPTIME,137,65,38,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_SPIN_AUTOSKIPTIME,"msctls_updown32",UDS_SETBUDDYINT | UDS_AUTOBUDDY | UDS_ARROWKEYS,174,65,12,12
     PUSHBUTTON      "&Default",IDDEFAULT,135,162,50,14
@@ -230,6 +230,8 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "&Open...\tCtrl+O",            IDM_FILE_OPEN
+		MENUITEM SEPARATOR
+		MENUITEM "&Save to WAV\tCtrl+S",		IDM_FILE_CREATEWAV
         MENUITEM "&Memory dump",                ID_FILE_MEMORYDUMP
         MENUITEM SEPARATOR
         POPUP "&Control"
@@ -265,8 +267,8 @@ BEGIN
         POPUP "TED channel &2"
         BEGIN
             MENUITEM "&Square wave",                ID_TEDCHANNEL2_SQUAREWAVE
-            MENUITEM "S&awtooth-ish wave",              ID_TEDCHANNEL2_SAWTOOTHWAVE
-            MENUITEM "&Triangle-ish wave",              ID_TEDCHANNEL2_TRIANGLEWAVE
+            MENUITEM "S&awtooth-ish wave",          ID_TEDCHANNEL2_SAWTOOTHWAVE
+            MENUITEM "&Triangle-ish wave",          ID_TEDCHANNEL2_TRIANGLEWAVE
             MENUITEM "S&quare+sawtooth",            ID_TEDCHANNEL2_SQUARESAW
             MENUITEM "Sq&uare+triangle",            ID_TEDCHANNEL2_SQUARETRIAN
             MENUITEM "Sa&wtooth+triangle",          ID_TEDCHANNEL2_SAWTOOTHTRI
@@ -351,6 +353,7 @@ IDR_ACCELERATORS ACCELERATORS
 BEGIN
     "O",            IDM_FILE_OPEN,          VIRTKEY, CONTROL, NOINVERT
     "A",            ID_PLAYLIST_SELECTALL,  VIRTKEY, CONTROL, NOINVERT
+	"S",			IDM_FILE_CREATEWAV,		VIRTKEY, CONTROL, NOINVERT
 END
 
 IDR_ACCELERATORS_PLAYLIST ACCELERATORS 

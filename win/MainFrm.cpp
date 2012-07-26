@@ -141,6 +141,9 @@ LRESULT CMainFrame::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 
 LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
+	// finish recording if applicable
+	if (::GetMenuState(GetMenu(), IDM_FILE_CREATEWAV, MF_BYCOMMAND) == MF_CHECKED)
+		tedPlayCloseWav();
 	// save waveforms
 	setRegistryValue(_T("TedChannel1WaveForm"), tedPlayGetWaveform(0));
 	setRegistryValue(_T("TedChannel2WaveForm"), tedPlayGetWaveform(1));
@@ -157,7 +160,7 @@ LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	// save settings
 	LONG regVal = playListViewDialog.IsWindowVisible();
 	setRegistryValue(_T("ShowPlayList"), regVal);
-	regVal = GetMenuState(GetMenu(), ID_TOOLS_DISABLESID, MF_BYCOMMAND);
+	regVal = GetMenuState(GetMenu(), ID_TOOLS_DISABLESID, MF_BYCOMMAND) == MF_CHECKED;
 	setRegistryValue(_T("DisableSID"), regVal);
 	//
 	bHandled = FALSE;
@@ -282,10 +285,7 @@ LRESULT CMainFrame::OnFileNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 
 		_tcscpy(tmp, wndFileDialog.m_szFileName);
 		selFilter = wndFileDialog.m_ofn.nFilterIndex;
-		tedplayPause();
-		::Sleep(10);
 		tedplayMain(tmp, NULL);
-		tedplayPlay();
 		UpdateSubsong();
 		//KillTimer(0);
 	}
@@ -296,7 +296,36 @@ LRESULT CMainFrame::OnFileNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 	//	COM_VERIFY(dialog.GetFilePath(filePath));
 	//	// Use file here...
 	//}
-	return 0;
+	return 0L;
+}
+
+LRESULT CMainFrame::OnFileSaveToWav(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	_TCHAR szFilter[] = _T("WAV files (*.wav)\0"
+						   "*.wav\0"
+						   "All Files (*.*)\0*.*\0\0");
+	WTL::CFileDialog wndFileDialog( FALSE, NULL, NULL, 
+		OFN_HIDEREADONLY | OFN_EXPLORER, 
+		szFilter, m_hWnd);
+	bool isChecked = ::GetMenuState(GetMenu(), 
+		IDM_FILE_CREATEWAV, MF_BYCOMMAND) == MF_CHECKED;
+	if (!isChecked) {
+		bool wasPlaying = tedPlayGetState() == 1;
+		if (wasPlaying) tedplayPause();
+		if (IDOK == wndFileDialog.DoModal() ) {
+			std::string filename = wndFileDialog.m_szFileName;
+			PTSTR ext = ::PathFindExtension(filename.c_str()); 
+			if (!*ext)
+				filename += _T(".wav");
+			if (tedPlayCreateWav(filename.c_str()))
+				CheckMenuItem(GetMenu(), IDM_FILE_CREATEWAV, MF_CHECKED);
+		}
+		if (wasPlaying) tedplayPlay();
+	} else {
+		tedPlayCloseWav();
+		CheckMenuItem(GetMenu(), IDM_FILE_CREATEWAV, MF_UNCHECKED);
+	}
+	return 0L;
 }
 
 LRESULT CMainFrame::OnFileProperties(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)

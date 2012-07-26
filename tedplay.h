@@ -21,6 +21,8 @@ extern void tedPlaySidEnable(bool enable);
 extern void tedPlaySetFilterOrder(unsigned int filterOrder);
 extern unsigned int tedPlayGetWaveform(unsigned int channel);
 extern void tedPlaySetWaveform(unsigned int channel, unsigned int wave);
+extern bool tedPlayCreateWav(const char *fileName);
+extern void tedPlayCloseWav();
 //
 extern void machineReset();
 extern void machineDoSomeFrames(unsigned int count);
