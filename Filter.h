@@ -13,11 +13,13 @@ public:
 protected:
 	int order_;
 	int *windowTable_;
+	int windowTableSize;
 	int *sampleHistory_;
 	unsigned int sampleBufPtr_;
 	unsigned int sampleBufMask_;
 	double fc_;
+	unsigned int timeStep;
 	unsigned int sampleFrq_;
 	const unsigned int precision_;
-	unsigned int mixingVolume;
+	double mixingVolume;
 };

@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="TedPlayWTL"
 	ProjectGUID="{98F8E553-2072-4A34-8152-D73A149331D1}"
+	RootNamespace="TedPlayWTL"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -183,10 +184,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\AudioSDL.h"
-				>
-			</File>
-			<File
 				RelativePath="..\CbmTune.h"
 				>
 			</File>
@@ -264,10 +261,6 @@
 			</File>
 			<File
 				RelativePath=".\AudioDirectSound.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\AudioSDL.cpp"
 				>
 			</File>
 			<File

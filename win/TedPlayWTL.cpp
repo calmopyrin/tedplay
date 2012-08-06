@@ -14,7 +14,6 @@
 #include "tedmem.h"
 #include "tedplay.h"
 
-//#define HAVE_SDL
 #ifdef HAVE_SDL
 #include <SDL.h>
 #include "AudioSDL.h"
@@ -60,7 +59,8 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 			bufferLengthInMsec));
 #else
 		int retval = tedplayMain( __argv[1], 
-			new AudioDirectSound(machineInit(defaultSampleRate, filterOrder), defaultSampleRate, bufferLengthInMsec));
+			new AudioDirectSound(machineInit(defaultSampleRate, filterOrder), 
+				TED_SOUND_CLOCK, defaultSampleRate, bufferLengthInMsec));
 #endif
 		// Read settings
 		// probably no race condition yet...
@@ -114,6 +114,12 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	//HRESULT hRes = ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
 	ATLASSERT(SUCCEEDED(hRes));
 
+	HANDLE m_hMutex = ::CreateMutex(NULL, FALSE, _T("WinTedPlayInstance"));
+	if( m_hMutex != NULL ) { // indicates running instance
+		if(::GetLastError() == ERROR_ALREADY_EXISTS)
+			return FALSE;   // forbid further processing
+	}
+
 	// this resolves ATL window thunking problem when Microsoft Layer for Unicode (MSLU) is used
 	::DefWindowProc(NULL, 0, 0, 0L);
 
@@ -128,6 +134,9 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 
 	_Module.Term();
 	::CoUninitialize();
+
+	if (m_hMutex)
+		::CloseHandle(m_hMutex);
 
 	return nRet;
 }

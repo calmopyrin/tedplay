@@ -148,6 +148,8 @@ LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	setRegistryValue(_T("TedChannel1WaveForm"), tedPlayGetWaveform(0));
 	setRegistryValue(_T("TedChannel2WaveForm"), tedPlayGetWaveform(1));
 	setRegistryValue(_T("AutoSkipInterval"), vAutoSkipInterval);
+	// stop playing
+	tedplayStop();
 	// save the playlist
 	_TCHAR plPath[MAX_PATH];
 	getDefaultPlayListPath(plPath);

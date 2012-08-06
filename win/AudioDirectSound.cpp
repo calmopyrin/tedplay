@@ -1,13 +1,13 @@
 #include "stdafx.h"
+#include <cstdio>
 #include <mmsystem.h>
 #include "AudioDirectSound.h"
-#include "Tedmem.h"
 
-#define DIVISOR 2
+#ifndef TIME_KILL_SYNCHRONOUS
+#define TIME_KILL_SYNCHRONOUS 0x0100
+#endif
 
-CRITICAL_SECTION AudioDirectSound::cs;
-
-void CALLBACK TimerProcess(UINT uTimerID, UINT uMsg, DWORD dwUser, DWORD dw1, DWORD dw2)
+static void CALLBACK TimerProcess(UINT uTimerID, UINT uMsg, DWORD dwUser, DWORD dw1, DWORD dw2)
 {
 	AudioDirectSound *pDDS = (AudioDirectSound *)dwUser;
 	pDDS->TimerCallback();	
@@ -20,10 +20,9 @@ HRESULT WINAPI AudioDirectSound::cb(LPBYTE lpDesBuf, const DWORD dwRequiredSampl
 	return 0;
 }
 
-AudioDirectSound::AudioDirectSound(void *userData, unsigned int sampleFrq_, 
+AudioDirectSound::AudioDirectSound(void *userData, unsigned int origFreq, unsigned int sampleFrq_, 
 				   unsigned int bufDurInMsec = 40) : Audio(sampleFrq_)
 {
-	InitializeCriticalSection(&cs);
 	//<DirectSound>
 	ZeroMemory(&m_WFE, sizeof(m_WFE));
 	m_lpDS = NULL;
@@ -44,11 +43,12 @@ AudioDirectSound::AudioDirectSound(void *userData, unsigned int sampleFrq_,
 	//</Playing>
 
 	//
+	bufDurationInMsec = bufDurInMsec;
 	unsigned int fragsPerSec = 1000 / bufDurInMsec;
 	unsigned int bufSize1kbChunk = (sampleFrq_ / fragsPerSec / 1024) * 1024;
 	if (!bufSize1kbChunk) bufSize1kbChunk = 512;
 	bufferLength = bufSize1kbChunk;
-	unsigned int bfSize = TED_SOUND_CLOCK / fragsPerSec; //(bufferLength * TED_SOUND_CLOCK + sampleFrq_ / 2) / sampleFrq_;
+	unsigned int bfSize = origFreq / fragsPerSec; //(bufferLength * TED_SOUND_CLOCK + sampleFrq_ / 2) / sampleFrq_;
 	// double length ring buffer, dividable by 8
 	ringBufferSize = (bfSize / 8 + 1) * 16;
 	ringBuffer = new short[ringBufferSize];
@@ -70,10 +70,12 @@ AudioDirectSound::AudioDirectSound(void *userData, unsigned int sampleFrq_,
 
 AudioDirectSound::~AudioDirectSound()
 {
+	stop();
 	if (NULL != m_lpAudioBuf) {
 		delete []m_lpAudioBuf;
 		m_lpAudioBuf = NULL;
 	}
+	timeEndPeriod(wTimerRes);
 }
 //</~AudioDirectSound>
 
@@ -123,7 +125,7 @@ void AudioDirectSound::SetFormat(WAVEFORMATEX WFE)
 	}
 
 	//Create Second Sound Buffer
-	dsbd.dwFlags = DSBCAPS_CTRLPOSITIONNOTIFY | DSBCAPS_GLOBALFOCUS;
+	dsbd.dwFlags = DSBCAPS_GETCURRENTPOSITION2| DSBCAPS_CTRLPOSITIONNOTIFY | DSBCAPS_GLOBALFOCUS;
 	dsbd.dwBufferBytes = 2 * 2 * bufferLength; //2 bytes per sample twice
 	dsbd.lpwfxFormat = &m_WFE;
 
@@ -160,9 +162,19 @@ void AudioDirectSound::SetFormat(WAVEFORMATEX WFE)
 		m_lpAudioBuf = NULL;		
 	}
 	m_lpAudioBuf = new unsigned char[bufferLength * 2 * 2];
-
 	//Init Audio Buffer
 	memset(m_lpAudioBuf, 0, bufferLength * 2 * 2);
+
+	// performance measurement
+	TIMECAPS		tc;
+
+	// set timer resolution to 1 msec
+	const int TARGET_RESOLUTION = 1; // 1-millisecond target resolution
+	if (timeGetDevCaps(&tc, sizeof(TIMECAPS)) != TIMERR_NOERROR) {
+		OutputDebugString(_T("Oops... couldn't get timer resolution.\n"));
+	}
+	wTimerRes = TARGET_RESOLUTION < tc.wPeriodMin ? tc.wPeriodMin : TARGET_RESOLUTION;
+	timeBeginPeriod(wTimerRes);
 }
 //</SetFormat>
 
@@ -190,7 +202,8 @@ void AudioDirectSound::play()
 	paused = false;
 	// Start playing
 	m_lpDSB->Play(0, 0, DSBPLAY_LOOPING);
-	m_timerID = timeSetEvent(20, 10, TimerProcess, (DWORD)this, TIME_PERIODIC | TIME_CALLBACK_FUNCTION);
+	m_timerID = timeSetEvent(5, 5, (LPTIMECALLBACK) TimerProcess, 
+		(DWORD)this, TIME_PERIODIC | TIME_CALLBACK_FUNCTION | TIME_KILL_SYNCHRONOUS);
 }
 //</Play>
 

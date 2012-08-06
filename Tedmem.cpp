@@ -1264,42 +1264,42 @@ void TED::ted_process(short *buffer, unsigned int count)
 			if (!(HBlanking |VBlanking)) {
 				if (SideBorderFlipFlop) { // drawing the visible part of the screen
 					// call the relevant rendering function
-					switch (scrattr) {
-						case 0:
-							hi_text();
-							break;
-						case REVERSE :
-							rv_text();
-							break;
-						case MULTICOLOR|REVERSE :
-						    mc_text_rvs();
-						    break;
-						case MULTICOLOR :
-							mc_text();
-							break;
-						case EXTCOLOR|REVERSE :
-						case EXTCOLOR :
-							ec_text();
-							break;
-						case GRAPHMODE|REVERSE :
-						case GRAPHMODE :
-							hi_bitmap();
-							break;
-						case EXTCOLOR|MULTICOLOR :
-						case GRAPHMODE|EXTCOLOR :
-						case GRAPHMODE|MULTICOLOR|EXTCOLOR :
-						case REVERSE|MULTICOLOR|EXTCOLOR :
-						case GRAPHMODE|MULTICOLOR|EXTCOLOR|REVERSE :
-							mcec();
-							break;
-						case GRAPHMODE|MULTICOLOR :
-						case GRAPHMODE|MULTICOLOR|REVERSE :
-							mc_bitmap();
-							break;
-						default:
-				    		illegalbank();
-				    		break;
-					}
+					//switch (scrattr) {
+					//	case 0:
+					//		hi_text();
+					//		break;
+					//	case REVERSE :
+					//		rv_text();
+					//		break;
+					//	case MULTICOLOR|REVERSE :
+					//	    mc_text_rvs();
+					//	    break;
+					//	case MULTICOLOR :
+					//		mc_text();
+					//		break;
+					//	case EXTCOLOR|REVERSE :
+					//	case EXTCOLOR :
+					//		ec_text();
+					//		break;
+					//	case GRAPHMODE|REVERSE :
+					//	case GRAPHMODE :
+					//		hi_bitmap();
+					//		break;
+					//	case EXTCOLOR|MULTICOLOR :
+					//	case GRAPHMODE|EXTCOLOR :
+					//	case GRAPHMODE|MULTICOLOR|EXTCOLOR :
+					//	case REVERSE|MULTICOLOR|EXTCOLOR :
+					//	case GRAPHMODE|MULTICOLOR|EXTCOLOR|REVERSE :
+					//		mcec();
+					//		break;
+					//	case GRAPHMODE|MULTICOLOR :
+					//	case GRAPHMODE|MULTICOLOR|REVERSE :
+					//		mc_bitmap();
+					//		break;
+					//	default:
+				 //   		illegalbank();
+				 //   		break;
+					//}
 					x = (x + 1) & 0x3F;
 				}
 				if (!CharacterWindow) {

@@ -8,14 +8,13 @@
 
 #pragma comment(lib,"dxguid.lib")
 
-//typedef	HRESULT	(WINAPI *LPGETAUDIOSAMPLES_PROGRESS)(LPBYTE lpDesBuf, const DWORD dwRequiredSamples, DWORD &dwRetSamples, LPVOID lpData);
 typedef	HRESULT	(WINAPI *LPGETAUDIOSAMPLES_PROGRESS)(LPBYTE lpDesBuf, const DWORD dwRequiredSamples, DWORD &dwRetSamples, LPVOID lpData);
 
 class AudioDirectSound : public Audio
 {
 public:
 
-	AudioDirectSound(void *userData, unsigned int sampleFrq_, unsigned int bufDurInMsec);
+	AudioDirectSound(void *userData, unsigned int origFreq, unsigned int sampleFrq_, unsigned int bufDurInMsec);
 	virtual ~AudioDirectSound();
 
 	void SetFormat(WAVEFORMATEX WFE);
@@ -56,5 +55,7 @@ private:
 	//CString m_strLastError;
 	CString m_strLastError;
 	//</Error Information>
+	unsigned int bufDurationInMsec;
+	UINT wTimerRes;
 };
 //</AudioDirectSound  >

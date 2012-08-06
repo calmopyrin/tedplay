@@ -311,7 +311,10 @@ int tedplayMain(char *fileName, Audio *player_)
 		tedplayPause();
 		machineReset();
 		tedplayPlay();
-		player->sleep(450);
+		// if we do not flush the buffer, the reset may not get executed
+		player->flush();
+		// let it run so that the reset sequence can finish
+		player->sleep(150);
 		tedplayStop();
 
 		psidHdr.fileName = fileName;
@@ -432,7 +435,7 @@ int tedplayMain(char *fileName, Audio *player_)
 			strcpy(psidHdr.model, "Unknown");
 			addr = buf[0] + (buf[1] << 8);
 			ted->injectCodeToRAM(addr, buf + 2, bufLength - 2);
-			ted->writeProtectedPlayerMemory(playerStartAddress, prgPlayer, 8);
+			ted->writeProtectedPlayerMemory(playerStartAddress, prgPlayer, sizeof(prgPlayer));
 			SIDsound *sid = ted->getSidCard();
 			if (sid)
 				sid->setModel(SID8580);

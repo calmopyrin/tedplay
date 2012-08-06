@@ -16,7 +16,7 @@
 #define ROMSIZE 16384
 #define SCR_HSIZE 456
 #define SCR_VSIZE 312
-#define TED_SOUND_CLOCK (110860 * 2)
+#define TED_SOUND_CLOCK (221680)
 
 #include "types.h"
 #include "mem.h"
