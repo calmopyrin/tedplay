@@ -10,13 +10,6 @@ bool Audio::recording;
 FILE *Audio::wavFileHandle;
 size_t Audio::wavDataLength;
 
-#pragma pack(1)
-static WAVHEADER wavHdr = {
-    'R','I','F','F',
-    0, 0, 0, 0,
-    'W','A','V','E','f','m','t',' '
-};
-
 void Audio::audioCallback(void *userData, unsigned char *stream, int len)
 {
 	TED *ted = reinterpret_cast<TED *>(userData);
@@ -99,7 +92,7 @@ bool Audio::dumpWavData(FILE *fp, unsigned char *buffer, unsigned int length)
 void Audio::closeWav()
 {
 	if (wavFileHandle) {
-		size_t foo = ftell(wavFileHandle) - 8;
+		unsigned int foo = (unsigned int)(ftell(wavFileHandle) - 8);
 		// RIFF chunk size
 		std::fseek(wavFileHandle, 4, SEEK_SET);
 		std::fwrite(&foo, sizeof(foo), 1, wavFileHandle);

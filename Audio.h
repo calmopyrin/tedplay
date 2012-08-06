@@ -42,6 +42,10 @@ public:
 	virtual void setSampleRate(unsigned int newSampleRate) {
 		sampleFrq = newSampleRate;
 	}
+	unsigned int getLatency() {
+		unsigned int msec = (unsigned int)(1000.f * double(bufferLength)/double(sampleFrq) + 1);
+		return msec;
+	}
 	unsigned int getSampleRate() { return sampleFrq; }
 	bool isPaused() { return paused; };
 	virtual bool createWav(const char *fileName);
