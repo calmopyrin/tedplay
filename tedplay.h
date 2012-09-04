@@ -1,11 +1,13 @@
 #pragma once
 
 #include <string>
+#include "psid.h"
 
 class TED;
 class Audio;
 
 extern TED *machineInit(unsigned int sampleRate, unsigned int filterOrder);
+extern void tedPlayGetInfo(void *file, PsidHeader &hdr);
 extern int tedplayMain(char *fileName, Audio *player);
 extern void tedPlaySetVolume(unsigned int masterVolume);
 extern void tedPlaySetSpeed(unsigned int speedPct);
@@ -23,6 +25,8 @@ extern unsigned int tedPlayGetWaveform(unsigned int channel);
 extern void tedPlaySetWaveform(unsigned int channel, unsigned int wave);
 extern bool tedPlayCreateWav(const char *fileName);
 extern void tedPlayCloseWav();
+extern unsigned int tedplayGetSecondsPlayed();
+extern void tedPlayResetCycleCounter();
 //
 extern void machineReset();
 extern void machineDoSomeFrames(unsigned int count);

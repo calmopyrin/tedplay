@@ -116,7 +116,7 @@ public:
 
 protected:
 	CMenu menu;
-	CEdit stAuthor, stTitle, stCopyright, stSubsong; // CContainedWindowT<CStatic>
+	CEdit stAuthor, stTitle, stCopyright, stSubsong, stTime; // CContainedWindowT<CStatic>
 	CButton btnPrev, btnNext, btnPlay, btnPause, btnStop, btnTemp; // CContainedWindowT<CButton> 
 	enum { TB_VOLUME = 0, TB_SPEED, TB_COUNT };
 	CTrackBarCtrl trackBars[2];

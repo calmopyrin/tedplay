@@ -116,7 +116,8 @@ class TED : public MemoryHandler {
 	}
 	void storeToBuffer(short *buffer,unsigned int count = 1);
 	void copyToKbBuffer(char *bufferString, unsigned int bufferLength = -1);
-	void getTimeSinceLastReset(int hour, int min, int sec);
+	unsigned int getTimeSinceLastReset();
+	void resetCycleCounter() { lastResetCycle = CycleCounter; }
 	SIDsound *getSidCard() { return sidCard; };
 	void enableSidCard(bool enable);
 	static unsigned int masterVolume;

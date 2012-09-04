@@ -87,8 +87,8 @@ int main(int argc, char *argv[])
         return -1;
     }
 	unsigned int defaultFreq = 48000;
-	int retval = tedplayMain(argv[1], 
-		player = new AudioSDL((void *) machineInit(defaultFreq), defaultFreq, 100));
+	int retval = tedplayMain(argv[1],
+		player = new AudioSDL((void *) machineInit(defaultFreq, 24), defaultFreq, 100));
 	if (0 == retval) {
 		printPsidInfo(getPsidHeader());
 		loop();

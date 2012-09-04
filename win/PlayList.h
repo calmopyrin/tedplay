@@ -84,8 +84,12 @@ public:
 protected:
 	enum {
 		LV_FIELD_FILENAME = 0,
+		LV_FIELD_TITLE,
+		LV_FIELD_AUTHOR,
+		LV_FIELD_RELEASED,
 		LV_FIELD_PATH,
 		LV_FIELD_STATUS,
+		LV_FIELD_TYPE,
 		LV_FIELD_INDEX
 	};
 	CListViewCtrl playListView;

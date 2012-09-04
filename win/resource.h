@@ -40,6 +40,8 @@
 #define IDC_SLIDER_VOLUME               1009
 #define IDC_SLIDER_SPEED                1010
 #define IDC_LSV1                        1011
+#define IDC_EDIT_SUBSONG2               1011
+#define IDC_EDIT_TIME                   1011
 #define IDC_BTN1                        1012
 #define IDC_BTN_ADD                     1012
 #define IDC_BTN_REMOVE                  1013
@@ -95,7 +97,7 @@
 #define ID_TEDCHANNEL2_SQUARETRIAN      40033
 #define ID_TEDCHANNEL2_SAWTOOTHTRI      40034
 #define ID_TEDCHANNEL2_SQUSAWTRIAN      40035
-#define IDM_FILE_CREATEWAV				40036
+#define IDM_FILE_CREATEWAV              40036
 
 // Next default values for new objects
 // 

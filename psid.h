@@ -27,14 +27,18 @@ struct PsidHeader {
 	unsigned int tracks;
 	unsigned int initAddress;
 	unsigned int replayAddress;
+	unsigned int loadAddress;
 	unsigned int defaultTune;
 	char title[512];
 	char author[512];
 	char copyright[512];
 	char model[32];
 	unsigned int type;
+	std::string typeName;
 	unsigned int version;
 	unsigned int current;
+	unsigned char *playerCode;
+	unsigned int *playerLength;
 };
 
 // Read 16-bit quantity from PSID header

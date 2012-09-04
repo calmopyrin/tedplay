@@ -259,6 +259,17 @@ void tedplayStop()
 	playState = 0;
 }
 
+unsigned int tedplayGetSecondsPlayed()
+{
+	unsigned int sec = ted->getTimeSinceLastReset();
+	return sec;
+}
+
+void tedPlayResetCycleCounter()
+{
+	ted->resetCycleCounter();
+}
+
 int tedPlayGetState()
 {
 	return playState;
@@ -295,6 +306,38 @@ void tedplayClose()
 	machineShutDown();
 }
 
+void tedPlayGetInfo(void *file, PsidHeader &hdr)
+{
+	unsigned char buf[256];
+	FILE *fp = reinterpret_cast<FILE *>(file);
+
+	memset(hdr.title, 0, sizeof(hdr.title));
+	strcpy(hdr.title, "Unknown");
+	memset(hdr.author, 0, sizeof(hdr.author));
+	strcpy(hdr.author, "Unknown");
+	memset(hdr.copyright, 0, sizeof(hdr.copyright));
+	strcpy(hdr.copyright, "Unknown");
+
+	if (fread(buf, 1, 256, fp) >= 64) {
+		if (!strncmp((const char *) buf + 1, "SID", 3)) {
+			parsePsid(buf, hdr);
+			hdr.loadAddress = buf[PSID_START + 1] + (buf[PSID_START] << 8);
+			if (buf[0] == 'P') {
+				hdr.typeName = "PSID";
+			} else {
+				hdr.typeName = "RSID";
+			}
+		} else if (!strncmp((const char *) buf, "CBM8M", 5)) {
+			CbmTune tune;
+			//tune.parse(
+			hdr.typeName = "CBM8M";
+		} else {
+			hdr.typeName = "PRG";
+			hdr.loadAddress = buf[0] + (buf[1] << 8);
+		}
+	}
+}
+
 int tedplayMain(char *fileName, Audio *player_)
 {
 	size_t bufLength;
@@ -319,28 +362,26 @@ int tedplayMain(char *fileName, Audio *player_)
 
 		psidHdr.fileName = fileName;
 
-		unsigned short addr;
 		if (!strncmp((const char *) buf + 1, "SID", 3)) {
-			addr = buf[PSID_START + 1] + (buf[PSID_START] << 8);
+			psidHdr.loadAddress = buf[PSID_START + 1] + (buf[PSID_START] << 8);
 			unsigned int corr = 0;
 			// zero load address means PRG module
-			if (!addr) {
-				addr = buf[PSID_MAX_HEADER_LENGTH] + (buf[PSID_MAX_HEADER_LENGTH + 1] << 8);
+			if (!psidHdr.loadAddress) {
+				psidHdr.loadAddress = buf[PSID_MAX_HEADER_LENGTH] + (buf[PSID_MAX_HEADER_LENGTH + 1] << 8);
 				corr = 2;
 			}
 			unsigned short initAddr = buf[PSID_INIT + 1] + (buf[PSID_INIT] << 8);
 			unsigned short replayAddr = buf[PSID_MAIN + 1] + (buf[PSID_MAIN] << 8);
 			// zero init address means equal to load address
-			psidHdr.initAddress = initAddr ? initAddr : addr;
+			psidHdr.initAddress = initAddr ? initAddr : psidHdr.loadAddress;
 			// 0 means an IRQ handler will be installed in the init routine
 			// (most likely nothing happens)
 			psidHdr.replayAddress = replayAddr ? replayAddr : 0xfe33;
 			psidHdr.defaultTune = readPsid16(buf, PSID_DEFSONG);
 			psidHdr.current = psidHdr.defaultTune;
 			psidHdr.version = readPsid16(buf, PSID_VERSION);
+			psidHdr.tracks = readPsid16(buf, PSID_NUMBER);
 			parsePsid(buf, psidHdr);
-			ted->injectCodeToRAM(addr, buf + PSID_MAX_HEADER_LENGTH + corr,
-				bufLength - PSID_MAX_HEADER_LENGTH - corr);
 
 			// setup the SID card
 			SIDsound *sid = ted->getSidCard();
@@ -360,24 +401,23 @@ int tedplayMain(char *fileName, Audio *player_)
 			} else {
 				strcpy(psidHdr.model, "TED8360?");
 			}
-			psidHdr.tracks = readPsid16(buf, PSID_NUMBER);
 			if (buf[0] == 'P') { // PSID
 				psidHdr.type = 0;
 				psidPlayer[1] = psidHdr.defaultTune - 1;
-				psidPlayer[3] = initAddr & 0xff;
-				psidPlayer[4] = initAddr >> 8;
-				psidPlayer[22] = replayAddr & 0xff;
-				psidPlayer[23] = replayAddr >> 8;
+				psidPlayer[3] = psidHdr.initAddress & 0xff;
+				psidPlayer[4] = psidHdr.initAddress >> 8;
+				psidPlayer[22] = psidHdr.replayAddress & 0xff;
+				psidPlayer[23] = psidHdr.replayAddress >> 8;
 				ted->writeProtectedPlayerMemory(playerStartAddress, psidPlayer, sizeof(psidPlayer));
 			} else if (buf[0] == 'R') { // RSID
 				psidHdr.type = 1;
 				rsidPlayer[1] = psidHdr.defaultTune - 1;
-				rsidPlayer[3] = initAddr & 0xff;
-				rsidPlayer[4] = initAddr >> 8;
+				rsidPlayer[3] = psidHdr.initAddress & 0xff;
+				rsidPlayer[4] = psidHdr.initAddress >> 8;
 				if (replayAddr != 0) {
 					rsidPlayer[5] = 0x4C; // JMP
-					rsidPlayer[6] = replayAddr & 0xff;
-					rsidPlayer[7] = replayAddr >> 8;
+					rsidPlayer[6] = psidHdr.replayAddress & 0xff;
+					rsidPlayer[7] = psidHdr.replayAddress >> 8;
 				} else {
 					rsidPlayer[5] = 0x18; // CLC
 					rsidPlayer[6] = 0x90; // BCC *-2
@@ -385,6 +425,9 @@ int tedplayMain(char *fileName, Audio *player_)
 				}
 				ted->writeProtectedPlayerMemory(playerStartAddress, rsidPlayer, sizeof(rsidPlayer));
 			}
+			ted->injectCodeToRAM(psidHdr.loadAddress, buf + PSID_MAX_HEADER_LENGTH + corr,
+				bufLength - PSID_MAX_HEADER_LENGTH - corr);
+
 		} else if (!strncmp((const char *) buf, "CBM8M", 5)) {
 			CbmTune tune;
 			tune.parse(fileName);
@@ -393,7 +436,7 @@ int tedplayMain(char *fileName, Audio *player_)
 			strcpy(psidHdr.author, tune.getAuthor());
 			strcpy(psidHdr.copyright, tune.getReleaseDate());
 			unsigned int dataLen = tune.getDumpLength(0);
-			unsigned short loadAddr = tune.getLoadAddress(0);
+			psidHdr.loadAddress = tune.getLoadAddress(0);
 			unsigned short initAddr = tune.getInitAddress(0);
 			unsigned short replayAddr = tune.getPlayAddress(0);
 			unsigned char *playerData;
@@ -406,22 +449,23 @@ int tedplayMain(char *fileName, Audio *player_)
 			psidHdr.replayAddress = replayAddr;
 			if (replayAddr) {
 				psidPlayer[1] = psidHdr.defaultTune;
-				psidPlayer[3] = loadAddr & 0xff;
-				psidPlayer[4] = loadAddr >> 8;
-				psidPlayer[22] = replayAddr & 0xff;
-				psidPlayer[23] = replayAddr >> 8;
+				psidPlayer[3] = psidHdr.loadAddress & 0xff;
+				psidPlayer[4] = psidHdr.loadAddress >> 8;
+				psidPlayer[22] = psidHdr.replayAddress & 0xff;
+				psidPlayer[23] = psidHdr.replayAddress >> 8;
 				playerLength = 33;
 				playerData = psidPlayer;
 			} else {
 				rsidPlayer[1] = psidHdr.defaultTune;
 				rsidPlayer[2] = 0x4C; // JMP
-				rsidPlayer[3] = loadAddr & 0xff;
-				rsidPlayer[4] = loadAddr >> 8;
+				rsidPlayer[3] = psidHdr.loadAddress & 0xff;
+				rsidPlayer[4] = psidHdr.loadAddress >> 8;
 				playerLength = 8;
 				playerData = rsidPlayer;
 			}
 			strcpy(psidHdr.model, "TED8360");
-			ted->injectCodeToRAM(loadAddr, tune.getBinaryData(0), dataLen - 2);
+
+			ted->injectCodeToRAM(psidHdr.loadAddress, tune.getBinaryData(0), dataLen - 2);
 			ted->writeProtectedPlayerMemory(playerStartAddress, playerData, playerLength);
 		} else { // PRG
 			psidHdr.type = -1;
@@ -433,8 +477,9 @@ int tedplayMain(char *fileName, Audio *player_)
 			strcpy(psidHdr.author, "Unknown");
 			strcpy(psidHdr.copyright, "Unknown");
 			strcpy(psidHdr.model, "Unknown");
-			addr = buf[0] + (buf[1] << 8);
-			ted->injectCodeToRAM(addr, buf + 2, bufLength - 2);
+			psidHdr.loadAddress = buf[0] + (buf[1] << 8);
+
+			ted->injectCodeToRAM(psidHdr.loadAddress, buf + 2, bufLength - 2);
 			ted->writeProtectedPlayerMemory(playerStartAddress, prgPlayer, sizeof(prgPlayer));
 			SIDsound *sid = ted->getSidCard();
 			if (sid)
@@ -445,7 +490,7 @@ int tedplayMain(char *fileName, Audio *player_)
 #else
 		char start[64];
 		ted->copyToKbBuffer("M\317:\r");
-		machineDoSomeFrames(35 * 900000 /8);
+		player->sleep(200);
 		sprintf(start, "G%04X\r", playerStartAddress);
 		ted->copyToKbBuffer(start);
 #endif

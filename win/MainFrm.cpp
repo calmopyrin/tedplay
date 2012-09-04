@@ -77,6 +77,7 @@ LRESULT CMainFrame::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	stAuthor.Attach(GetDlgItem(IDC_EDIT_AUTHOR3));
 	stCopyright.Attach(GetDlgItem(IDC_EDIT_COPYRIGHT));
 	stSubsong.Attach(GetDlgItem(IDC_EDIT_SUBSONG));
+	stTime.Attach(GetDlgItem(IDC_EDIT_TIME));
 	// Buttons
 	btnPrev.Attach(GetDlgItem(IDC_BUTTON_PREV));
 	btnNext.Attach(GetDlgItem(IDC_BUTTON_NEXT));
@@ -249,8 +250,27 @@ LRESULT CMainFrame::OnTrackBar(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bH
 
 LRESULT CMainFrame::OnTimer(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
-	if (tedPlayGetState() == 1)
-		playListViewDialog.OnBnClickedBtnNextModule(0, 0, 0, bHandled);
+	switch (wParam) {
+		case 0:
+			if (tedPlayGetState() == 1)
+				playListViewDialog.OnBnClickedBtnNextModule(0, 0, 0, bHandled);
+			break;
+		case 1:
+			{
+				static unsigned int prevSecs = -1;
+				unsigned int secs = tedplayGetSecondsPlayed();
+				if (prevSecs != secs) {
+					prevSecs = secs;
+					unsigned int hour = secs / 360;
+					unsigned int minute = (secs - hour * 60) / 60;
+					unsigned int sec = secs - hour * 360 - minute * 60;
+					_TCHAR txt[64];
+					_stprintf(txt, _T("%02u:%02u:%02u"), hour, minute, sec);
+					stTime.SetWindowText(txt);
+				}
+			}
+			break;
+	}
 	return 0L;
 }
 
@@ -259,6 +279,9 @@ LRESULT CMainFrame::OnResetAutoSkipTimerFromChildWnd(UINT uMsg, WPARAM wParam, L
 	if (vAutoSkipInterval) {
 		KillTimer(0);
 		SetTimer(0, vAutoSkipInterval * 1000);
+		// reset the time
+		stTime.SetWindowText(_T("00:00:00"));
+		tedPlayResetCycleCounter();
 	}
 	return 0L;
 }
@@ -287,9 +310,9 @@ LRESULT CMainFrame::OnFileNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 
 		_tcscpy(tmp, wndFileDialog.m_szFileName);
 		selFilter = wndFileDialog.m_ofn.nFilterIndex;
+		stTime.SetWindowText(_T("00:00:00"));
 		tedplayMain(tmp, NULL);
 		UpdateSubsong();
-		//KillTimer(0);
 	}
 
 	//CFileOpenDialog dialog;
@@ -420,8 +443,11 @@ void CMainFrame::UpdateSubsong()
 	if (t) {
 		_stprintf(txt, _T("%u of %u"), c, t);
 		stSubsong.SetWindowText(txt);
+		SetTimer(1, 100);
 	} else {
 		stSubsong.SetWindowText(_T(""));
+		stTime.SetWindowText(_T(""));
+		KillTimer(1);
 	}
 	if (getPsidHeader().tracks > 1)
 		enableButtons(0x1f - 4);
@@ -432,20 +458,22 @@ void CMainFrame::UpdateSubsong()
 LRESULT CMainFrame::OnClickedPrev(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled)
 {
 	tedplayPause();
-	psidChangeTrack(-1);
-	UpdateSubsong();
+	if (psidChangeTrack(-1)) {
+		UpdateSubsong();
+		OnResetAutoSkipTimerFromChildWnd(0, 0, 0, bHandled);
+	}
 	tedplayPlay();
-	OnResetAutoSkipTimerFromChildWnd(0, 0, 0, bHandled);
 	return 0L;
 }
 
 LRESULT CMainFrame::OnClickedNext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled)
 {
 	tedplayPause();
-	psidChangeTrack(+1);
-	UpdateSubsong();
+	if (psidChangeTrack(+1)) {
+		UpdateSubsong();
+		OnResetAutoSkipTimerFromChildWnd(0, 0, 0, bHandled);
+	}
 	tedplayPlay();
-	OnResetAutoSkipTimerFromChildWnd(0, 0, 0, bHandled);
 	return 0L;
 }
 

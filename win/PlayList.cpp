@@ -112,15 +112,27 @@ LRESULT CPlayList::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	playListView.AddColumn(_T("Filename"), LV_FIELD_FILENAME);
 	playListView.SetColumnWidth(LV_FIELD_FILENAME, 150);
 	//
+	playListView.AddColumn(_T("Title"), LV_FIELD_TITLE);
+	playListView.SetColumnWidth(LV_FIELD_TITLE, 150);
+	//
+	playListView.AddColumn(_T("Author"), LV_FIELD_AUTHOR);
+	playListView.SetColumnWidth(LV_FIELD_TITLE, 150);
+	//
+	playListView.AddColumn(_T("Released"), LV_FIELD_RELEASED);
+	playListView.SetColumnWidth(LV_FIELD_TITLE, 150);
+	//
 	playListView.AddColumn(_T("Path"), LV_FIELD_PATH);
 	playListView.SetColumnWidth(LV_FIELD_PATH, 300);
 	//
 	playListView.AddColumn(_T("Status"), LV_FIELD_STATUS);
 	playListView.SetColumnWidth(LV_FIELD_STATUS, 50);
 	//
+	playListView.AddColumn(_T("Type"), LV_FIELD_TYPE);
+	playListView.SetColumnWidth(LV_FIELD_TYPE, 32);
+	//
 	playListView.AddColumn(_T("#"), LV_FIELD_INDEX);
 	playListView.SetColumnWidth(LV_FIELD_INDEX, 32);
-	
+
 	// register hotkeys for the playlist
 	::RegisterHotKey(m_hWnd, 1, MOD_ALT | MOD_CONTROL, VK_RIGHT);
 	::RegisterHotKey(m_hWnd, 2, MOD_ALT | MOD_CONTROL, VK_LEFT);
@@ -158,6 +170,16 @@ BOOL CPlayList::AddFileToPlaylist(_TCHAR *fullPath)
 	playListView.AddItem(index, LV_FIELD_FILENAME, tmp);
 	playListView.AddItem(index, LV_FIELD_PATH, fullPath);
 	playListView.AddItem(index, LV_FIELD_STATUS, _T("OK"));
+	FILE *fp = _tfopen(fullPath, _T("rb"));
+	if (fp) {
+		PsidHeader hdr;
+		tedPlayGetInfo(fp, hdr);
+		playListView.AddItem(index, LV_FIELD_TYPE, hdr.typeName.c_str());
+		playListView.AddItem(index, LV_FIELD_TITLE, hdr.title);
+		playListView.AddItem(index, LV_FIELD_AUTHOR, hdr.author);
+		playListView.AddItem(index, LV_FIELD_RELEASED, hdr.copyright);
+		fclose(fp);
+	}
 	playListView.AddItem(index, LV_FIELD_INDEX, indexText);
 	return TRUE;
 }

@@ -270,10 +270,11 @@ void TED::setplaybackSpeed(unsigned int speed)
 	playbackSpeed = speeds[(speed - 1) % 5];
 }
 
-void TED::getTimeSinceLastReset(int hour, int min, int sec)
+unsigned int TED::getTimeSinceLastReset()
 {
 	ClockCycle elapsedCycles = CycleCounter - lastResetCycle;
-	int secondsPlayed = int(double(elapsedCycles) / double(TED_SOUND_CLOCK * 4) + 0.5);
+	unsigned int secondsPlayed = (unsigned int)(double(elapsedCycles) / double(TED_SOUND_CLOCK * 4) + 0.5);
+	return secondsPlayed;
 }
 
 void TED::setSampleRate(unsigned int value)
