@@ -504,6 +504,9 @@ LRESULT CMainFrame::OnClickedStop(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	tedplayStop();
 	unsigned int bmask = getButtonStates() & ~(4 + 8 + 0x10);
 	enableButtons(bmask | 4);
+	// reset the time
+	stTime.SetWindowText(_T("00:00:00"));
+	tedPlayResetCycleCounter();
 	return 0L;
 }
 

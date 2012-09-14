@@ -90,6 +90,7 @@ protected:
 		LV_FIELD_PATH,
 		LV_FIELD_STATUS,
 		LV_FIELD_TYPE,
+		LV_FIELD_LOAD_ADDRESS,
 		LV_FIELD_INDEX
 	};
 	CListViewCtrl playListView;

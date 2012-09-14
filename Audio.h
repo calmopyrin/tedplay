@@ -27,6 +27,7 @@ class Audio {
 public:
 	Audio(unsigned int sampleFrq_) : bufferLength(4096), sampleFrq(sampleFrq_) { // 2048
 		recording = false;
+		wavFileHandle = 0;
 	}
 	virtual ~Audio() {};
 	virtual void play() = 0;

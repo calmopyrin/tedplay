@@ -82,7 +82,7 @@ bool Audio::createWav(const char *fileName)
 
 bool Audio::dumpWavData(FILE *fp, unsigned char *buffer, unsigned int length)
 {
-	if (std::fwrite(buffer, 1, length, fp)) {
+	if (fp && std::fwrite(buffer, 1, length, fp)) {
 		wavDataLength += length;
 		return true;
 	}

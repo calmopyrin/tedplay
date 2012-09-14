@@ -322,6 +322,8 @@ void tedPlayGetInfo(void *file, PsidHeader &hdr)
 		if (!strncmp((const char *) buf + 1, "SID", 3)) {
 			parsePsid(buf, hdr);
 			hdr.loadAddress = buf[PSID_START + 1] + (buf[PSID_START] << 8);
+			if (!hdr.loadAddress)
+				hdr.loadAddress = buf[PSID_MAX_HEADER_LENGTH] + (buf[PSID_MAX_HEADER_LENGTH + 1] << 8);
 			if (buf[0] == 'P') {
 				hdr.typeName = "PSID";
 			} else {

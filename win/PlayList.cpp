@@ -113,13 +113,13 @@ LRESULT CPlayList::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	playListView.SetColumnWidth(LV_FIELD_FILENAME, 150);
 	//
 	playListView.AddColumn(_T("Title"), LV_FIELD_TITLE);
-	playListView.SetColumnWidth(LV_FIELD_TITLE, 150);
+	playListView.SetColumnWidth(LV_FIELD_TITLE, 120);
 	//
 	playListView.AddColumn(_T("Author"), LV_FIELD_AUTHOR);
-	playListView.SetColumnWidth(LV_FIELD_TITLE, 150);
+	playListView.SetColumnWidth(LV_FIELD_TITLE, 250);
 	//
 	playListView.AddColumn(_T("Released"), LV_FIELD_RELEASED);
-	playListView.SetColumnWidth(LV_FIELD_TITLE, 150);
+	playListView.SetColumnWidth(LV_FIELD_TITLE, 200);
 	//
 	playListView.AddColumn(_T("Path"), LV_FIELD_PATH);
 	playListView.SetColumnWidth(LV_FIELD_PATH, 300);
@@ -128,7 +128,10 @@ LRESULT CPlayList::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	playListView.SetColumnWidth(LV_FIELD_STATUS, 50);
 	//
 	playListView.AddColumn(_T("Type"), LV_FIELD_TYPE);
-	playListView.SetColumnWidth(LV_FIELD_TYPE, 32);
+	playListView.SetColumnWidth(LV_FIELD_TYPE, 50);
+	//
+	playListView.AddColumn(_T("Load address"), LV_FIELD_LOAD_ADDRESS);
+	playListView.SetColumnWidth(LV_FIELD_LOAD_ADDRESS, 32);
 	//
 	playListView.AddColumn(_T("#"), LV_FIELD_INDEX);
 	playListView.SetColumnWidth(LV_FIELD_INDEX, 32);
@@ -178,6 +181,8 @@ BOOL CPlayList::AddFileToPlaylist(_TCHAR *fullPath)
 		playListView.AddItem(index, LV_FIELD_TITLE, hdr.title);
 		playListView.AddItem(index, LV_FIELD_AUTHOR, hdr.author);
 		playListView.AddItem(index, LV_FIELD_RELEASED, hdr.copyright);
+		_stprintf(tmp, _T("$%04X"), hdr.loadAddress);
+		playListView.AddItem(index, LV_FIELD_LOAD_ADDRESS, tmp);
 		fclose(fp);
 	}
 	playListView.AddItem(index, LV_FIELD_INDEX, indexText);

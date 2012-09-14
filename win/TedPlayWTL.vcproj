@@ -136,6 +136,7 @@
 				AdditionalDependencies="winmm.lib user32.lib gdi32.lib comdlg32.lib Shell32.lib SDL.lib dsound.lib dxguid.lib shlwapi.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
+				GenerateMapFile="true"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
