@@ -564,7 +564,7 @@ LRESULT CPlayList::OnRootOpenfilelocation(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	UINT index = playListView.GetSelectionMark();
 	_TCHAR namebuffer[MAX_PATH] = _T("");
 
-	if (playListView.GetItemText(index, 1, namebuffer, MAX_PATH)) {
+	if (playListView.GetItemText(index, LV_FIELD_PATH, namebuffer, MAX_PATH)) {
 		_TCHAR *end = _tcsrchr(namebuffer, _T('\\'));
 		if (end) {
 			*end = _T('\0');
