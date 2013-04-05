@@ -261,9 +261,9 @@ LRESULT CMainFrame::OnTimer(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& b
 				unsigned int secs = tedplayGetSecondsPlayed();
 				if (prevSecs != secs) {
 					prevSecs = secs;
-					unsigned int hour = secs / 360;
+					unsigned int hour = secs / 3600;
 					unsigned int minute = (secs - hour * 60) / 60;
-					unsigned int sec = secs - hour * 360 - minute * 60;
+					unsigned int sec = secs - hour * 3600 - minute * 60;
 					_TCHAR txt[64];
 					_stprintf(txt, _T("%02u:%02u:%02u"), hour, minute, sec);
 					stTime.SetWindowText(txt);
