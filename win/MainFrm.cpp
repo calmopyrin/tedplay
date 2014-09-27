@@ -515,7 +515,7 @@ LRESULT CMainFrame::OnCheckBox1Clicked(WORD wNotifyCode, WORD wID, HWND hWndCtl,
 	unsigned int enabled = cbChannels[0].GetCheck();
 	bool wasPlaying = tedPlayGetState() == 1;
 	if (wasPlaying) tedplayPause();
-	tedPlayChannelEnable(0, enabled);
+	tedPlayChannelEnable(0, !!enabled);
 	if (wasPlaying) tedplayPlay();
 	bHandled = TRUE;
 	return 0L;
@@ -526,7 +526,7 @@ LRESULT CMainFrame::OnCheckBox2Clicked(WORD wNotifyCode, WORD /*wID*/, HWND hWnd
 	unsigned int enabled = cbChannels[1].GetCheck();
 	bool wasPlaying = tedPlayGetState() == 1;
 	if (wasPlaying) tedplayPause();
-	tedPlayChannelEnable(1, enabled);
+	tedPlayChannelEnable(1, !!enabled);
 	if (wasPlaying) tedplayPlay();
 	bHandled = TRUE;
 	return 0L;
@@ -537,7 +537,7 @@ LRESULT CMainFrame::OnBnClickedCheck3(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 	unsigned int enabled = cbChannels[2].GetCheck();
 	bool wasPlaying = tedPlayGetState() == 1;
 	if (wasPlaying) tedplayPause();
-	tedPlayChannelEnable(2, enabled);
+	tedPlayChannelEnable(2, !!enabled);
 	if (wasPlaying) tedplayPlay();
 	bHandled = TRUE;
 	return 0;
@@ -567,10 +567,13 @@ LRESULT CMainFrame::OnToolsDisablesid(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 	bool wasPlaying = tedPlayGetState() == 1;
 	if (wasPlaying) tedplayPause();
 	if (!GetMenuState(GetMenu(), ID_TOOLS_DISABLESID, MF_BYCOMMAND)) {
-		tedPlaySidEnable(false);
+		tedPlaySidEnable(false, 0);
 		::CheckMenuItem(GetMenu(), ID_TOOLS_DISABLESID, MF_CHECKED);
 	} else {
-		tedPlaySidEnable(true);
+		unsigned int enabled = cbChannels[0].GetCheck();
+		enabled = enabled|(cbChannels[1].GetCheck() << 1);
+		enabled = enabled|(cbChannels[2].GetCheck() << 2);
+		tedPlaySidEnable(true, ~enabled);
 		::CheckMenuItem(GetMenu(), ID_TOOLS_DISABLESID, MF_UNCHECKED);
 	}
 	if (wasPlaying) tedplayPlay();

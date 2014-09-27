@@ -4,8 +4,8 @@
 #include "Cpu.h"
 #include "Tedmem.h"
 
-//#define CPUS_STATS 
-#ifdef CPUS_STATS 
+//#define CPU_STATS 
+#ifdef CPU_STATS 
 #include "Cpu7501asm.h"
 #endif
 
@@ -121,7 +121,7 @@ void CPU::process()
 		currins=mem->Read(PC);				// fetch opcode
 		nextins=mem->Read(PC+1);			// prefetch next opcode/operand
 		cycle = 1;							// increment the CPU cycle counter
-#ifdef CPUS_STATS
+#ifdef CPU_STATS
 		stats[currins]++;
 		static FILE *f = fopen("disasm.txt", "a");
 		//unsigned char t = mem->Read(PC+1);
@@ -132,6 +132,7 @@ void CPU::process()
 			fprintf(f, " %02X", mem->Read(PC+i++));
 		}
 		fprintf(f, "\n");
+		fflush(f);
 #endif
 		PC=(PC+1)&0xFFFF;
 	}

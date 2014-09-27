@@ -12,7 +12,7 @@
 
 #define MAX_BUFFER_SIZE 0x10000
 
-static uint8_t inputBuffer[MAX_BUFFER_SIZE];
+static unsigned char inputBuffer[MAX_BUFFER_SIZE];
 static const unsigned int playerStartAddress = 0xfe00;
 static unsigned char psidPlayer[] = {
 	0xA9, 0x00 // song nr (offset 2)
@@ -50,7 +50,7 @@ PsidHeader &getPsidHeader()
 	return psidHdr;
 }
 
-unsigned int parsePsid(uint8_t *buf, PsidHeader &psidHdr_)
+unsigned int parsePsid(unsigned char *buf, PsidHeader &psidHdr_)
 {
 	char *buffer = (char *) buf;
 
@@ -120,7 +120,7 @@ void printPsidInfo(PsidHeader &psidHdr_)
 	std::cout << std::string(output) << std::endl;
 }
 
-unsigned int readFile(char *fName, uint8_t **bufferPtr, size_t *bLen)
+unsigned int readFile(char *fName, unsigned char **bufferPtr, size_t *bLen)
 {
 	std::FILE *file = (std::FILE *) 0;
 
@@ -541,14 +541,14 @@ bool tedPlayIsChannelEnabled(unsigned int channel)
 	return ted->isChannelEnabled(channel);
 }
 
-void tedPlayChannelEnable(unsigned int channel, unsigned int enable)
+void tedPlayChannelEnable(unsigned int channel, bool enable)
 {
 	ted->enableChannel(channel, enable);
 }
 
-void tedPlaySidEnable(bool enable)
+void tedPlaySidEnable(bool enable, unsigned int disableMask)
 {
-	ted->enableSidCard(enable);
+	ted->enableSidCard(enable, disableMask);
 }
 
 bool tedPlayCreateWav(const char *fileName)

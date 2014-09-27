@@ -168,14 +168,15 @@ void SIDsound::setSampleRate(unsigned int sampleRate_)
 	calcEnvelopeTable();
 }
 
-SIDsound::SIDsound(unsigned int model) : enableDigiBlaster(false)
+SIDsound::SIDsound(unsigned int model, unsigned int chnlDisableMask) : enableDigiBlaster(false)
 {
 	unsigned int i;
 
 	// Link voices together
-	for ( i=0; i<3; i++) {
+	for (i=0; i<3; i++) {
 		voice[i].modulatedBy = &voice[(i+2)%3]; // previous voice
 		voice[i].modulatesThis = &voice[(i+1)%3]; // next voice
+		voice[i].disabled = !!((chnlDisableMask >> i) & 1);
 	}
 
 	filterCutoff = 0;
@@ -584,7 +585,7 @@ void SIDsound::calcSamples(short *buf, long accu)
 				// real accu is 24 bit but we use FP integer arithmetic
 				v.accu &= 0xFFFFFFF;
 			}
-			int output = getWaveSample(v);
+			int output = v.disabled ? 0x0800 : getWaveSample(v);
 
 			if (v.filter)
 				sumFilteredOutput += (output - dcWave) * envelope + dcVoice;

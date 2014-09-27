@@ -14,7 +14,7 @@ enum {
 class SIDsound 
 {
 public:
-	SIDsound(unsigned int model);
+	SIDsound(unsigned int model, unsigned int chnlDisableMask);
 	virtual ~SIDsound();
 	virtual void reset();
 	virtual void setReplayFreq() {
@@ -27,6 +27,9 @@ public:
 	unsigned char read(unsigned int adr);
 	void write(unsigned int adr, unsigned char byte);
 	void calcSamples(short *buf, long count);
+	void enableDisableChannel(unsigned int ch, bool enabled) {
+		voice[ch].disabled = !enabled;
+	}
 
 private:
 
@@ -73,6 +76,7 @@ private:
 		unsigned int test;		// test flag
 		unsigned int filter;	// voice filtered flag
 		unsigned int muted;		// voice muted flag (only for 3rd voice)
+		bool		disabled;	// voice disabled
 
 		// This bit is set for the modulating voice, 
 		// not for the modulated one (compared to the real one)

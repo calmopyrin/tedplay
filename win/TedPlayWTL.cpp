@@ -66,7 +66,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 		// probably no race condition yet...
 		unsigned int regVal = 0;
 		if (getRegistryValue(_T("DisableSID"), regVal) && regVal) {
-			tedPlaySidEnable(false);
+			tedPlaySidEnable(false, 0);
 			::CheckMenuItem(dlgMain.GetMenu(), ID_TOOLS_DISABLESID, MF_CHECKED);
 		}
 		regVal = 0;

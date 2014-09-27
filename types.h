@@ -4,7 +4,7 @@
 #ifdef HAVE_SDL
 #include <SDL.h>
 #else
-#include <stdint.h>
+//#include <stdint.h>
 #endif
 
 #include <stdlib.h>

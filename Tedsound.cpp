@@ -176,6 +176,12 @@ inline unsigned int TED::waveTriangle(unsigned int channel)
 	//if (oscCount[channel] >= 0x3fa) diff = 0;
 	mod = (3 * Volume * diff / msb / 2);
 #else
+	/*
+		msb = (OscReload[channel] + OSCRELOADVAL) / 2;
+	int diff = oscCount[channel] < msb ? oscCount[channel] - OscReload[channel] : OSCRELOADVAL - oscCount[channel];
+	mod = (2 * diff * Volume / (OSCRELOADVAL - OscReload[channel] + 1));
+	if (mod > Volume) mod = Volume;
+	*/
 	msb = (OscReload[channel] + OSCRELOADVAL) / 2;
 	mod = oscCount[channel] < msb ? oscCount[channel] : (oscCount[channel] - msb);
 	mod = (mod * Volume / msb);
@@ -267,7 +273,7 @@ void TED::selectWaveForm(unsigned int channel, unsigned int wave)
 void TED::setplaybackSpeed(unsigned int speed)
 {
 	unsigned int speeds[] = { 16, 8, 4, 3, 2 };
-	playbackSpeed = speeds[(speed - 1) % 5];
+	playbackSpeed = speeds[(speed - 1) % sizeof(speeds)];
 }
 
 unsigned int TED::getTimeSinceLastReset()

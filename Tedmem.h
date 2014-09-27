@@ -108,9 +108,7 @@ class TED : public MemoryHandler {
 			protectedPlayerMemory[(addr + i) & 0xfff] = *byte++;
 	}
 	void setplaybackSpeed(unsigned int speed);
-	void enableChannel(unsigned int channel, unsigned int enable) {
-		channelMask[channel % 3] = enable ? -1 : 0;
-	}
+	void enableChannel(unsigned int channel, bool enable);
 	bool isChannelEnabled(unsigned int channel) {
 		return channelMask[channel % 3] != 0;
 	}
@@ -119,7 +117,7 @@ class TED : public MemoryHandler {
 	unsigned int getTimeSinceLastReset();
 	void resetCycleCounter() { lastResetCycle = CycleCounter; }
 	SIDsound *getSidCard() { return sidCard; };
-	void enableSidCard(bool enable);
+	void enableSidCard(bool enable, unsigned int disableMask);
 	static unsigned int masterVolume;
 
   private:
