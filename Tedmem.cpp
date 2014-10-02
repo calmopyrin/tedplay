@@ -234,7 +234,7 @@ void TED::injectCodeToRAM(unsigned int address, unsigned char *from, size_t len)
 void TED::copyToKbBuffer(char *bufferString, unsigned int bufferLength)
 {
 	unsigned int bufferAddress = 0x0527;
-	if (bufferLength == -1) bufferLength = strlen(bufferString);
+	if (bufferLength == -1) bufferLength = (unsigned int) strlen(bufferString);
 
 	for (unsigned int i=0; i < bufferLength; i++)
 		Write( bufferAddress + i, bufferString[i]);

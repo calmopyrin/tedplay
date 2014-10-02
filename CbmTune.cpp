@@ -45,7 +45,7 @@ int CbmTune::parse(char *fName)
 		return 2;
 	//
 	dataIndex = CBM8M_HDR_STRINGS
-		 + (strlen(getReleaseDate()) + strlen(getAuthor()) + strlen(getName()) + 3);
+		 + (unsigned int) (strlen(getReleaseDate()) + strlen(getAuthor()) + strlen(getName()) + 3);
 	if (bufferPtr[CBM8M_HDR_FIELDS] & CBM8M_FIELD_SUBTUNES)
 		dataIndex += 1;
 	if (bufferPtr[CBM8M_HDR_FIELDS] & CBM8M_FIELD_DEFAULT)

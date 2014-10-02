@@ -1,7 +1,7 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TedPlayWTL", "TedPlayWTL.VS9.vcproj", "{98F8E553-2072-4A34-8152-D73A149331D1}"
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TedPlayWTL", "TedPlayWTL.VS10.vcxproj", "{98F8E553-2072-4A34-8152-D73A149331D1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,6 +24,7 @@ Global
 		{98F8E553-2072-4A34-8152-D73A149331D1}.Release|Win32.ActiveCfg = Release|Win32
 		{98F8E553-2072-4A34-8152-D73A149331D1}.Release|Win32.Build.0 = Release|Win32
 		{98F8E553-2072-4A34-8152-D73A149331D1}.Release|x64.ActiveCfg = Release|x64
+		{98F8E553-2072-4A34-8152-D73A149331D1}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

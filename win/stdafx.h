@@ -13,13 +13,14 @@
 
 // This project was generated for VC++ 2005 Express and ATL 3.0 from Platform SDK.
 // Comment out this line to build the project with different versions of VC++ and ATL.
-#define _WTL_SUPPORT_SDK_ATL3
+//#define _WTL_SUPPORT_SDK_ATL3
 
 // Support for VS2005 Express & SDK ATL
 #ifdef _WTL_SUPPORT_SDK_ATL3
   #define _CRT_SECURE_NO_DEPRECATE
   #pragma conform(forScope, off)
   #pragma comment(linker, "/NODEFAULTLIB:atlthunk.lib")
+  #pragma comment(linker, "/NODEFAULTLIB:atlamd64.lib")
 #endif // _WTL_SUPPORT_SDK_ATL3
 
 #include <atlbase.h>
