@@ -100,7 +100,7 @@ TED::TED() : filter(0), sidCard(0)
 	chrbuf = DMAbuf;
 	clrbuf = DMAbuf + 64;
 	tmpClrbuf = DMAbuf + 128;
-	memset( clrbuf, sizeof(DMAbuf), 0);
+	memset(DMAbuf, 0, sizeof(DMAbuf));
 
 	// create an instance of the keyboard class
 //	keys = new KEYS;

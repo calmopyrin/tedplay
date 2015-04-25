@@ -1,44 +1,61 @@
-#include <iostream>
-#ifndef WIN32
-#pragma comment(lib, "SDL2.lib")
-#include <SDL/SDL.h>
-#include "AudioSDL.h"
-
-bool AudioSDL::hasSDL()
-{
-	return true;
-}
-
-#else
 #include <SDL.h>
+#include <iostream>
 #include "AudioSDL.h"
-
-#define LOADFUNC(NAME) NAME = GetProcAddress(SDL_DLL, "NAME");
-#define EXTERN __declspec(dllimport)
-
-typedef int EXTERN (*_SDL_OpenAudio)(HWND hWnd, DWORD dwFlags);
-typedef _SDL_PauseAudio EXTERN (*_GXGetDisplayProperties)();
-typedef int EXTERN *(*_SDL_LockAudio)();
-typedef void EXTERN (*_SDL_UnlockAudio)();
-typedef void EXTERN (*_SDL_CloseAudio)();
-
-static _SDL_OpenAudio	SDL_OpenAudio;
-static _SDL_PauseAudio	SDL_PauseAudio;
-static _SDL_LockAudio	SDL_LockAudio;
-static _SDL_UnlockAudio SDL_UnlockAudio;
-static _SDL_Delay		SDL_Delay;
-static _SDL_CloseAudio	SDL_CloseAudio;
-
-bool AudioSDL::hasSDL()
-{
-	HINSTANCE sdlDll = LoadLibrary("SDL.DLL");
-	return sdlDll != 0;
-}
-
-#endif
 #include "Tedmem.h"
 
-void AudioSDL::setCallback(callbackFunc callback_)
+#define TED_SOUND_CLOCK 110860
+#pragma comment(lib, "SDL.lib")
+
+SdlCallbackFunc AudioSDL::callback;
+short *AudioSDL::resampleBuffer;
+size_t AudioSDL::resampleBufferSize;
+size_t AudioSDL::resampleBufferIndex;
+
+void AudioSDL::audioCallback(void *userData, Uint8 *stream, int len)
+{
+	TED *ted = reinterpret_cast<TED *>(userData);
+
+	if (ted) {
+#if 1
+		short *playerBuffer = (short*) stream;
+		unsigned int sampleRate = ted->getSampleRate();
+		unsigned int sampleCnt = len / 2;
+		static unsigned int remainder = 0;
+		unsigned int sampleIndex = 0;
+		do {
+			// since we double buffer, fill only the half if the one we're playing is depleted
+			if ((resampleBufferIndex + 1) % (resampleBufferSize / 2) == 0) {
+				unsigned int half = resampleBufferIndex + 1 >= resampleBufferSize ? 0 : resampleBufferSize / 2;
+				//ted->ted_process(resampleBuffer, resampleBufferSize / 2);
+				ted->ted_process(resampleBuffer + half, resampleBufferSize / 2);
+			}
+			//
+			unsigned int newCount = remainder + sampleRate;
+			if ( newCount >= TED_SOUND_CLOCK) {
+				remainder = newCount - TED_SOUND_CLOCK;
+#if 1
+				int weightPrev = remainder;
+				int weightCurr = (TED_SOUND_CLOCK - remainder);
+				short sample = (weightPrev * int(resampleBuffer[resampleBufferIndex]) + 
+						weightCurr * int(resampleBuffer[(resampleBufferIndex + 1) % resampleBufferSize]) ) / TED_SOUND_CLOCK;
+				*playerBuffer++ = sample;
+#else
+				*playerBuffer++ = resampleBuffer[sampleIndex];
+#endif
+				sampleCnt--;
+			} else {
+				remainder = newCount;
+			}
+			sampleIndex += 1;
+			resampleBufferIndex = (resampleBufferIndex + 1) % resampleBufferSize;
+		} while (sampleCnt);
+#else
+		ted->ted_process((short*) stream, len / 2);
+#endif
+	}
+}
+
+void AudioSDL::setCallback(SdlCallbackFunc callback_)
 {
 	SDL_LockAudio();
 	callback = callback_;
@@ -71,8 +88,7 @@ void AudioSDL::setSampleRate(unsigned int newSampleRate)
 	Audio::setSampleRate(newSampleRate);
 }
 
-AudioSDL::AudioSDL(void *userData, unsigned int sampleFrq_ = 48000,
-				   unsigned int bufDurInMsec = 40) : Audio(sampleFrq_), audiohwspec(0)
+AudioSDL::AudioSDL(void *userData, unsigned int sampleFrq_ = 48000) : Audio(sampleFrq_), audiohwspec(0)
 {
 	if (SDL_Init(SDL_INIT_AUDIO) < 0) { //  SDL_INIT_AUDIO|
 		std::cerr << "Unable to init SDL: " << SDL_GetError() << std::endl;
@@ -89,6 +105,8 @@ AudioSDL::AudioSDL(void *userData, unsigned int sampleFrq_ = 48000,
 		std::cerr << "Exception occurred: " << txt << std::endl;
 	}
 
+	//sampleFrq = sampleFrq_;
+	unsigned int bufDurInMsec = 40;
 	unsigned int fragsPerSec = 1000 / bufDurInMsec;
 	unsigned int bufSize1kbChunk = (sampleFrq_ / fragsPerSec / 1024) * 1024;
 	if (!bufSize1kbChunk) bufSize1kbChunk = 512;
@@ -105,10 +123,10 @@ AudioSDL::AudioSDL(void *userData, unsigned int sampleFrq_ = 48000,
 
 	unsigned int bfSize = TED_SOUND_CLOCK / fragsPerSec; //(bufferLength * TED_SOUND_CLOCK + sampleFrq_ / 2) / sampleFrq_;
 	// double length ring buffer, dividable by 8
-	ringBufferSize = (bfSize / 8 + 1) * 16;
-	ringBuffer = new short[ringBufferSize];
+	resampleBufferSize = (bfSize / 8 + 1) * 16;
+	resampleBuffer = new short[resampleBufferSize];
 	// trigger initial buffer fill
-	ringBufferIndex = ringBufferSize-1;
+	resampleBufferIndex = resampleBufferSize-1;
 
 	if (SDL_OpenAudio(desired, obtained)) {
 		fprintf(stderr,"SDL_OpenAudio failed!\n");
@@ -116,7 +134,8 @@ AudioSDL::AudioSDL(void *userData, unsigned int sampleFrq_ = 48000,
 	} else {
 		char drvnamebuf[16];
 		fprintf(stderr,"SDL_OpenAudio success!\n");
-		fprintf(stderr, "Using audio driver : %s\n", SDL_GetCurrentAudioDriver());
+		SDL_AudioDriverName( drvnamebuf, 16);
+		fprintf(stderr, "Using audio driver : %s\n", drvnamebuf);		
 		if ( obtained == NULL ) {
 			fprintf(stderr, "Great! We have our desired audio format!\n");
 			audiohwspec = desired;
@@ -146,20 +165,7 @@ void AudioSDL::stop()
 {
 	SDL_PauseAudio(1);
 	paused = true;
-}
-
-void AudioSDL::sleep(unsigned int msec)
-{
-	SDL_Delay(msec);
-}
-
-void AudioSDL::lock()
-{
-	SDL_LockAudio();
-}
-void AudioSDL::unlock()
-{
-	SDL_UnlockAudio();
+	///
 }
 
 AudioSDL::~AudioSDL()
@@ -170,6 +176,6 @@ AudioSDL::~AudioSDL()
 	SDL_Quit();
 	if (audiohwspec)
 		delete audiohwspec;
-	if (ringBuffer)
-		delete [] ringBuffer;
+	if (resampleBuffer)
+		delete [] resampleBuffer;
 }

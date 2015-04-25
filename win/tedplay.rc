@@ -8,19 +8,16 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include <windows.h>
-#include <atlres.h>
-
+#include <atlres.h>
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -64,7 +61,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_FORMVIEW, DIALOG
     BEGIN
@@ -76,7 +73,7 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
-#endif    // English (U.S.) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -84,10 +81,8 @@ END
 // Dutch (Netherlands) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NLD)
-#ifdef _WIN32
 LANGUAGE LANG_DUTCH, SUBLANG_DUTCH
 #pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -120,7 +115,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_TOOLS_OPTIONS_AUDIO, DIALOG
     BEGIN
@@ -140,10 +135,8 @@ END
 // English (Ireland) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENI)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_EIRE
 #pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -196,7 +189,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
@@ -227,13 +220,13 @@ END
 // Menu
 //
 
-IDR_MENU MENU 
+IDR_MENU MENU
 BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "&Open...\tCtrl+O",            IDM_FILE_OPEN
         MENUITEM SEPARATOR
-        MENUITEM "&Save to WAV\tCtrl+S",        IDM_FILE_CREATEWAV
+        MENUITEM "&Save to WAV...\tCtrl+S",     IDM_FILE_CREATEWAV
         MENUITEM "&Memory dump",                ID_FILE_MEMORYDUMP
         MENUITEM SEPARATOR
         POPUP "&Control"
@@ -288,7 +281,7 @@ BEGIN
     END
 END
 
-IDR_POPUPMENU_PLIST MENU 
+IDR_POPUPMENU_PLIST MENU
 BEGIN
     POPUP "Root"
     BEGIN
@@ -351,14 +344,14 @@ IDI_PROPPAGEAUDIO       ICON                    "audio.ico"
 // Accelerator
 //
 
-IDR_ACCELERATORS ACCELERATORS 
+IDR_ACCELERATORS ACCELERATORS
 BEGIN
     "O",            IDM_FILE_OPEN,          VIRTKEY, CONTROL, NOINVERT
     "A",            ID_PLAYLIST_SELECTALL,  VIRTKEY, CONTROL, NOINVERT
     "S",            IDM_FILE_CREATEWAV,     VIRTKEY, CONTROL, NOINVERT
 END
 
-IDR_ACCELERATORS_PLAYLIST ACCELERATORS 
+IDR_ACCELERATORS_PLAYLIST ACCELERATORS
 BEGIN
     "A",            ID_PLAYLIST_SELECTALL,  VIRTKEY, CONTROL, NOINVERT
 END
