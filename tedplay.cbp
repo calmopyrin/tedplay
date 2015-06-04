@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="tedplay" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin\Debug\tedplay" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj\Debug\" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-ansi" />
+					<Add option="-g" />
+					<Add directory="C:\Program Files\CodeBlocks\MinGW\include\SDL" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="bin\Release\tedplay" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj\Release\" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O3" />
+					<Add option="-O2" />
+					<Add directory="C:\Program Files\CodeBlocks\MinGW\include\SDL" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-fexceptions" />
+			<Add option="-mwindows" />
+			<Add directory=".\SDL" />
+		</Compiler>
+		<Linker>
+			<Add library="mingw32" />
+			<Add library="SDLmain" />
+			<Add library="SDL" />
+		</Linker>
+		<Unit filename="Audio.h" />
+		<Unit filename="AudioSDL.cpp" />
+		<Unit filename="AudioSDL.h" />
+		<Unit filename="CbmTune.cpp" />
+		<Unit filename="Cpu.h" />
+		<Unit filename="Cpu7501asm.h" />
+		<Unit filename="Filter.cpp" />
+		<Unit filename="Filter.h" />
+		<Unit filename="Sid.cpp" />
+		<Unit filename="Sid.h" />
+		<Unit filename="Tedmem.h" />
+		<Unit filename="Tedsound.cpp" />
+		<Unit filename="cpu.cpp" />
+		<Unit filename="main.cpp" />
+		<Unit filename="mem.h" />
+		<Unit filename="psid.h" />
+		<Unit filename="roms.h" />
+		<Unit filename="serial.h" />
+		<Unit filename="tedmem.cpp" />
+		<Unit filename="tedplay.cpp" />
+		<Unit filename="types.h" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

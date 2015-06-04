@@ -247,8 +247,8 @@ void TED::renderSound(unsigned int nrsamples, short *buffer)
 				oscCount[1] = OscReload[1] + (oscCount[1] - OSCRELOADVAL);
 			}
 			result = (Snd1Status && FlipFlop[0]) ? (getWaveSample(0, waveForm[0]) & channelMask[0]) : 0;
-			if (Snd2Status && FlipFlop[1]) {
-				result += getWaveSample(1, waveForm[1]) & channelMask[1];
+			if (Snd2Status && FlipFlop[1] & channelMask[1]) {
+				result += getWaveSample(1, waveForm[1]);
 			} else if (SndNoiseStatus && noise[NoiseCounter] & channelMask[2]) {
 				result += Volume;
 			}

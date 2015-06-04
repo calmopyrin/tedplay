@@ -204,7 +204,7 @@ void SIDsound::reset(void)
 		voice[v].shiftReg = 0x7FFFFC;
 		voice[v].envExpCounter = 0;
 		voice[v].envAttackAdd = voice[v].envDecaySub = voice[v].envReleaseSub = 0;
-		voice[v].envCounterCompare = RateCountPeriod[0];
+		voice[v].envCounterCompare = 0;
 		voice[v].envCounter = 0x7fff;
 	}
 
