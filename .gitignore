@@ -214,3 +214,11 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+default.pls
+freqlog.txt
+maketedstormc8m.pl
+tedplay.layout
+win/TedPlayWTL.VS10.vcxproj.filters
+win/TedPlayWTL.VS10.vcproj
+tedplay.VS9.layout
+win/TedPlayWTL.VS10.sln.old

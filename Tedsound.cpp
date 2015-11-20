@@ -68,7 +68,7 @@ void TED::writeSoundReg(unsigned int reg, unsigned char value)
 #if defined(_DEBUG) && 1
 	static FILE *f = std::fopen("freqlog.txt", "a");
 	if (f)
-		std::fprintf(f, "%04X <- %02X in cycle %u", 0xff0e + reg, value, CycleCounter);
+		std::fprintf(f, "%04X <- %02X in cycle %llu", 0xff0e + reg, value, CycleCounter);
 	fprintf(f, "\n");
 #endif
 

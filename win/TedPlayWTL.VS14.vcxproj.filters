@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\Audio.cpp" />
+    <ClCompile Include="AudioDirectSound.cpp" />
+    <ClCompile Include="..\CbmTune.cpp" />
+    <ClCompile Include="..\Cpu.cpp" />
+    <ClCompile Include="..\Filter.cpp" />
+    <ClCompile Include="..\Sid.cpp" />
+    <ClCompile Include="..\Tedmem.cpp" />
+    <ClCompile Include="..\tedplay.cpp" />
+    <ClCompile Include="..\Tedsound.cpp" />
+    <ClCompile Include="MainFrm.cpp" />
+    <ClCompile Include="PlayList.cpp" />
+    <ClCompile Include="PropPageAudio.cpp" />
+    <ClCompile Include="PropSheet.cpp" />
+    <ClCompile Include="registry.cpp" />
+    <ClCompile Include="TedPlayWTL.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Audio.h" />
+    <ClInclude Include="AudioDirectSound.h" />
+    <ClInclude Include="..\CbmTune.h" />
+    <ClInclude Include="..\Cpu.h" />
+    <ClInclude Include="..\Cpu7501asm.h" />
+    <ClInclude Include="..\Filter.h" />
+    <ClInclude Include="..\psid.h" />
+    <ClInclude Include="..\Sid.h" />
+    <ClInclude Include="..\Tedmem.h" />
+    <ClInclude Include="..\tedplay.h" />
+    <ClInclude Include="Aboutdlg.h" />
+    <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="PlayList.h" />
+    <ClInclude Include="PropertiesDlg.h" />
+    <ClInclude Include="PropPageAudio.h" />
+    <ClInclude Include="PropSheet.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="resource.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="audio.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="chip.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="next.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="open.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="pause.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="play.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="prev.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="save.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="stop.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\cbm8m.txt">
+      <Filter>Resources</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{141a9ac0-8bda-411d-9a6a-4d479343476c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="tedplay.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{ca74bc3e-4283-4bcb-b8b6-9c652583faa0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Audio.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioSDL.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="cpu.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="psid.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Sid.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Audio.cpp" />
+    <ClCompile Include="AudioSDL.cpp" />
+    <ClCompile Include="CbmTune.cpp" />
+    <ClCompile Include="cpu.cpp" />
+    <ClCompile Include="Filter.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Sid.cpp" />
+    <ClCompile Include="tedmem.cpp" />
+    <ClCompile Include="tedplay.cpp" />
+    <ClCompile Include="tedsound.cpp" />
+  </ItemGroup>
+</Project>

@@ -27,6 +27,7 @@ extern bool tedPlayCreateWav(const char *fileName);
 extern void tedPlayCloseWav();
 extern unsigned int tedplayGetSecondsPlayed();
 extern void tedPlayResetCycleCounter();
+extern short tedPlayGetLastSample();
 //
 extern void machineReset();
 extern void machineDoSomeFrames(unsigned int count);
