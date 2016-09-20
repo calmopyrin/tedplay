@@ -39,6 +39,7 @@ struct PsidHeader {
 	unsigned int current;
 	unsigned char *playerCode;
 	unsigned int *playerLength;
+	unsigned int speed;
 };
 
 // Read 16-bit quantity from PSID header

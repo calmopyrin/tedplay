@@ -222,3 +222,5 @@ win/TedPlayWTL.VS10.vcxproj.filters
 win/TedPlayWTL.VS10.vcproj
 tedplay.VS9.layout
 win/TedPlayWTL.VS10.sln.old
+*.db
+*.opendb

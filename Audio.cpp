@@ -21,6 +21,8 @@ void Audio::audioCallback(void *userData, unsigned char *stream, int len)
 		unsigned int sampleRate = ted->getSampleRate();
 		unsigned int sampleCnt = len / 2;
 		static unsigned int remainder = 0;
+		const double avw = 0.90;
+		static double avg = 0;
 
 		do {
 			// since we double buffer, fill only the half if the one we're playing is depleted
@@ -38,6 +40,8 @@ void Audio::audioCallback(void *userData, unsigned char *stream, int len)
 				short sample = short(weightPrev * double(ringBuffer[ringBufferIndex]) + 
 						weightCurr * double(ringBuffer[(ringBufferIndex + 1) % ringBufferSize]) );
 				*playerBuffer++ = sample;
+				avg = avw * avg + (1 - avw) * sample;
+				lastSample = int(avg);
 				sampleCnt--;
 			} else {
 				remainder = newCount;
@@ -48,7 +52,9 @@ void Audio::audioCallback(void *userData, unsigned char *stream, int len)
 		if (recording && !paused) {
 			dumpWavData(wavFileHandle, stream, len);
 		}
+#if 0
 		lastSample = *(((short*)stream) + len / 2 - 1);
+#endif
 	}
 }
 

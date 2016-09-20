@@ -61,7 +61,7 @@ enum {
 
 TED::TED() : filter(0), sidCard(0)
 {
-	register unsigned int	i;
+	unsigned int i;
 
 	instance_ = this;
 	// clearing cartdridge ROMs
@@ -324,14 +324,14 @@ unsigned char TED::Read(unsigned int addr)
 						case 0xFF0B : return irqline & 0xFF;
 						case 0xFF0C : return ((crsrpos>>8)&0x03)|0xFC;
 						case 0xFF0D : return crsrpos&0xFF;
+						case 0xFF10 : return Ram[0xFF10] | 0x7C;
+						case 0xFF12 : return Ram[0xFF12] | 0xC0;
 						case 0xFF0E :
 						case 0xFF0F :
-						case 0xFF10 :
 						case 0xFF11 :
-						case 0xFF12 :
 						case 0xFF13 :
-						case 0xFF14 :
 							return Ram[addr];
+						case 0xFF14 : return Ram[addr]|0x07;	// lowest 3 bits are always high
 						case 0xFF15 : return ecol[0]|0x80;	// The highest bit is not used and so always 1
 						case 0xFF16 : return ecol[1]|0x80;	// A few games (Rockman) used it...
 						case 0xFF17 : return ecol[2]|0x80;
@@ -1378,6 +1378,10 @@ TED::~TED()
 {
 	if (filter)
 		delete filter;
+
+	if (sidCard)
+		enableSidCard(false, 0);
 }
+
 //--------------------------------------------------------------
 

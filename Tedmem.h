@@ -186,6 +186,8 @@ class TED : public MemoryHandler {
 	unsigned int sampleRate;
 	unsigned int filterOrder;
 	SIDsound *sidCard;
+
+	friend class Vic2mem;
 };
 
 const short HUE[16] = { 0, 0,
