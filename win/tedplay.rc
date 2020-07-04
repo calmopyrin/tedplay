@@ -8,7 +8,8 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include <windows.h>
-#include <atlres.h>
+#include <atlres.h>
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -162,7 +163,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,86,176,50,14
     ICON            IDI_APPICON,IDC_STATIC,7,34,20,20
     LTEXT           "Commodore 264 TED C8M/PSID/RSID/PRG format player",IDC_STATIC,34,8,180,13,SS_CENTERIMAGE
-    LTEXT           "Copyright 2012-2015 Attila Grósz",IDC_STATIC,69,26,117,13
+    LTEXT           "Copyright 2012-2015, 2020 Attila Grósz",IDC_STATIC,69,26,117,13
     LTEXT           "This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 2 of the License, or (at your option) any later version.",IDC_STATIC,40,46,176,42
     LTEXT           "This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.",IDC_STATIC,40,90,176,43
     LTEXT           "You should have received a copy of the GNU General Public License along with this program.  If not, see http://www.gnu.org/licenses/",IDC_STATIC,40,137,176,30

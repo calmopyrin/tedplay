@@ -224,3 +224,5 @@ tedplay.VS9.layout
 win/TedPlayWTL.VS10.sln.old
 *.db
 *.opendb
+*.db-shm
+*.db-wal
