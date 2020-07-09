@@ -93,7 +93,7 @@ LRESULT CPropPageAudio::OnDefaultClick(WORD wNotifyCode, WORD wID, HWND hwndCtl,
 	_stprintf(txt, _T("%u"), vFilterOrder);
 	ebFilterOrder.SetWindowText(txt);
 
-	vLatency = 400;
+	vLatency = 200;
 	_stprintf(txt, _T("%u"), vLatency);
 	ebLatency.SetWindowText(txt);
 
@@ -107,7 +107,14 @@ LRESULT CPropPageAudio::OnDefaultClick(WORD wNotifyCode, WORD wID, HWND hwndCtl,
 int CPropPageAudio::OnApply()
 {
 	BOOL retval = DoDataExchange(true);
-	return retval;// ? PSNRET_INVALID : PSNRET_NOERROR;
+	if (retval) {
+		vLatency = GetDlgItemInt(IDC_EDIT_BUFLEN);
+		vSamplingRate = GetDlgItemInt(IDC_COMBO_SAMPLEFREQ);
+		vFilterOrder = GetDlgItemInt(IDC_EDIT_FILTERORDER);
+		vAutoSkipInterval = GetDlgItemInt(IDC_EDIT_AUTOSKIPTIME);
+		return PSNRET_NOERROR;
+	}
+	return PSNRET_INVALID;
 }
 
 LRESULT CPropPageAudio::OnSpinButton(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
@@ -118,9 +125,5 @@ LRESULT CPropPageAudio::OnSpinButton(UINT uMsg, WPARAM wParam, LPARAM lParam, BO
 
 LRESULT CPropPageAudio::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
-	vLatency = GetDlgItemInt(IDC_EDIT_BUFLEN);
-	vSamplingRate = GetDlgItemInt(IDC_COMBO_SAMPLEFREQ);
-	vFilterOrder = GetDlgItemInt(IDC_EDIT_FILTERORDER);
-	vAutoSkipInterval = GetDlgItemInt(IDC_EDIT_AUTOSKIPTIME);
 	return 0L;
 }

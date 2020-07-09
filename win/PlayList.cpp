@@ -107,34 +107,31 @@ LRESULT CPlayList::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	// Create the listview columns
 	playListView.Attach(GetDlgItem(IDC_LSV1));
 	playListView.SetView(LV_VIEW_DETAILS);
-	// FIXME doesnt work
-	//playListView.SetExtendedListViewStyle(LVS_SHOWSELALWAYS);
-	playListView.AddColumn(_T("Filename"), LV_FIELD_FILENAME);
-	playListView.SetColumnWidth(LV_FIELD_FILENAME, 150);
-	//
-	playListView.AddColumn(_T("Title"), LV_FIELD_TITLE);
-	playListView.SetColumnWidth(LV_FIELD_TITLE, 120);
-	//
-	playListView.AddColumn(_T("Author"), LV_FIELD_AUTHOR);
-	playListView.SetColumnWidth(LV_FIELD_TITLE, 250);
-	//
-	playListView.AddColumn(_T("Released"), LV_FIELD_RELEASED);
-	playListView.SetColumnWidth(LV_FIELD_TITLE, 200);
-	//
-	playListView.AddColumn(_T("Path"), LV_FIELD_PATH);
-	playListView.SetColumnWidth(LV_FIELD_PATH, 300);
-	//
-	playListView.AddColumn(_T("Status"), LV_FIELD_STATUS);
-	playListView.SetColumnWidth(LV_FIELD_STATUS, 50);
-	//
-	playListView.AddColumn(_T("Type"), LV_FIELD_TYPE);
-	playListView.SetColumnWidth(LV_FIELD_TYPE, 50);
-	//
-	playListView.AddColumn(_T("Load address"), LV_FIELD_LOAD_ADDRESS);
-	playListView.SetColumnWidth(LV_FIELD_LOAD_ADDRESS, 32);
-	//
-	playListView.AddColumn(_T("#"), LV_FIELD_INDEX);
-	playListView.SetColumnWidth(LV_FIELD_INDEX, 32);
+	playListView.SetWindowLongPtr(GWL_STYLE, playListView.GetWindowLongPtr(GWL_STYLE)|LVS_SHOWSELALWAYS);
+	playListView.SetExtendedListViewStyle(LVS_EX_HEADERDRAGDROP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
+	
+	struct ListViewData {
+		std::string headerName;
+		ListViewItemEnum headerType;
+		int HeaderWidth;
+	} listViewData[] = {
+		{ "Filename", LV_FIELD_FILENAME, 150 },
+		{ "Title", LV_FIELD_TITLE, 120 },
+		{ "Author", LV_FIELD_AUTHOR, 120 },
+		{ "Released", LV_FIELD_RELEASED, 100 },
+		{ "Path", LV_FIELD_PATH, 300 },
+		{ "Status", LV_FIELD_STATUS, 50 },
+		{ "Type", LV_FIELD_TYPE, 50 },
+		{ "Load address", LV_FIELD_LOAD_ADDRESS, 50 },
+		{ "#", LV_FIELD_INDEX, 32 },
+		{ "EOL", LV_FIELD_END, 0 }
+	};
+	UINT i = 0;
+	while (listViewData[i].headerName != "EOL") {
+		ListViewData& item = listViewData[i++];
+		playListView.AddColumn(item.headerName.c_str(), item.headerType);
+		playListView.SetColumnWidth(item.headerType, item.HeaderWidth);
+	}
 
 	// register hotkeys for the playlist
 	::RegisterHotKey(m_hWnd, 1, MOD_ALT | MOD_CONTROL, VK_RIGHT);

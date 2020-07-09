@@ -82,7 +82,7 @@ public:
 	void setParent(HWND parent) { m_hwndParent = parent; };
 
 protected:
-	enum {
+	enum ListViewItemEnum {
 		LV_FIELD_FILENAME = 0,
 		LV_FIELD_TITLE,
 		LV_FIELD_AUTHOR,
@@ -91,7 +91,8 @@ protected:
 		LV_FIELD_STATUS,
 		LV_FIELD_TYPE,
 		LV_FIELD_LOAD_ADDRESS,
-		LV_FIELD_INDEX
+		LV_FIELD_INDEX,
+		LV_FIELD_END
 	};
 	CListViewCtrl playListView;
 	HWND m_hwndParent;

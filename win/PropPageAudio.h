@@ -1,12 +1,12 @@
 #pragma once
 
 #include <atldlgs.h>
+#include <atlapp.h>
 #include <atlddx.h>
-//#include "ddxext.h"
 
 class CPropPageAudio :
 	public CPropertyPageImpl<CPropPageAudio>
-	//,	public CWinDataExchangeEx<CPropPageAudio>
+	, public CWinDataExchange<CPropPageAudio>
 {
 public:
 
@@ -24,6 +24,10 @@ public:
     END_MSG_MAP()
 
     BEGIN_DDX_MAP(CPropPageAudio)
+		DDX_UINT(IDC_COMBO_SAMPLEFREQ, vSamplingRate)
+		DDX_UINT(IDC_EDIT_FILTERORDER, vFilterOrder)
+		DDX_UINT(IDC_EDIT_BUFLEN, vLatency)
+		DDX_UINT(IDC_EDIT_AUTOSKIPTIME, vAutoSkipInterval)
 		//DDX_COMBO_INDEX(IDC_CBO9, vAudioDriver)
 	END_DDX_MAP()
 
