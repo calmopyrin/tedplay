@@ -9,6 +9,7 @@
 #include "Tedmem.h"
 #include "Cpu.h"
 #include "Sid.h"
+#include "tedplay.h"
 
 //#define NEWPLAYER
 #define MAX_BUFFER_SIZE 0x10000
@@ -37,24 +38,44 @@ static unsigned char psidPlayer[] = {
 	, 0x20, 0xbf, 0xfe, 0x60, 
 	0xa0, 0x1f, 0xb9, 0x00, 0xd4, 0x99, 0x40, 0xfd, 0x88, 0x10, 0xf7, 0x60
 #else
-	0xA9, 0x00 // song nr (offset 2)
+	0xA9, 0x00 // song nr (offset 1)
 	,0x20 ,
-	0x33 , 0xfe, // song init (offset 4)
+	0x33 , 0xfe, // song init (offset 3-4)
 	0x78 , 0xA9 , 0x00 , 0x8D ,
 	0x06 , 0xFF , 0xA9 , 0x38 ,
 	0xCD , 0x1D , 0xFF , 0xD0 ,
 	0xFB , 0xCE , 0x19 , 0xFF ,
-	0x20 , 0x33 , 0xfe  // song play (offset 23)
+	0x20 , 0x33 , 0xfe  // song play (offset 22-23)
 	, 0xEE , 0x19 , 0xFF , 0x4C , 0x0B , 0xfe, 
 	0x00 , 0x60 // fake RTS at $FE33
 #endif
 };
 
 static unsigned char rsidPlayer[] = {
-	0xA9, 0x00, // song nr (offset 2)
+	0xA9, 0x00, // song nr (offset 1)
 	0x20,
-	0xea, 0xe2, // song init (offset 3)
-	0x18, 0x90, 0xfe // song init (offset 5)
+	0xea, 0xe2, // song init (offset 3-4)
+	0x18, 0x90, 0xfe // song play (offset 6-7)
+};
+
+static unsigned char tmfPlayer[] = {
+	0xA9, 0x00, // song nr (offset 1)
+	0x20,
+	0x33 ,0xfe, // song init (offset 3-4)
+	0xA9, 0x1B, // screen off? (offset 6)
+	0x8D, 0x06, 0xFF,
+	0xA9, 0x46, // timing LO (offset 11)
+	0x8D, 0x00, 0xFF,
+	0xA9, 0x45, // timing HI (offset 16)
+	0x8D, 0x01, 0xFF,
+	0x78,
+	0xA9, 0x08,			// timer 1 IRQ flag
+	0x2C, 0x09, 0xFF, // BIT $FF09
+	0xF0, 0xFB,
+	0x8D, 0x09, 0xFF,
+	0x20, 
+	0x33, 0xFE,  // song play (offset 31-32)
+	0xB8, 0x50, 0xF0
 };
 
 static unsigned char prgPlayer[] = {
@@ -73,17 +94,32 @@ PsidHeader &getPsidHeader()
 	return psidHdr;
 }
 
+char *trimTrailingSpace(char* str, unsigned int maxSize)
+{
+	size_t sln = strlen(str);
+	size_t actualLen = maxSize < sln ? maxSize : sln;
+
+	// Trim trailing space
+	char *end = str + actualLen - 1;
+	while (end > str && isspace(*end)) end--;
+
+	// Write new null terminator character
+	end[1] = '\0';
+
+	return str;
+}
+
 unsigned int parsePsid(unsigned char *buf, PsidHeader &psidHdr_)
 {
 	char *buffer = (char *) buf;
 
 	if (buf) {
 		memset(psidHdr_.title, 0, sizeof(psidHdr_.title));
-		strncpy(psidHdr_.title, buffer + PSID_NAME, 32);
+		strncpy(psidHdr_.title, trimTrailingSpace(buffer + PSID_NAME, 32), 32);
 		psidHdr_.title[PSID_NAME + 32] = 0;
-		strncpy(psidHdr_.author, buffer + PSID_AUTHOR, 32);
+		strncpy(psidHdr_.author, trimTrailingSpace(buffer + PSID_AUTHOR, 32), 32);
 		psidHdr_.author[PSID_AUTHOR + 32] = 0;
-		strncpy(psidHdr_.copyright, buffer + PSID_COPYRIGHT, 32);
+		strncpy(psidHdr_.copyright, trimTrailingSpace(buffer + PSID_COPYRIGHT, 32), 32);
 		psidHdr_.copyright[PSID_COPYRIGHT + 32] = 0;
 	} else {
 		memset(psidHdr_.title, 0, sizeof(psidHdr_.title));
@@ -115,6 +151,9 @@ void getPsidProperties(PsidHeader &psidHdr_, char *os)
 			break;
 		case 2:
 			mType = "CBM8M";
+			break;
+		case 3:
+			mType = "TMF";
 			break;
 	}
 	sprintf(os,   "Type:         %s\r\n", mType.c_str());
@@ -178,28 +217,38 @@ bool psidChangeTrack(int direction)
 #else
 	unsigned int tuneOffset = 1;
 #endif
+	// SID
 	if (direction > 0) {
 		if (psidHdr.tracks > psidHdr.current) {
 			psidPlayer[tuneOffset] += direction;
 			rsidPlayer[tuneOffset] += direction;
+			tmfPlayer[tuneOffset] += direction;
 			psidHdr.current += direction;
-		} else {
+		}
+		else {
 			std::cerr << "No more tracks." << std::endl;
 			return false;
 		}
-	} else {
+	}
+	else {
 		if (1 < psidHdr.current) {
 			psidPlayer[tuneOffset] += direction;
 			rsidPlayer[tuneOffset] += direction;
 			psidHdr.current += direction;
-		} else {
+			tmfPlayer[tuneOffset] += direction;
+		}
+		else {
 			std::cerr << "No more tracks." << std::endl;
 			return false;
 		}
 	}
 	if (psidHdr.type == 1 || (psidHdr.type == 2 && !psidHdr.replayAddress)) {
 		ted->writeProtectedPlayerMemory(playerStartAddress, rsidPlayer, sizeof(rsidPlayer));
-	} else {
+	}
+	else if (psidHdr.type == 3) {
+		ted->writeProtectedPlayerMemory(playerStartAddress, tmfPlayer, sizeof(tmfPlayer));
+	}
+	else {
 		ted->writeProtectedPlayerMemory(playerStartAddress, psidPlayer, sizeof(psidPlayer));
 	}
 	cpu->setPC(playerStartAddress);
@@ -300,6 +349,19 @@ short tedPlayGetLastSample()
 	return player->getLastSample();
 }
 
+short *tedPlayGetLastBuffer(size_t& size)
+{
+	if (!playState)
+		return 0;
+	return player->getLastBuffer(size);
+}
+
+void tedPlayStopUsingLastBuffer()
+{
+	if (player)
+		player->stopUsingLastBuffer();
+}
+
 void tedPlayResetCycleCounter()
 {
 	ted->resetCycleCounter();
@@ -364,6 +426,13 @@ void tedPlayGetInfo(void *file, PsidHeader &hdr)
 			} else {
 				hdr.typeName = "RSID";
 			}
+		}
+		else if (!strncmp((const char*)buf + 17, "TEDMUSIC", 8)) {
+			hdr.typeName = "TMF";
+			hdr.loadAddress = buf[28] + (buf[29] << 8);
+			strncpy(hdr.title, trimTrailingSpace((char*)buf + 65, 32), 32);
+			strncpy(hdr.author, trimTrailingSpace((char*)buf + 97, 32), 32);
+			strncpy(hdr.copyright, trimTrailingSpace((char*)buf + 129, 32), 32);
 		} else if (!strncmp((const char *) buf, "CBM8M", 5)) {
 			CbmTune tune;
 			//tune.parse(
@@ -482,6 +551,66 @@ int tedplayMain(char *fileName, Audio *player_)
 			}
 			ted->injectCodeToRAM(psidHdr.loadAddress, buf + PSID_MAX_HEADER_LENGTH + corr,
 				bufLength - PSID_MAX_HEADER_LENGTH - corr);
+		}
+		else if (!strncmp((const char*)buf + 17, "TEDMUSIC", 8)) {
+			psidHdr.type = 3;
+			psidHdr.version = buf[25];
+			psidHdr.tracks = buf[34];
+			psidHdr.defaultTune = psidHdr.current = 1;
+			psidHdr.replayAddress = playerStartAddress;
+			memset(psidHdr.title, 0, sizeof(psidHdr.title));
+			memset(psidHdr.author, 0, sizeof(psidHdr.author));
+			memset(psidHdr.copyright, 0, sizeof(psidHdr.copyright));
+			strncpy(psidHdr.title, trimTrailingSpace((char*)buf + 65, 32), 32);
+			strncpy(psidHdr.author, trimTrailingSpace((char*)buf + 97, 32), 32);
+			strncpy(psidHdr.copyright, trimTrailingSpace((char*)buf + 129, 32), 32);
+			psidHdr.loadAddress = buf[0] + (buf[1] << 8);
+			psidHdr.initAddress = buf[30] + (buf[31] << 8);
+			psidHdr.replayAddress = buf[32] + (buf[33] << 8);
+			// The offset where song data starts from the beginning of the file (load address included)
+			unsigned int musicDataOffset = buf[26] + (buf[27] << 8);
+			// Memory address where the real music data should be loaded (in case of BASIC load this is the address where the music should be relocated to)
+			unsigned int relocatedAddress = buf[28] + (buf[29] << 8);
+			// Music data size
+			size_t musicDataSize = bufLength - musicDataOffset;
+			// Timing
+			unsigned char timingLo = buf[36];
+			unsigned char timingHi = buf[37];
+
+			tmfPlayer[1] = psidHdr.defaultTune - 1;
+			tmfPlayer[3] = psidHdr.initAddress & 0xff;
+			tmfPlayer[4] = psidHdr.initAddress >> 8;
+			tmfPlayer[6] = (buf[38] & 1) ? 0x00 : 0x1B;
+			// timer based timing?
+			if (buf[35] >= 2) {
+				tmfPlayer[11] = timingLo;
+				tmfPlayer[16] = timingHi;
+			}
+			// Vblank based FIXME: PAL only
+			else { 
+				tmfPlayer[11] = 0x46;
+				tmfPlayer[16] = 0x45;
+			}
+			tmfPlayer[32] = psidHdr.replayAddress & 0xff;
+			tmfPlayer[33] = psidHdr.replayAddress >> 8;
+
+			// if offset is illegal fall back to normal load
+			if (int(musicDataSize) - 257 < 0) {
+				ted->injectCodeToRAM(psidHdr.loadAddress, buf + 2, bufLength - 2);
+			}
+			else {
+				psidHdr.loadAddress = relocatedAddress;
+				ted->injectCodeToRAM(relocatedAddress, buf + musicDataOffset, musicDataSize);
+			}
+			ted->writeProtectedPlayerMemory(playerStartAddress, tmfPlayer, sizeof(tmfPlayer));
+
+			strcpy(psidHdr.model, "TED8360");
+			if (buf[38] & 2) {
+				SIDsound* sid = ted->getSidCard();
+				if (sid)
+					sid->setModel(SID8580);
+			}
+
 		} else if (!strncmp((const char *) buf, "CBM8M", 5)) {
 			CbmTune tune;
 			tune.parse(fileName);

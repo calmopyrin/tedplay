@@ -11,6 +11,10 @@ FILE *Audio::wavFileHandle;
 size_t Audio::wavDataLength;
 short Audio::lastSample;
 
+static const unsigned int playedBufSize = 441 * 5;
+static short playedBuffer[playedBufSize];
+static bool usingPlayedBuffer = false;
+
 void Audio::audioCallback(void *userData, unsigned char *stream, int len)
 {
 	TED *ted = reinterpret_cast<TED *>(userData);
@@ -49,13 +53,33 @@ void Audio::audioCallback(void *userData, unsigned char *stream, int len)
 			ringBufferIndex = (ringBufferIndex + 1) % ringBufferSize;
 		} while (sampleCnt);
 		// FIXME: it is not a very good idea to do this here
-		if (recording && !paused) {
-			dumpWavData(wavFileHandle, stream, len);
+		if (!paused) {
+			if (recording)
+				dumpWavData(wavFileHandle, stream, len);
+			//
+			if (!usingPlayedBuffer)
+				for (unsigned int i = 0; i < ((len / 2) < playedBufSize ? len / 2 : playedBufSize); i++)
+					playedBuffer[i] = *(((short*)stream) + i);
+			else {
+				void;
+			}
 		}
 #if 0
 		lastSample = *(((short*)stream) + len / 2 - 1);
 #endif
 	}
+}
+
+short* Audio::getLastBuffer(size_t& size)
+{
+	usingPlayedBuffer = true;
+	size = playedBufSize / 2;
+	return playedBuffer;
+}
+
+void Audio::stopUsingLastBuffer()
+{
+	usingPlayedBuffer = false;
 }
 
 bool Audio::createWav(const char *fileName)

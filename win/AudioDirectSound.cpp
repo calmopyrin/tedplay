@@ -44,13 +44,12 @@ AudioDirectSound::AudioDirectSound(void *userData, unsigned int origFreq, unsign
 
 	//
 	bufDurationInMsec = bufDurInMsec;
-	unsigned int fragsPerSec = 1000 / bufDurInMsec;
-	unsigned int bufSize1kbChunk = (sampleFrq_ / fragsPerSec / 1024) * 1024;
+	unsigned int bufSize1kbChunk = (sampleFrq_ * bufDurInMsec + 500) / 1000;
 	if (!bufSize1kbChunk) bufSize1kbChunk = 512;
 	bufferLength = bufSize1kbChunk;
-	unsigned int bfSize = origFreq / fragsPerSec; //(bufferLength * TED_SOUND_CLOCK + sampleFrq_ / 2) / sampleFrq_;
+	unsigned int bfSize = (origFreq * bufDurInMsec + 500) / 1000; //(bufferLength * TED_SOUND_CLOCK + sampleFrq_ / 2) / sampleFrq_;
 	// double length ring buffer, dividable by 8
-	ringBufferSize = (bfSize / 8 + 1) * 16;
+	ringBufferSize = bfSize * 2;// (bfSize / 8 + 1) * 16;
 	ringBuffer = new short[ringBufferSize];
 	// trigger initial buffer fill
 	ringBufferIndex = ringBufferSize-1;

@@ -28,6 +28,8 @@ extern void tedPlayCloseWav();
 extern unsigned int tedplayGetSecondsPlayed();
 extern void tedPlayResetCycleCounter();
 extern short tedPlayGetLastSample();
+extern short* tedPlayGetLastBuffer(size_t& size);
+extern void tedPlayStopUsingLastBuffer();
 //
 extern void machineReset();
 extern void machineDoSomeFrames(unsigned int count);

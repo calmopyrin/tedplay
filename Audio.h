@@ -53,6 +53,8 @@ public:
 	virtual void closeWav();
 	static bool dumpWavData(FILE *fp, unsigned char *buffer, unsigned int length);
 	static short getLastSample() { return lastSample; };
+	static short* getLastBuffer(size_t& size);
+	static void stopUsingLastBuffer();
 
 protected:
 	unsigned int bufferLength;

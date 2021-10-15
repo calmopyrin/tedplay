@@ -394,8 +394,8 @@ LRESULT CPlayList::OnBnClickedBtnAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	const int FILENAMES_BUFFER_SIZE = 32048;
 	static unsigned int selFilter = 0;
 	_TCHAR szFileNamesBuffer[FILENAMES_BUFFER_SIZE] = {0};
-	_TCHAR szFilter[] = _T("TED tunes (*.c8m;*.prg)\0"
-											"*.c8m;*.prg\0"
+	_TCHAR szFilter[] = _T("TED tunes (*.tmf;*.c8m;*.prg)\0"
+											"*.tmf;*.c8m;*.prg\0"
 											"SID tunes (*.sid)\0*.sid\0"
 								"All Files (*.*)\0*.*\0\0");
 	WTL::CFileDialog wndFileDialog ( TRUE, NULL, NULL, 

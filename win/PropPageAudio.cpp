@@ -107,7 +107,7 @@ LRESULT CPropPageAudio::OnDefaultClick(WORD wNotifyCode, WORD wID, HWND hwndCtl,
 int CPropPageAudio::OnApply()
 {
 	BOOL retval = DoDataExchange(true);
-	return retval;// ? PSNRET_INVALID : PSNRET_NOERROR;
+	return retval ? PSNRET_NOERROR : PSNRET_INVALID;
 }
 
 LRESULT CPropPageAudio::OnSpinButton(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)

@@ -493,6 +493,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\c64rom.h"
+				>
+			</File>
+			<File
 				RelativePath="..\CbmTune.h"
 				>
 			</File>
@@ -522,6 +526,10 @@
 			</File>
 			<File
 				RelativePath="..\tedplay.h"
+				>
+			</File>
+			<File
+				RelativePath="..\vic2mem.h"
 				>
 			</File>
 			<Filter

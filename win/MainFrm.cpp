@@ -19,9 +19,12 @@
 #include "TedPlay.h"
 
 #include "registry.h"
+#ifdef _DEBUG
+#include <assert.h>
+#endif
 
 #define APPNAME _T("WinTedPlay")
-#define UPDATE_FREQ_MS 10
+#define UPDATE_FREQ_MS 40
 
 //Get EXE directory.
 void CMainFrame::MakePathName(LPTSTR lpFileName)
@@ -313,19 +316,9 @@ void CMainFrame::updateWaveOutWindow(bool updatePosition)
 	wHeight = rc.bottom - rc.top;
 	// fill with black
 	int r = ::FillRect(hdc, &rc, (HBRUSH) GetStockObject(DKGRAY_BRUSH));
-	// set up
-	if (wWidth == -1 || !sampHist) {
-		if (sampHist) {
-			delete [] sampHist;
-		}
-		sampHist = new short[wWidth + 1];
-		// pre-fill with silence
-		for(unsigned int i = 0; i <= wWidth; i++)
-			sampHist[i] = wHeight / 2;
-		sampPos = 0;
-	}
 	// update sample history, convert to coordinate
 	if (updatePosition && tedPlayGetState()) {
+#if 0
 		unsigned int i;
 		int sample = ((tedPlayGetLastSample() + 8192) * wHeight) / 16384;
 		sample = sample <= 0 ? 1 : (sample >= (int)wHeight ? wHeight - 2 : sample);
@@ -351,6 +344,66 @@ void CMainFrame::updateWaveOutWindow(bool updatePosition)
 		//::SelectObject(hdc, hPenOld);
 		//
 		::DeleteObject(hLinePen);
+#else
+		unsigned int i;
+		size_t size;
+		unsigned int lastNegative = 0;
+		unsigned int waveStart = 0;
+		short delta = 0;
+		short prevSample = 0;
+		short minSample = 0;
+		short maxSample = 0;
+		
+		bool firstWaveFound = false;
+		unsigned int waveFound = 0;
+		const int ZEROTHRESHOLD = 0;
+		short* buf = tedPlayGetLastBuffer(size);
+		i = 0;
+		do {
+			delta = buf[i] - prevSample;
+			if (buf[i] < -ZEROTHRESHOLD) {
+				if (!waveStart)
+					lastNegative = i;
+				if (waveStart == 2 && delta < 0)
+					waveStart = 3;
+			} else if (buf[i] >= ZEROTHRESHOLD) {
+				if (!waveStart && delta > 0) {
+					waveStart = 1;
+					firstWaveFound = true;
+				}
+				if (waveStart == 1 && delta < 0)
+					waveStart = 2;
+				else if (waveStart == 3 && delta >= 0) {
+					waveStart = 0;
+					waveFound++;
+				}
+			}
+			if (firstWaveFound) {
+				if (buf[i] < minSample)
+					minSample = buf[i];
+				if (buf[i] > maxSample)
+					maxSample = buf[i];
+			}
+			prevSample = buf[i];
+		} while (!(++i == size || waveFound >= 5));
+		int samples = i - lastNegative - 1;
+		int absMin = (minSample < 0 ? -minSample : minSample);
+		int absMax = (maxSample < 0 ? -maxSample : maxSample);
+		int dynRange = (absMax > absMin ? absMax : absMin) * 2;
+
+		// create pen
+		::SelectObject(hdc, GetStockObject(COLOR_WINDOW + 1));
+		// draw wave
+		::MoveToEx(hdc, -1, wHeight / 2, NULL);
+		for (i = 0; i <= wWidth; i++) {
+			sampPos = lastNegative + 1 + (samples * i) / wWidth;
+			const int w = (dynRange ? (int(buf[sampPos]) * int(wHeight)) / (dynRange) : 0);
+			const int s = int(wHeight / 2) - w;
+			::LineTo(hdc, i, s);
+		}
+		tedPlayStopUsingLastBuffer();
+		// last plot
+#endif
 	}
 	// clean up
 	::ReleaseDC(uwHwnd, hdc);
@@ -378,10 +431,10 @@ LRESULT CMainFrame::OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 LRESULT CMainFrame::OnFileNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	static unsigned int selFilter = 0;
-	_TCHAR szFilter[] = _T("All suported formats (*.c8m;*.prg;*.sid)\0"
-						   "*.c8m;*.prg;*.sid\0"
-						   "TED tunes (*.c8m;*.prg)\0"
-						   "*.c8m;*.prg\0"
+	_TCHAR szFilter[] = _T("All suported formats (*.tmf;*.c8m;*.prg;*.sid)\0"
+						   "*.tmf;*.c8m;*.prg;*.sid\0"
+						   "TED tunes (*.tmf;*.c8m;*.prg)\0"
+						   "*.tmf;*.c8m;*.prg\0"
 						   "SID tunes (*.sid)\0*.sid\0"
 						   "All Files (*.*)\0*.*\0\0");
 	WTL::CFileDialog wndFileDialog ( TRUE, NULL, NULL, 

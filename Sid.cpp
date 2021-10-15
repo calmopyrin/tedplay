@@ -614,7 +614,7 @@ void SIDsound::calcSamples(short *buf, long accu)
 			+ dcMixer + dcDigiBlaster) * volume;
 
 #if 1
-		int sample = accu >> 12;
+		int sample = accu >> 13;
 #else
 		unsigned int interPolationFac = (clockDeltaRemainder - sidCyclesPerSampleInt) & 0xFF;
 		accu >>= 7;
