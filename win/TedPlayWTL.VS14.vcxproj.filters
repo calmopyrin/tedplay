@@ -2,7 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="..\Audio.cpp" />
-    <ClCompile Include="AudioDirectSound.cpp" />
     <ClCompile Include="..\CbmTune.cpp" />
     <ClCompile Include="..\Cpu.cpp" />
     <ClCompile Include="..\Filter.cpp" />
@@ -10,33 +9,82 @@
     <ClCompile Include="..\Tedmem.cpp" />
     <ClCompile Include="..\tedplay.cpp" />
     <ClCompile Include="..\Tedsound.cpp" />
-    <ClCompile Include="MainFrm.cpp" />
-    <ClCompile Include="PlayList.cpp" />
-    <ClCompile Include="PropPageAudio.cpp" />
-    <ClCompile Include="PropSheet.cpp" />
-    <ClCompile Include="registry.cpp" />
-    <ClCompile Include="TedPlayWTL.cpp" />
+    <ClCompile Include="AudioDirectSound.cpp">
+      <Filter>Win</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayList.cpp">
+      <Filter>Win</Filter>
+    </ClCompile>
+    <ClCompile Include="MainFrm.cpp">
+      <Filter>Win</Filter>
+    </ClCompile>
+    <ClCompile Include="PropPageAudio.cpp">
+      <Filter>Win</Filter>
+    </ClCompile>
+    <ClCompile Include="PropSheet.cpp">
+      <Filter>Win</Filter>
+    </ClCompile>
+    <ClCompile Include="registry.cpp">
+      <Filter>Win</Filter>
+    </ClCompile>
+    <ClCompile Include="TedPlayWTL.cpp">
+      <Filter>Win</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Audio.h" />
-    <ClInclude Include="AudioDirectSound.h" />
-    <ClInclude Include="..\CbmTune.h" />
-    <ClInclude Include="..\Cpu.h" />
-    <ClInclude Include="..\Cpu7501asm.h" />
-    <ClInclude Include="..\Filter.h" />
-    <ClInclude Include="..\psid.h" />
-    <ClInclude Include="..\Sid.h" />
-    <ClInclude Include="..\Tedmem.h" />
-    <ClInclude Include="..\tedplay.h" />
-    <ClInclude Include="Aboutdlg.h" />
-    <ClInclude Include="MainFrm.h" />
-    <ClInclude Include="PlayList.h" />
-    <ClInclude Include="PropertiesDlg.h" />
-    <ClInclude Include="PropPageAudio.h" />
-    <ClInclude Include="PropSheet.h" />
-    <ClInclude Include="stdafx.h" />
     <ClInclude Include="resource.h">
       <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Aboutdlg.h">
+      <Filter>Win</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayList.h">
+      <Filter>Win</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioDirectSound.h">
+      <Filter>Win</Filter>
+    </ClInclude>
+    <ClInclude Include="MainFrm.h">
+      <Filter>Win</Filter>
+    </ClInclude>
+    <ClInclude Include="PropertiesDlg.h">
+      <Filter>Win</Filter>
+    </ClInclude>
+    <ClInclude Include="PropPageAudio.h">
+      <Filter>Win</Filter>
+    </ClInclude>
+    <ClInclude Include="PropSheet.h">
+      <Filter>Win</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Audio.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CbmTune.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Cpu.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Cpu7501asm.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Filter.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\psid.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sid.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Tedmem.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tedplay.h">
+      <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -74,6 +122,12 @@
   <ItemGroup>
     <Filter Include="Resources">
       <UniqueIdentifier>{141a9ac0-8bda-411d-9a6a-4d479343476c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{97025fd2-6f6a-475b-8214-5eebcf4c5c46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Win">
+      <UniqueIdentifier>{5a5ba9a5-c0e0-487e-811a-69ad0c3229e2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -326,7 +326,7 @@ void SIDsound::write(unsigned int adr, unsigned char value)
 					v.envCounterCompare = v.envAttackAdd;
 				} else {
 					// gate off
-						v.egState = EG_RELEASE;
+					v.egState = EG_RELEASE;
 					v.envCounterCompare = v.envReleaseSub;
 				}
 				v.gate = value & 1;
@@ -374,13 +374,13 @@ void SIDsound::write(unsigned int adr, unsigned char value)
 
 		case 21:
 			if ((value ^ filterCutoff) & 7) {
-				filterCutoff = (value&7)|(filterCutoff&0x7F8);
+				filterCutoff = (value & 7) | (filterCutoff & 0x7F8);
 				setFilterCutoff();
 			}
 			break;
 
 		case 22:
-			filterCutoff = (value<<3)|(filterCutoff&7);
+			filterCutoff = (value << 3) | (filterCutoff & 7);
 			setFilterCutoff();
 			break;
 
@@ -589,7 +589,7 @@ void SIDsound::calcSamples(short *buf, long accu)
 					if (!(accPrev & 0x080000) && (accNext & 0x080000))
 						updateShiftReg(v);
 					accPrev = accNext;
-				} while ( accNext < v.accu );
+				} while (accNext < v.accu);
 				// accu is 24 bit
 				v.accu &= 0xFFFFFF;
 			}
