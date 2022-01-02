@@ -319,7 +319,7 @@ void tedplayPause()
 
 void tedplayPlay()
 {
-	if (player) {
+	if (player && !playState) {
 		player->unlock();
 		player->play();
 		playState = 1;

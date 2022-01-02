@@ -303,7 +303,6 @@ LRESULT CMainFrame::OnPaint(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& b
 void CMainFrame::updateWaveOutWindow(bool updatePosition)
 {
 	RECT rc;
-	static unsigned int sampPos = 0;
 	static unsigned int wWidth = -1;
 	static unsigned int wHeight = -1;
 	static short *sampHist = NULL;
@@ -315,7 +314,21 @@ void CMainFrame::updateWaveOutWindow(bool updatePosition)
 	wWidth = rc.right - rc.left;
 	wHeight = rc.bottom - rc.top;
 	// fill with black
-	int r = ::FillRect(hdc, &rc, (HBRUSH) GetStockObject(DKGRAY_BRUSH));
+	int r = ::FillRect(hdc, &rc, (HBRUSH)GetStockObject(DKGRAY_BRUSH));
+
+	// set up
+	if (wWidth == -1 || !sampHist) {
+		if (sampHist) {
+			delete[] sampHist;
+			sampHist = NULL;
+		}
+		else {
+			sampHist = new short[wWidth + 1];
+			// pre-fill with "silence"
+			for (unsigned int i = 0; i <= wWidth; i++)
+				sampHist[i] = wHeight / 2;
+		}
+	}
 	// update sample history, convert to coordinate
 	if (updatePosition && tedPlayGetState()) {
 #if 0
@@ -323,7 +336,6 @@ void CMainFrame::updateWaveOutWindow(bool updatePosition)
 		int sample = ((tedPlayGetLastSample() + 8192) * wHeight) / 16384;
 		sample = sample <= 0 ? 1 : (sample >= (int)wHeight ? wHeight - 2 : sample);
 
-		sampHist[sampPos] = (short) sample;
 		sampPos = (sampPos + 1) % wWidth;
 		// create pen
 		COLORREF qLineColor = RGB(0, 255, 0);
@@ -391,15 +403,19 @@ void CMainFrame::updateWaveOutWindow(bool updatePosition)
 		int absMax = (maxSample < 0 ? -maxSample : maxSample);
 		int dynRange = (absMax > absMin ? absMax : absMin) * 2;
 
-		// create pen
-		::SelectObject(hdc, GetStockObject(COLOR_WINDOW + 1));
 		// draw wave
 		::MoveToEx(hdc, -1, wHeight / 2, NULL);
 		for (i = 0; i <= wWidth; i++) {
-			sampPos = lastNegative + 1 + (samples * i) / wWidth;
+			const int sampPos = lastNegative + 1 + (samples * i) / wWidth;
 			const int w = (dynRange ? (int(buf[sampPos]) * int(wHeight)) / (dynRange) : 0);
 			const int s = int(wHeight / 2) - w;
+			// select pen
+			/*::SelectObject(hdc, (HBRUSH)GetStockObject(DKGRAY_BRUSH));
+			::LineTo(hdc, i, sampHist[i]);*/
+			// select pen
+			::SelectObject(hdc, (HBRUSH)GetStockObject(COLOR_WINDOW + 1));
 			::LineTo(hdc, i, s);
+			sampHist[i] = s;
 		}
 		tedPlayStopUsingLastBuffer();
 		// last plot

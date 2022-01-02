@@ -14,6 +14,7 @@ short Audio::lastSample;
 static const unsigned int playedBufSize = 441 * 5;
 static short playedBuffer[playedBufSize];
 static bool usingPlayedBuffer = false;
+static bool usingFileHandle = false;
 
 void Audio::audioCallback(void *userData, unsigned char *stream, int len)
 {
@@ -114,15 +115,19 @@ bool Audio::createWav(const char *fileName)
 
 bool Audio::dumpWavData(FILE *fp, unsigned char *buffer, unsigned int length)
 {
+	usingFileHandle = true;
 	if (fp && std::fwrite(buffer, 1, length, fp)) {
+		usingFileHandle = false;
 		wavDataLength += length;
 		return true;
 	}
+	usingFileHandle = false;
 	return false;
 }
 
 void Audio::closeWav()
 {
+	while (usingFileHandle);
 	if (wavFileHandle) {
 		unsigned int foo = (unsigned int)(ftell(wavFileHandle) - 8);
 		// RIFF chunk size

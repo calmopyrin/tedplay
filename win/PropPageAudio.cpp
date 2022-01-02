@@ -107,6 +107,12 @@ LRESULT CPropPageAudio::OnDefaultClick(WORD wNotifyCode, WORD wID, HWND hwndCtl,
 int CPropPageAudio::OnApply()
 {
 	BOOL retval = DoDataExchange(true);
+	if (retval) {
+		vLatency = GetDlgItemInt(IDC_EDIT_BUFLEN);
+		vSamplingRate = GetDlgItemInt(IDC_COMBO_SAMPLEFREQ);
+		vFilterOrder = GetDlgItemInt(IDC_EDIT_FILTERORDER);
+		vAutoSkipInterval = GetDlgItemInt(IDC_EDIT_AUTOSKIPTIME);
+	}
 	return retval ? PSNRET_NOERROR : PSNRET_INVALID;
 }
 
@@ -118,9 +124,5 @@ LRESULT CPropPageAudio::OnSpinButton(UINT uMsg, WPARAM wParam, LPARAM lParam, BO
 
 LRESULT CPropPageAudio::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
-	vLatency = GetDlgItemInt(IDC_EDIT_BUFLEN);
-	vSamplingRate = GetDlgItemInt(IDC_COMBO_SAMPLEFREQ);
-	vFilterOrder = GetDlgItemInt(IDC_EDIT_FILTERORDER);
-	vAutoSkipInterval = GetDlgItemInt(IDC_EDIT_AUTOSKIPTIME);
 	return 0L;
 }

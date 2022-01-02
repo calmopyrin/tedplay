@@ -31,7 +31,7 @@ class SIDsound;
 class TED : public MemoryHandler {
   public:
   	TED();
-  	~TED();
+  	virtual ~TED();
 	KEYS *keys;
 	TAP	*tap;
 	virtual void UpdateSerialState(unsigned char portval);
