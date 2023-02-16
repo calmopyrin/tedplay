@@ -30,34 +30,11 @@
     <ClCompile Include="TedPlayWTL.cpp">
       <Filter>Win</Filter>
     </ClCompile>
+    <ClCompile Include="..\SIDSoundLib.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
       <Filter>Resources</Filter>
-    </ClInclude>
-    <ClInclude Include="Aboutdlg.h">
-      <Filter>Win</Filter>
-    </ClInclude>
-    <ClInclude Include="PlayList.h">
-      <Filter>Win</Filter>
-    </ClInclude>
-    <ClInclude Include="AudioDirectSound.h">
-      <Filter>Win</Filter>
-    </ClInclude>
-    <ClInclude Include="MainFrm.h">
-      <Filter>Win</Filter>
-    </ClInclude>
-    <ClInclude Include="PropertiesDlg.h">
-      <Filter>Win</Filter>
-    </ClInclude>
-    <ClInclude Include="PropPageAudio.h">
-      <Filter>Win</Filter>
-    </ClInclude>
-    <ClInclude Include="PropSheet.h">
-      <Filter>Win</Filter>
-    </ClInclude>
-    <ClInclude Include="stdafx.h">
-      <Filter>Win</Filter>
     </ClInclude>
     <ClInclude Include="..\Audio.h">
       <Filter>Headers</Filter>
@@ -84,6 +61,33 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\tedplay.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Aboutdlg.h">
+      <Filter>Headers\Win</Filter>
+    </ClInclude>
+    <ClInclude Include="MainFrm.h">
+      <Filter>Headers\Win</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayList.h">
+      <Filter>Headers\Win</Filter>
+    </ClInclude>
+    <ClInclude Include="PropertiesDlg.h">
+      <Filter>Headers\Win</Filter>
+    </ClInclude>
+    <ClInclude Include="PropPageAudio.h">
+      <Filter>Headers\Win</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Headers\Win</Filter>
+    </ClInclude>
+    <ClInclude Include="PropSheet.h">
+      <Filter>Headers\Win</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioDirectSound.h">
+      <Filter>Headers\Win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SIDSoundLib.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
@@ -128,6 +132,9 @@
     </Filter>
     <Filter Include="Win">
       <UniqueIdentifier>{5a5ba9a5-c0e0-487e-811a-69ad0c3229e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Win">
+      <UniqueIdentifier>{888b5ad0-2c90-44c3-902e-6d002b87d72e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

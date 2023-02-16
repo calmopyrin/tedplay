@@ -226,3 +226,4 @@ win/TedPlayWTL.VS10.sln.old
 *.opendb
 *.db-shm
 *.db-wal
+*.dll

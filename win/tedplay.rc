@@ -163,10 +163,10 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,86,176,50,14
     ICON            IDI_APPICON,IDC_STATIC,7,34,20,20
     LTEXT           "Commodore 264 TED+SID TMF/C8M/PSID/PRG format player",IDC_STATIC,14,8,194,13,SS_CENTERIMAGE
-    LTEXT           "Copyright 2012-2015,2021 Attila Grósz",IDC_STATIC,60,26,127,13
-    LTEXT           "This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 2 of the License, or (at your option) any later version.",IDC_STATIC,40,46,176,42
-    LTEXT           "This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.",IDC_STATIC,40,90,176,43
-    LTEXT           "You should have received a copy of the GNU General Public License along with this program.  If not, see http://www.gnu.org/licenses/",IDC_STATIC,40,137,176,30
+    LTEXT           "© 2012-2015,2021-2023 Attila Grósz\nhttps://github.com/calmopyrin/tedplay",IDC_STATIC,60,23,127,21
+    LTEXT           "This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 2 of the License, or (at your option) any later version.",IDC_STATIC,40,48,176,42
+    LTEXT           "This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.",IDC_STATIC,40,92,176,43
+    LTEXT           "You should have received a copy of the GNU General Public License along with this program.  If not, see http://www.gnu.org/licenses/",IDC_STATIC,40,139,176,30
 END
 
 IDD_DIALOG_PROPERTIES DIALOGEX 0, 0, 316, 184
