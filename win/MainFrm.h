@@ -142,4 +142,5 @@ public:
 	LRESULT OnTedchannel2Squarewave(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	void updateWaveOutWindow(bool updatePosition);
 	LRESULT OnViewShowwaveplotter(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	CPlayList* getPlayListDialog() { return &playListViewDialog; };
 };

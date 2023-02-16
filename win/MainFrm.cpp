@@ -113,10 +113,6 @@ LRESULT CMainFrame::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	// I needed this because GetParent wouldn't work...
 	playListViewDialog.setParent(m_hWnd);
 
-	// get the playlist
-	_TCHAR plPath[MAX_PATH];
-	getDefaultPlayListPath(plPath);
-	playListViewDialog.loadPlaylist(plPath);
 	// the control buttons
 	enableButtons(0);
 	// set focus to the volume control so no caret is shown
@@ -162,9 +158,15 @@ LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	// stop playing
 	tedplayStop();
 	// save the playlist
-	_TCHAR plPath[MAX_PATH];
-	getDefaultPlayListPath(plPath);
-	playListViewDialog.savePlaylist(plPath);
+	HANDLE mutex = playListViewDialog.getMutex();
+	DWORD dwWaitResult = WaitForSingleObject(mutex, 0);  // no time-out interval INFINITE
+	if (dwWaitResult != STATUS_TIMEOUT) {
+		_TCHAR plPath[MAX_PATH];
+		getDefaultPlayListPath(plPath);
+		playListViewDialog.savePlaylist(plPath);
+		ReleaseMutex(playListViewDialog.getMutex());
+		CloseHandle(playListViewDialog.getMutex());
+	}
 	// unregister message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
 	ATLASSERT(pLoop != NULL);

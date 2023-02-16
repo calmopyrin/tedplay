@@ -23,6 +23,26 @@
 
 CAppModule _Module;
 
+#define USE_PL_THREAD
+
+static DWORD dwThreadIdArray;
+static struct CPlstStruct {
+	_TCHAR plPath[MAX_PATH];
+	CPlayList* pPlst;
+} pls;
+
+static DWORD WINAPI populateListThreadProc(LPVOID lpParameter)
+{
+	CPlstStruct* pls = (CPlstStruct*)lpParameter;
+	
+	// no time-out interval
+	HANDLE mutex = pls->pPlst->getMutex();
+	DWORD dwWaitResult = WaitForSingleObject(mutex, INFINITE);
+	pls->pPlst->loadPlaylist(pls->plPath);
+	BOOL b = ReleaseMutex(mutex);
+	return 0;
+}
+
 // make sure the message loop is destroyed before CoUninitialize gets called
 static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 {
@@ -95,6 +115,16 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 		MessageBox(NULL, str, _T("Exception occured."), MB_OK | MB_ICONERROR);
 	}
 	int nRet = dlgMain.ShowWindow(SW_NORMAL);
+
+	// get the playlist
+	pls.pPlst = dlgMain.getPlayListDialog();
+	CMainFrame::getDefaultPlayListPath(pls.plPath);
+#ifdef USE_PL_THREAD
+	CreateThread(NULL, 0, populateListThreadProc, &pls, 0, &dwThreadIdArray);
+#else
+	pls.pPlst->loadPlaylist(pls.plPath);
+#endif
+
 	nRet = theLoop.Run();
 	tedplayClose();
 	

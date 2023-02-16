@@ -52,6 +52,7 @@ bool CPlayList::EnumerateFolder(LPCTSTR lpcszFolder, LPTSTR ext, int nLevel)
 
 LRESULT CPlayList::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
+	hMutex = CreateMutex(NULL, FALSE, NULL);
 	// Init the CDialogResize code
 	DlgResize_Init();
     //Bind keys...
@@ -153,6 +154,7 @@ LRESULT CPlayList::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	CheckMenuItem(hmenu, IDM_VIEW_PLAYLIST, MF_UNCHECKED);
 	::UnregisterHotKey(m_hWnd, 1);
 	::UnregisterHotKey(m_hWnd, 2);
+	CloseHandle(hMutex);
 	return 0;
 }
 
@@ -203,6 +205,10 @@ LRESULT CPlayList::OnDropFiles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, 
 
 LRESULT CPlayList::OnGetMinMaxInfo(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
+	PMINMAXINFO mmi = (PMINMAXINFO)lParam;
+	// TODO make this dynamic
+	mmi->ptMinTrackSize.x = 320;
+	mmi->ptMinTrackSize.y = 120;
 	return 0L;
 }
 
@@ -272,6 +278,7 @@ int CPlayList::loadPlaylist(_TCHAR * plName)
 				AddFileToPlaylist(name);
 				BOOL status = ::PathFileExists(name);
 				playListView.AddItem(index, LV_FIELD_STATUS, status ? _T("OK") : _T("Error!"));
+				playListView.UpdateWindow();
 			}
 			index++;
 		}
@@ -512,7 +519,7 @@ LRESULT CPlayList::OnBnClickedBtnAddfolder(WORD /*wNotifyCode*/, WORD /*wID*/, H
 	static _TCHAR strFolderPath[MAX_PATH] = { 0 };
 	// TODO: Add your control notification handler code here
 	CFolderDialog dlgFolder(m_hWnd, _T("Add files recoursively from folder..."),
-		BIF_NEWDIALOGSTYLE | BIF_RETURNONLYFSDIRS);
+		BIF_USENEWUI | BIF_RETURNONLYFSDIRS);
 
 	if (!::PathIsDirectory(strFolderPath))
 		::GetCurrentDirectory(MAX_PATH, strFolderPath);

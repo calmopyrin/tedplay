@@ -22,6 +22,8 @@ public:
 			if(::TranslateAccelerator(m_hWnd, m_haccelerator, pMsg))
 				return TRUE;
 		}
+		if (!m_hWnd)
+			return FALSE;
 		BOOL retval = CWindow::IsDialogMessage(pMsg);
 		return retval;
 	}
@@ -78,6 +80,7 @@ public:
 
 	int savePlaylist(_TCHAR * plName);
 	int loadPlaylist(_TCHAR * plName);
+	HANDLE getMutex() { return hMutex; };
 	bool EnumerateFolder(LPCTSTR lpcszFolder, LPTSTR ext, int nLevel = 0);
 	void setParent(HWND parent) { m_hwndParent = parent; };
 
@@ -127,7 +130,8 @@ public:
 	LRESULT OnBnClickedBtnRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnLvnKeydownLsv1(int /*idCtrl*/, LPNMHDR pNMHDR, BOOL& bHandled);
 private:
-	HACCEL    m_haccelerator;
+	HACCEL m_haccelerator;
+	HANDLE hMutex;
 public:
 	LRESULT OnBnClickedBtnAddfolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnNMRclickLsv1(int /*idCtrl*/, LPNMHDR pNMHDR, BOOL& /*bHandled*/);
