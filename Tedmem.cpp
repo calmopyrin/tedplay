@@ -16,6 +16,7 @@
 #include <ctype.h>
 #include "Tedmem.h"
 #include "Sid.h"
+#include "SidSoundLib.h"
 #include "Cpu.h"
 #include "roms.h"
 #include "Filter.h"
@@ -1321,7 +1322,7 @@ void TED::ted_process(short *buffer, unsigned int count)
 						sidCard->calcSamples(imBuf, samples);
 						unsigned int i = samples - 1;
 						do {
-							buffer[i] += (short)(int(imBuf[i]) * int(masterVolume) / 10);
+							buffer[i] += (short)(int(imBuf[i]) * int(masterVolume) / 1000);
 						}while (i--);
 					}
 					storeToBuffer(buffer, samples);
@@ -1366,7 +1367,10 @@ void TED::enableSidCard(bool enable, unsigned int disableMask)
 	if (enable) {
 		if (sidCard)
 			return;
-		sidCard = new SIDsound(SID8580, disableMask);
+		if (SIDSoundLib::connect())
+			sidCard = new SIDSoundLib(SID8580);
+		else
+			sidCard = new SIDsound(SID8580, disableMask);
 		sidCard->setSampleRate(TED_SOUND_CLOCK);
 	} else {
 		if (!sidCard)
@@ -1383,6 +1387,7 @@ TED::~TED()
 
 	if (sidCard)
 		enableSidCard(false, 0);
+
 }
 
 //--------------------------------------------------------------

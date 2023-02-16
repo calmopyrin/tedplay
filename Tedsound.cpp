@@ -8,6 +8,7 @@
 
 #define PRECISION 0
 #define OSCRELOADVAL (0x3FF << PRECISION)
+#define AMP(X) ((unsigned int)(17.0f * pow(double(X), 1.5f)))
 
 unsigned int		   TED::masterVolume;
 static int             Volume;
@@ -56,7 +57,7 @@ void TED::oscillatorInit()
 
 	// set player specific parameters
 	waveForm[0] = waveForm[1] = 1;
-	masterVolume = 8;
+	masterVolume = AMP(8);
 	setplaybackSpeed(3);
 	enableChannel(0, true);
 	enableChannel(1, true);
@@ -95,7 +96,7 @@ void TED::writeSoundReg(unsigned int reg, unsigned char value)
 			}
 			Volume = value & 0x0F;
 			if (Volume > 8) Volume = 8;
-			Volume = (Volume << 8) * masterVolume / 10;
+			Volume = (Volume << 8) * masterVolume / 1000;
 			Snd1Status = value & 0x10;
 			Snd2Status = value & 0x20;
 			SndNoiseStatus = value & 0x40;
@@ -262,7 +263,10 @@ void TED::setMasterVolume(unsigned int shift)
 	unsigned int vol = Ram[0xFF11] & 0x0f;
 	if (vol > 8) vol = 8;
 	Volume = (vol << 8) * shift / 10;
-	masterVolume = shift;
+	if (!shift)
+		masterVolume = 0;
+	else
+		masterVolume = AMP(shift);
 }
 
 void TED::selectWaveForm(unsigned int channel, unsigned int wave)

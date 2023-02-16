@@ -21,12 +21,12 @@ public:
 		calcEnvelopeTable();
 	};
 	void setModel(unsigned int model);
-	void setFrequency(unsigned int sid_frequency);
-	void setSampleRate(unsigned int sampleRate_);
+	virtual void setFrequency(unsigned int sid_frequency);
+	virtual void setSampleRate(unsigned int sampleRate_);
 	void calcEnvelopeTable();
-	unsigned char read(unsigned int adr);
-	void write(unsigned int adr, unsigned char byte);
-	void calcSamples(short *buf, long count);
+	virtual unsigned char read(unsigned int adr);
+	virtual void write(unsigned int adr, unsigned char byte);
+	virtual void calcSamples(short* buf, long count);
 	void enableDisableChannel(unsigned int ch, bool enabled) {
 		voice[ch].disabled = !enabled;
 	}
@@ -84,7 +84,6 @@ private:
 		unsigned int sync; // sync modulation flag
 	} voice[3];			// array for the 3 channels
 	int volume;			// SID Master volume
-	unsigned int sidBaseFreq;	// SID base frequency
 	unsigned int sidCyclesPerSampleInt;
 	unsigned int clockDeltaRemainder; // Accumulator for frequency conversion
 	unsigned int clockDeltaFraction; // Fractional component for frequency conversion
@@ -126,9 +125,12 @@ private:
 	int Vlp; // lowpass
 	//
 	unsigned char lastByteWritten;// Last value written to the SID
-	int model_;
 	bool enableDigiBlaster;
 	unsigned int sampleRate;
+
+protected:
+	int model_;
+	unsigned int sidBaseFreq;	// SID base frequency
 };
 
 /*

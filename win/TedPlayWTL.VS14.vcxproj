@@ -313,6 +313,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\Audio.h" />
+    <ClInclude Include="..\SIDSoundLib.h" />
     <ClInclude Include="AudioDirectSound.h" />
     <ClInclude Include="..\CbmTune.h" />
     <ClInclude Include="..\Cpu.h" />
@@ -348,6 +349,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Audio.cpp" />
+    <ClCompile Include="..\SIDSoundLib.cpp" />
     <ClCompile Include="AudioDirectSound.cpp" />
     <ClCompile Include="..\CbmTune.cpp" />
     <ClCompile Include="..\Cpu.cpp" />
