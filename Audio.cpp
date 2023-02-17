@@ -62,7 +62,7 @@ void Audio::audioCallback(void *userData, unsigned char *stream, int len)
 				for (unsigned int i = 0; i < ((len / 2) < playedBufSize ? len / 2 : playedBufSize); i++)
 					playedBuffer[i] = *(((short*)stream) + i);
 			else {
-				void;
+				;
 			}
 		}
 #if 0

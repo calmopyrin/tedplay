@@ -1,10 +1,27 @@
 #include "SIDSoundLib.h"
+
+#ifdef WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
-
+#define LIBNAME "sidlib.dll"
+#define LOAD_LIBRARY(X) LoadLibrary(X)
+#define LOAD_FUNCTION GetProcAddress
+#define CLOSE_LIBRARY FreeLibrary
 static HMODULE m_hDll = NULL;
+#else
+#include <dlfcn.h>
+#include <stdio.h>
+#define LIBNAME "sidlib"
+#define LOAD_LIBRARY(X) dlopen(X, RTLD_LOCAL)
+#define LOAD_FUNCTION dlsym
+#define CLOSE_LIBRARY dlclose
+static void *m_hDll = NULL;
+#endif
+
+#define LIBNAME_DEBUG LIBNAME
+
 typedef void (*_sidCreate)(unsigned int clock_type, unsigned int model, unsigned int replayFreq);
 typedef void (*_sidDestroy)();
 typedef void (*_sidSetSampleRate)(unsigned int sampleRate_);
@@ -27,20 +44,20 @@ bool SIDSoundLib::connect()
 {
 	if (!detected) {
 #ifdef _DEBUG
-		m_hDll = LoadLibrary("sidlib.dll");
+		m_hDll = LOAD_LIBRARY(LIBNAME_DEBUG);
 #else
-		m_hDll = LoadLibrary("sidlib.dll");
+		m_hDll = LOAD_LIBRARY(LIBNAME);
 #endif
-		HRESULT r = GetLastError();
+		//HRESULT r = GetLastError();
 		if (m_hDll) {
-			sidCreate = (_sidCreate)GetProcAddress(m_hDll, "sidCreate");
-			sidDestroy = (_sidDestroy)GetProcAddress(m_hDll, "sidDestroy");
-			sidSetSampleRate = (_sidSetSampleRate)GetProcAddress(m_hDll, "sidSetSampleRate");
-			sidReset = (_sidReset)GetProcAddress(m_hDll, "sidReset");
-			sidPause = (_sidPause)GetProcAddress(m_hDll, "sidPause");
-			sidWriteReg = (_sidWriteReg)GetProcAddress(m_hDll, "sidWriteReg");
-			sidReadReg = (_sidReadReg)GetProcAddress(m_hDll, "sidReadReg");
-			sidCalcSamples = (_sidCalcSamples)GetProcAddress(m_hDll, "sidCalcSamples");
+			sidCreate = (_sidCreate)LOAD_FUNCTION(m_hDll, "sidCreate");
+			sidDestroy = (_sidDestroy)LOAD_FUNCTION(m_hDll, "sidDestroy");
+			sidSetSampleRate = (_sidSetSampleRate)LOAD_FUNCTION(m_hDll, "sidSetSampleRate");
+			sidReset = (_sidReset)LOAD_FUNCTION(m_hDll, "sidReset");
+			sidPause = (_sidPause)LOAD_FUNCTION(m_hDll, "sidPause");
+			sidWriteReg = (_sidWriteReg)LOAD_FUNCTION(m_hDll, "sidWriteReg");
+			sidReadReg = (_sidReadReg)LOAD_FUNCTION(m_hDll, "sidReadReg");
+			sidCalcSamples = (_sidCalcSamples)LOAD_FUNCTION(m_hDll, "sidCalcSamples");
 			if (!(sidCreate && sidDestroy && sidSetSampleRate && sidReset && sidPause && sidWriteReg && sidReadReg && sidCalcSamples))
 				return false;
 		} else
@@ -62,7 +79,7 @@ SIDSoundLib::SIDSoundLib(unsigned int model) : SIDsound(model, 0)
 SIDSoundLib::~SIDSoundLib()
 {
 	sidDestroy();
-	FreeLibrary(m_hDll);
+	CLOSE_LIBRARY(m_hDll);
 	m_hDll = NULL;
 	detected = false;
 }

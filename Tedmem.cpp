@@ -16,7 +16,7 @@
 #include <ctype.h>
 #include "Tedmem.h"
 #include "Sid.h"
-#include "SidSoundLib.h"
+#include "SIDSoundLib.h"
 #include "Cpu.h"
 #include "roms.h"
 #include "Filter.h"
@@ -140,7 +140,7 @@ void TED::forcedReset()
 
 void TED::texttoscreen(int x,int y, const char *scrtxt)
 {
-	register int i =0;
+	int i =0;
 
 	while (scrtxt[i]) {
 		chrtoscreen(x + i * 8, y, scrtxt[i]);
@@ -150,7 +150,7 @@ void TED::texttoscreen(int x,int y, const char *scrtxt)
 
 void TED::chrtoscreen(int x,int y, char scrchr)
 {
-	register int j, k;
+	int j, k;
 	unsigned char *charset = (unsigned char *) kernal+0x1000;
 
 	if (isalpha(scrchr)) {
@@ -237,11 +237,11 @@ void TED::injectCodeToRAM(unsigned int address, unsigned char *from, size_t len)
 void TED::copyToKbBuffer(char *bufferString, unsigned int bufferLength)
 {
 	unsigned int bufferAddress = 0x0527;
-	if (bufferLength == -1) bufferLength = (unsigned int) strlen(bufferString);
+	if (bufferLength == -1U) bufferLength = (unsigned int) strlen(bufferString);
 
 	for (unsigned int i=0; i < bufferLength; i++)
 		Write( bufferAddress + i, bufferString[i]);
-	
+
 	Write(0xEF, bufferLength);
 }
 
@@ -313,7 +313,7 @@ unsigned char TED::Read(unsigned int addr)
 						case 0xFF05 : return timer3>>8;
 						case 0xFF06 : return Ram[0xFF06];
 						case 0xFF07 : return Ram[0xFF07];
-						case 0xFF08 : 
+						case 0xFF08 :
 #if 0
 							if (joyemu)
 								  return keys->feedjoy(Ram[0xFF08])&(keys->feedkey(Ram[0xFD30]));
@@ -535,7 +535,7 @@ void TED::Write(unsigned int addr, unsigned char value)
 							// check for graphics mode (5th b14it)
 							scrattr=(scrattr&~GRAPHMODE)|(value&GRAPHMODE);
 							return;
-						case 0xFF07 : 
+						case 0xFF07 :
 							Ram[0xFF07]=value;
 							// check for narrow screen (38 columns)
 							nrwscr=value&0x08;
@@ -1356,7 +1356,7 @@ void TED::ted_process(short *buffer, unsigned int count)
 	render_ok = false;
 }
 
-void TED::enableChannel(unsigned int channel, bool enable) 
+void TED::enableChannel(unsigned int channel, bool enable)
 {
 	channelMask[channel % 3] = enable ? -1 : 0;
 	if (sidCard) sidCard->enableDisableChannel(channel, enable);

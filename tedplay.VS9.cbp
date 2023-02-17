@@ -12,14 +12,14 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
-					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
-					<Add option="-W" />
 					<Add option="-g" />
+					<Add option="-W" />
 					<Add option="-O0" />
+					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
 				</Compiler>
 				<Linker>
-					<Add library="SDL" />
-					<Add library="SDLmain" />
+					<Add library="SDL2" />
+					<Add library="SDL2main" />
 				</Linker>
 			</Target>
 			<Target title="Release Win32">
@@ -31,8 +31,8 @@
 					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
 				</Compiler>
 				<Linker>
-					<Add library="SDL" />
-					<Add library="SDLmain" />
+					<Add library="SDL2" />
+					<Add library="SDL2main" />
 				</Linker>
 			</Target>
 		</Build>
@@ -43,6 +43,8 @@
 		<Unit filename="CbmTune.cpp" />
 		<Unit filename="Cpu.cpp" />
 		<Unit filename="Filter.cpp" />
+		<Unit filename="SIDSoundLib.cpp" />
+		<Unit filename="SIDSoundLib.h" />
 		<Unit filename="Sid.cpp" />
 		<Unit filename="Sid.h" />
 		<Unit filename="Tedmem.cpp" />
@@ -51,9 +53,6 @@
 		<Unit filename="main.cpp" />
 		<Unit filename="psid.h" />
 		<Unit filename="tedplay.cpp" />
-		<Extensions>
-			<code_completion />
-			<debugger />
-		</Extensions>
+		<Extensions />
 	</Project>
 </CodeBlocks_project_file>
