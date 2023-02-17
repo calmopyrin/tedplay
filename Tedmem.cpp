@@ -125,7 +125,8 @@ TED::TED() : filter(0), sidCard(0)
 void TED::Reset()
 {
 	// clear RAM with powerup pattern
-	for (int i = 0; i < RAMSIZE; Ram[i] = (i >> 1 ) << 1 == i ? 0 : 0xFF, i++);
+	for (int i = 0; i < RAMSIZE; i++)
+		Ram[i] = (i >> 1) << 1 == i ? 0 : 0xFF;
 	// reset oscillators
 	oscillatorReset();
 	if (sidCard) sidCard->reset();

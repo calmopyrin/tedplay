@@ -321,6 +321,7 @@ void tedplayPlay()
 {
 	if (player && !playState) {
 		player->unlock();
+		ted->oscillatorReset();
 		player->play();
 		playState = 1;
 	}
