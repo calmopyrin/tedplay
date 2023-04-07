@@ -87,7 +87,7 @@ void TED::writeSoundReg(unsigned int reg, unsigned char value)
 			setFreq(1, Freq2);
 			break;
 		case 3:
-			if (DAStatus = value & 0x80) {
+			if ((DAStatus = value & 0x80)) {
 				FlipFlop[0] = 1;
 				FlipFlop[1] = 1;
 				oscCount[0] = OscReload[0];
@@ -96,7 +96,7 @@ void TED::writeSoundReg(unsigned int reg, unsigned char value)
 			}
 			Volume = value & 0x0F;
 			if (Volume > 8) Volume = 8;
-			Volume = (Volume << 8) * masterVolume / 1000;
+			Volume = (Volume << 9);
 			Snd1Status = value & 0x10;
 			Snd2Status = value & 0x20;
 			SndNoiseStatus = value & 0x40;
@@ -253,16 +253,13 @@ void TED::renderSound(unsigned int nrsamples, short *buffer)
 			} else if (SndNoiseStatus && noise[NoiseCounter] & channelMask[2]) {
 				result += Volume;
 			}
-			*buffer++ = result;
+			*buffer++ = result * masterVolume / 1000;
 		}   // for
 	}
 }
 
 void TED::setMasterVolume(unsigned int shift)
 {
-	unsigned int vol = Ram[0xFF11] & 0x0f;
-	if (vol > 8) vol = 8;
-	Volume = (vol << 8) * shift / 10;
 	if (!shift)
 		masterVolume = 0;
 	else

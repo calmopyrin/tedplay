@@ -103,7 +103,7 @@ bool Audio::createWav(const char *fileName)
 	wav.nSamplesPerSec = sampleFrq;
 	wav.nAvgBytesPerSec = wav.nSamplesPerSec * wav.nChannels * (wav.nBitsPerSample/8);
 
-	if (wavFileHandle = std::fopen(fileName, "wb")) {
+	if ((wavFileHandle = std::fopen(fileName, "wb"))) {
 		if (std::fwrite(&wav, sizeof(wav), 1, wavFileHandle)) {
 			recording = true;
 		} else {
