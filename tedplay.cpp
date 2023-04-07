@@ -94,6 +94,47 @@ PsidHeader &getPsidHeader()
 	return psidHdr;
 }
 
+static char convertToAscii(unsigned char c, bool isCaps)
+{
+	char rv = 0x20;
+	
+	if (c == 0)
+		rv = ' ';
+	else if (isCaps) {
+		if (c <= 0x1F)
+			rv = c ^ 0x40;
+		else if (c >= 0x60 && c <= 0x7F)
+			rv = c - 0x20;
+		else
+			rv = c;
+	}
+	else {
+		if (c >= 0x01 && c <= 0x1A)
+			rv = c ^ 0x60;
+		else if (c >= 0x1B && c <= 0x1F)
+			rv = c ^ 0x40;
+		else if (c == 0)
+			rv = 64;
+		else if (c >= 0x41 && c <= 0x5A)
+			rv = c ^ 0x20;
+		else if (c >= 0xC1 && c <= 0xDA)
+			rv = c ^ 0x80;
+		else
+			rv = c;
+	}
+	return rv;
+}
+
+static void copyPetsciiToAsc(char* to, char* from, unsigned int size)
+{
+	if (size) {
+		unsigned int i = size - 1;
+		do {
+			to[i] = convertToAscii((unsigned char)from[i], false);
+		} while (i--);
+	}
+}
+
 char *trimTrailingSpace(char* str, unsigned int maxSize)
 {
 	size_t sln = strlen(str);
@@ -431,9 +472,9 @@ void tedPlayGetInfo(void *file, PsidHeader &hdr)
 		else if (!strncmp((const char*)buf + 17, "TEDMUSIC", 8)) {
 			hdr.typeName = "TMF";
 			hdr.loadAddress = buf[28] + (buf[29] << 8);
-			strncpy(hdr.title, trimTrailingSpace((char*)buf + 65, 32), 32);
-			strncpy(hdr.author, trimTrailingSpace((char*)buf + 97, 32), 32);
-			strncpy(hdr.copyright, trimTrailingSpace((char*)buf + 129, 32), 32);
+			copyPetsciiToAsc(hdr.title, trimTrailingSpace((char*)buf + 65, 32), 32);
+			copyPetsciiToAsc(hdr.author, trimTrailingSpace((char*)buf + 97, 32), 32);
+			copyPetsciiToAsc(hdr.copyright, trimTrailingSpace((char*)buf + 129, 32), 32);
 		} else if (!strncmp((const char *) buf, "CBM8M", 5)) {
 			CbmTune tune;
 			//tune.parse(
@@ -554,6 +595,7 @@ int tedplayMain(char *fileName, Audio *player_)
 				bufLength - PSID_MAX_HEADER_LENGTH - corr);
 		}
 		else if (!strncmp((const char*)buf + 17, "TEDMUSIC", 8)) {
+			// specs http://siz.hu/en/tedmusiccollection
 			psidHdr.type = 3;
 			psidHdr.version = buf[25];
 			psidHdr.tracks = buf[34];
@@ -562,9 +604,9 @@ int tedplayMain(char *fileName, Audio *player_)
 			memset(psidHdr.title, 0, sizeof(psidHdr.title));
 			memset(psidHdr.author, 0, sizeof(psidHdr.author));
 			memset(psidHdr.copyright, 0, sizeof(psidHdr.copyright));
-			strncpy(psidHdr.title, trimTrailingSpace((char*)buf + 65, 32), 32);
-			strncpy(psidHdr.author, trimTrailingSpace((char*)buf + 97, 32), 32);
-			strncpy(psidHdr.copyright, trimTrailingSpace((char*)buf + 129, 32), 32);
+			copyPetsciiToAsc(psidHdr.title, trimTrailingSpace((char*)buf + 65, 32), 32);
+			copyPetsciiToAsc(psidHdr.author, trimTrailingSpace((char*)buf + 97, 32), 32);
+			copyPetsciiToAsc(psidHdr.copyright, trimTrailingSpace((char*)buf + 129, 32), 32);
 			psidHdr.loadAddress = buf[0] + (buf[1] << 8);
 			psidHdr.initAddress = buf[30] + (buf[31] << 8);
 			psidHdr.replayAddress = buf[32] + (buf[33] << 8);
@@ -582,15 +624,20 @@ int tedplayMain(char *fileName, Audio *player_)
 			tmfPlayer[3] = psidHdr.initAddress & 0xff;
 			tmfPlayer[4] = psidHdr.initAddress >> 8;
 			tmfPlayer[6] = (buf[38] & 1) ? 0x00 : 0x1B;
-			// timer based timing?
-			if (buf[35] >= 2) {
+			// timer based timing? FIXME: PAL only
+			if (buf[35] >= 2 && buf[35] < 6) {
 				tmfPlayer[11] = timingLo;
 				tmfPlayer[16] = timingHi;
 			}
-			// Vblank based FIXME: PAL only
-			else { 
-				tmfPlayer[11] = 0x46;
-				tmfPlayer[16] = 0x45;
+			// Vblank based - we use timers anyway
+			else {
+				unsigned int frameRate = (buf[35] == 1 || buf[35] == 7) ? 60 : 50;
+				unsigned short timer = (TED_SOUND_CLOCK * 4) / frameRate;
+				// doubleSpeed?
+				if (buf[35] >= 6)
+					timer /= 2;
+				tmfPlayer[11] = timer & 0xFF;
+				tmfPlayer[16] = timer >> 8;
 			}
 			tmfPlayer[32] = psidHdr.replayAddress & 0xff;
 			tmfPlayer[33] = psidHdr.replayAddress >> 8;
