@@ -270,7 +270,7 @@ DWORD AudioDirectSound::GetSamplesPlayed()
 	m_lpDSB->GetCurrentPosition(&dwCurPlayPos, NULL);
 	dwCurPlaySample = dwCurPlayPos/m_WFE.nBlockAlign;
 
-	//Caculate the samples played
+	//Calculate the samples played
 	DWORD dwSamplesPlayed = 0;
 	if (m_dwCircles2 < 1) {
 		return dwCurPlaySample;

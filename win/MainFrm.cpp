@@ -1,4 +1,4 @@
-// MainFrm.cpp : implmentation of the CMainFrame class
+// MainFrm.cpp : implementation of the CMainFrame class
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -449,7 +449,7 @@ LRESULT CMainFrame::OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 LRESULT CMainFrame::OnFileNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	static unsigned int selFilter = 0;
-	_TCHAR szFilter[] = _T("All suported formats (*.tmf;*.c8m;*.prg;*.sid)\0"
+	_TCHAR szFilter[] = _T("All supported formats (*.tmf;*.c8m;*.prg;*.sid)\0"
 						   "*.tmf;*.c8m;*.prg;*.sid\0"
 						   "TED tunes (*.tmf;*.c8m;*.prg)\0"
 						   "*.tmf;*.c8m;*.prg\0"

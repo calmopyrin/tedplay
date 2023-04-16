@@ -112,7 +112,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 			dlgMain.UpdateSubsong();
 		}
 	} catch (_TCHAR *str) {
-		MessageBox(NULL, str, _T("Exception occured."), MB_OK | MB_ICONERROR);
+		MessageBox(NULL, str, _T("Exception occurred."), MB_OK | MB_ICONERROR);
 	}
 	int nRet = dlgMain.ShowWindow(SW_NORMAL);
 
