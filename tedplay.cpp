@@ -174,10 +174,18 @@ unsigned int parsePsid(unsigned char *buf, PsidHeader &psidHdr_)
 void getPsidProperties(PsidHeader &psidHdr_, char *os)
 {
 	char temp[256];
+	SIDsound* sid;
 
-	if (!psidHdr_.tracks) {
-		strcat(os, "");
-		return;
+	if (ted)
+		sid = ted->getSidCard();
+
+	if (sid) {
+		sprintf(os, "SID engine   :%s\r\n", sid->getSidEngineName());
+	} else { 
+		if (!psidHdr_.tracks) {
+			strcat(os, "");
+			return;
+		}
 	}
 	std::string mType;
 	switch (psidHdr_.type) {
@@ -197,22 +205,23 @@ void getPsidProperties(PsidHeader &psidHdr_, char *os)
 			mType = "TMF";
 			break;
 	}
-	sprintf(os,   "Type:         %s\r\n", mType.c_str());
-	sprintf(temp, "Chip:         %s\r\n", psidHdr_.model);
+	sprintf(temp,   "Type         :%s\r\n", mType.c_str());
 	strcat(os, temp);
-	sprintf(temp, "Module:       %s\r\n", psidHdr_.title);
+	sprintf(temp, "Chip         :%s\r\n", psidHdr_.model);
 	strcat(os, temp);
-	sprintf(temp, "Author:       %s\r\n", psidHdr_.author);
+	sprintf(temp, "Module       :%s\r\n", psidHdr_.title);
 	strcat(os, temp);
-	sprintf(temp, "Released:     %s\r\n", psidHdr_.copyright);
+	sprintf(temp, "Author       :%s\r\n", psidHdr_.author);
 	strcat(os, temp);
-	sprintf(temp, "Total tunes:  %u\r\n", psidHdr_.tracks);
+	sprintf(temp, "Released     :%s\r\n", psidHdr_.copyright);
 	strcat(os, temp);
-	sprintf(temp, "Default tune: %u\r\n", psidHdr_.defaultTune);
+	sprintf(temp, "Total tunes  :%u\r\n", psidHdr_.tracks);
 	strcat(os, temp);
-	sprintf(temp, "Init        : $%04X\r\n", psidHdr_.initAddress);
+	sprintf(temp, "Default tune :%u\r\n", psidHdr_.defaultTune);
 	strcat(os, temp);
-	sprintf(temp, "Play address: $%04X\r\n", psidHdr_.replayAddress);
+	sprintf(temp, "Init         :$%04X\r\n", psidHdr_.initAddress);
+	strcat(os, temp);
+	sprintf(temp, "Play address :$%04X\r\n", psidHdr_.replayAddress);
 	strcat(os, temp);
 }
 
@@ -351,18 +360,19 @@ void machineShutDown()
 
 void tedplayPause()
 {
-	if (player && playState) {
+	if (player && playState == 1) {
 		player->pause();
 		player->lock();
+		playState = 2;
 	}
-	playState = 0;
 }
 
 void tedplayPlay()
 {
-	if (player && !playState) {
+	if (player && !(playState == 1)) {
 		player->unlock();
-		ted->oscillatorReset();
+		if (!playState)
+			ted->oscillatorReset();
 		player->play();
 		playState = 1;
 	}
@@ -386,14 +396,14 @@ unsigned int tedplayGetSecondsPlayed()
 
 short tedPlayGetLastSample()
 {
-	if (!playState)
+	if (!(playState == 1))
 		return 0;
 	return player->getLastSample();
 }
 
 short *tedPlayGetLastBuffer(size_t& size)
 {
-	if (!playState)
+	if (!(playState == 1))
 		return 0;
 	return player->getLastBuffer(size);
 }
@@ -745,12 +755,8 @@ int tedplayMain(char *fileName, Audio *player_)
 
 void tedPlaySetVolume(unsigned int masterVolume)
 {
-	if (player)
-		player->pause();
 	if (ted)
 		ted->setMasterVolume(masterVolume);
-	if (player && tedPlayGetState() == 1)
-		player->play();
 }
 
 void tedPlaySetSpeed(unsigned int speedPct)

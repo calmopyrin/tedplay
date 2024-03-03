@@ -30,6 +30,9 @@ public:
 	void enableDisableChannel(unsigned int ch, bool enabled) {
 		voice[ch].disabled = !enabled;
 	}
+	virtual const char* getSidEngineName() {
+		return "yape";
+	}
 
 private:
 

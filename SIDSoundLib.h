@@ -14,6 +14,7 @@ public:
 	unsigned char read(unsigned int adr);
 	void write(unsigned int adr, unsigned char byte);
 	static bool connect();
+	virtual const char* getSidEngineName();
 
 protected:
 	virtual void calcSamples(short* buf, long count);

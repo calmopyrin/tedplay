@@ -235,22 +235,10 @@ LRESULT CMainFrame::OnTrackBar(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bH
 			} // end switch
 			switch (i) {
 				case 0:
-					if (tedPlayGetState()) {
-						tedplayPause();
-						tedPlaySetVolume(value);
-						tedplayPlay();
-					} else {
-						tedPlaySetVolume(value);
-					}
+					tedPlaySetVolume(value);
 					break;
 				case 1:
-					if (tedPlayGetState()) {
-						tedplayPause();
-						tedPlaySetSpeed(value);
-						tedplayPlay();
-					} else {
-						tedPlaySetSpeed(value);
-					}
+					tedPlaySetSpeed(value);
 					break;
 				default: ;
 			}
@@ -332,7 +320,7 @@ void CMainFrame::updateWaveOutWindow(bool updatePosition)
 		}
 	}
 	// update sample history, convert to coordinate
-	if (updatePosition && tedPlayGetState()) {
+	if (updatePosition && tedPlayGetState() == 1) {
 #if 0
 		unsigned int i;
 		int sample = ((tedPlayGetLastSample() + 8192) * wHeight) / 16384;
@@ -449,7 +437,7 @@ LRESULT CMainFrame::OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 LRESULT CMainFrame::OnFileNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	static unsigned int selFilter = 0;
-	_TCHAR szFilter[] = _T("All suported formats (*.tmf;*.c8m;*.prg;*.sid)\0"
+	_TCHAR szFilter[] = _T("All supported formats (*.tmf;*.c8m;*.prg;*.sid)\0"
 						   "*.tmf;*.c8m;*.prg;*.sid\0"
 						   "TED tunes (*.tmf;*.c8m;*.prg)\0"
 						   "*.tmf;*.c8m;*.prg\0"
