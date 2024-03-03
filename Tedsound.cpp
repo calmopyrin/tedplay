@@ -25,6 +25,7 @@ static int             oscCount[2];
 static int             OscReload[2];
 static int             oscStep;
 static unsigned char   noise[256]; // 0-8
+static int			   volumeTable[64];
 
 inline void TED::setFreq(unsigned int channel, int freq)
 {
@@ -40,19 +41,28 @@ void TED::oscillatorReset()
 	oscCount[1] = 0;
 	NoiseCounter = 0;
 	Freq1 = Freq2 = 0;
-	DAStatus = Snd1Status = Snd2Status = 0;
+	DAStatus = Snd1Status = Snd2Status = SndNoiseStatus = 0;
 }
 
 // call only once!
 void TED::oscillatorInit()
 {
+	unsigned int i;
+
 	oscillatorReset();
-	/* initialise im with 0xa8 */
-	int im = 0xa8;
-    for (unsigned int i = 0; i<256; i++) {
+
+	int im = 0xff;
+    for (i = 0; i < 256; i++) {
+		im = (im << 1) | (((im >> 7) ^ (im >> 5) ^ (im >> 4) ^ (im >> 1)) & 1);
 		noise[i] = im & 1;
-		im = (im<<1)+(1^((im>>7)&1)^((im>>5)&1)^((im>>4)&1)^((im>>1)&1));
     }
+	for (i = 0; i < 64; i++) {
+		int chdbl = (i & 0x30) == 0x30;
+		int vol = ((i & 0x0F) < 9 ? (i & 0x0F) : 8);
+		int nonl = ((chdbl && vol > 1) ? vol * vol * 54 - 173 * vol + 162 : 0);
+		volumeTable[i] = (vol && i & 0x30) ?
+			(nonl + (586 + (vol - 1) * 1024) << (chdbl ? 1 : 0)) : 0;
+	}
 	oscStep = (1 << PRECISION) << 0;
 
 	// set player specific parameters
@@ -66,7 +76,7 @@ void TED::oscillatorInit()
 
 void TED::writeSoundReg(unsigned int reg, unsigned char value)
 {
-#if defined(_DEBUG) && 1
+#if defined(_DEBUG) && 0
 	static FILE *f = std::fopen("freqlog.txt", "a");
 	if (f)
 		std::fprintf(f, "%04X <- %02X in cycle %llu", 0xff0e + reg, value, CycleCounter);
@@ -92,7 +102,7 @@ void TED::writeSoundReg(unsigned int reg, unsigned char value)
 				FlipFlop[1] = 1;
 				oscCount[0] = OscReload[0];
 				oscCount[1] = OscReload[1];
-				NoiseCounter = 0xFF;
+				NoiseCounter = 0;
 			}
 			Volume = value & 0x0F;
 			if (Volume > 8) Volume = 8;
@@ -113,8 +123,8 @@ void TED::storeToBuffer(short *buffer, unsigned int count)
 	static double			lp_accu = 0;
 	static double			hp_accu = 0;
 
-	const double hptc=4000.0/1000000;		// 6000us (est) maybe 7000 ?
-	const double hpc=1.0/(hptc * sampleRate * 2.0);	// 2*pi*fc=1/tau..
+	const double hptc = 20000.0/1000000;		// 6000us (est) maybe 7000 ?
+	const double hpc = 1.0/(hptc * sampleRate * 2.0);	// 2*pi*fc=1/tau..
 	
 	// TODO: a proper windowed lowpass FIR filter
 #if 0
@@ -223,11 +233,9 @@ void TED::renderSound(unsigned int nrsamples, short *buffer)
 {
 	// Calculate the buffer...
 	if (DAStatus) {// digi?
-		short sample = 0;//audiohwspec->silence;
-		if (Snd1Status) sample = Volume;
-		if (Snd2Status) sample += Volume;
+		int sample = (volumeTable[Snd1Status | Snd2Status | (Volume >> 9)] & channelMask[2]) * masterVolume / 1000;
 		for (;nrsamples--;) {
-			*buffer++ = sample & channelMask[2];
+			*buffer++ = short(sample);
 		}
 	} else {
 		unsigned int result;
@@ -243,16 +251,24 @@ void TED::renderSound(unsigned int nrsamples, short *buffer)
 			if (dcOutput[1]) {
 				FlipFlop[1] = 1;
 			} else if ((oscCount[1] += oscStep) >= OSCRELOADVAL) {
-				NoiseCounter = (NoiseCounter + 1) & 0xFF;
+				NoiseCounter = (NoiseCounter + 1) % 255;
 				FlipFlop[1] ^= 1;
 				oscCount[1] = OscReload[1] + (oscCount[1] - OSCRELOADVAL);
 			}
-			result = (Snd1Status && FlipFlop[0]) ? (getWaveSample(0, waveForm[0]) & channelMask[0]) : 0;
-			if (Snd2Status && FlipFlop[1] & channelMask[1]) {
-				result += getWaveSample(1, waveForm[1]);
-			} else if (SndNoiseStatus && noise[NoiseCounter] & channelMask[2]) {
-				result += Volume;
+			int s1on = (Snd1Status && FlipFlop[0]);
+			int s2on = (Snd2Status && FlipFlop[1]);
+			int non = SndNoiseStatus && noise[NoiseCounter];
+			result = s1on ? (getWaveSample(0, waveForm[0]) & channelMask[0]) : 0;
+			if (s2on) {
+				result += getWaveSample(1, waveForm[1]) & channelMask[1];
+			} else if (non) {
+				result += volumeTable[0x20 | (Volume >> 9)] & channelMask[2];
 			}
+			if ((s2on || non) && s1on && Volume) {
+				unsigned int vol = Volume >> 9;
+				result = (result * volumeTable[0x30 | vol]) / (volumeTable[0x10 | vol] * 2);
+			}
+
 			*buffer++ = result * masterVolume / 1000;
 		}   // for
 	}
