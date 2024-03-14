@@ -25,7 +25,7 @@ public:
 	virtual void sleep(unsigned int msec) { ::Sleep(msec); };
 	virtual void lock();
 	virtual void unlock();
-	DWORD GetSamplesPlayed();	
+	virtual DWORD GetSamplesPlayed();
 	void TimerCallback();
 
 private:

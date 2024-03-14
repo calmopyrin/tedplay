@@ -283,7 +283,12 @@ BEGIN
             MENUITEM "Sa&wtooth+triangle",          ID_TEDCHANNEL2_SAWTOOTHTRI
             MENUITEM "Squa&re+sawtooth+triangle",   ID_TEDCHANNEL2_SQUSAWTRIAN
         END
-        MENUITEM "Disable &SID",                ID_TOOLS_DISABLESID
+        POPUP "&SID emulation"
+        BEGIN
+            MENUITEM "Disable &SID",                ID_TOOLS_DISABLESID
+            MENUITEM "&YAPE SID engine",            ID_TOOLS_SID_YAPE
+            MENUITEM "&reSID DLL",                  ID_TOOLS_SID_RESID, GRAYED
+        END
         MENUITEM SEPARATOR
         MENUITEM "&Options...",                 IDM_TOOLS_OPTIONS
         MENUITEM SEPARATOR

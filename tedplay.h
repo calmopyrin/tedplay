@@ -19,7 +19,7 @@ extern void tedPlayGetSongs(unsigned int &current, unsigned int &total);
 extern bool tedPlayIsChannelEnabled(unsigned int channel);
 extern void tedPlayChannelEnable(unsigned int channel, bool enable);
 extern int tedPlayGetState();
-extern void tedPlaySidEnable(bool enable, unsigned int disableMask);
+extern unsigned int tedPlaySidEnable(unsigned int typeEnabled, unsigned int disableMask);
 extern void tedPlaySetFilterOrder(unsigned int filterOrder);
 extern unsigned int tedPlayGetWaveform(unsigned int channel);
 extern void tedPlaySetWaveform(unsigned int channel, unsigned int wave);

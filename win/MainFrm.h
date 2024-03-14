@@ -78,7 +78,9 @@ public:
 		COMMAND_ID_HANDLER(IDM_HELP_ABOUT, OnAppAbout)
 		COMMAND_ID_HANDLER(IDM_TOOLS_OPTIONS, OnToolsOptions)
 		COMMAND_ID_HANDLER(ID_TOOLS_RESETPLAYER, OnToolsResetplayer)
-		COMMAND_ID_HANDLER(ID_TOOLS_DISABLESID, OnToolsDisablesid)
+		COMMAND_ID_HANDLER(ID_TOOLS_DISABLESID, OnToolsSetSid)
+		COMMAND_ID_HANDLER(ID_TOOLS_SID_YAPE, OnToolsSetSid)
+		COMMAND_ID_HANDLER(ID_TOOLS_SID_RESID, OnToolsSetSid)
 		COMMAND_RANGE_HANDLER(ID_TEDCHANNEL1_SQUAREWAVE, ID_TEDCHANNEL1_SQUSAWTRIAN, 
 			OnTedchannel1waveformSquarewave)
 		COMMAND_RANGE_HANDLER(ID_TEDCHANNEL2_SQUAREWAVE, ID_TEDCHANNEL2_SQUSAWTRIAN, 
@@ -137,7 +139,7 @@ public:
 	static void MakePathName(LPTSTR lpFileName);
 	static void getDefaultPlayListPath(_TCHAR *sFullPath);
 	LRESULT OnBnClickedCheck3(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT OnToolsDisablesid(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnToolsSetSid(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnTedchannel1waveformSquarewave(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnTedchannel2Squarewave(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	void updateWaveOutWindow(bool updatePosition);

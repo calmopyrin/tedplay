@@ -19,7 +19,7 @@ public:
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 	{
 		CenterWindow(GetParent());
-		SetWindowText(_T("About WinTedplay 1.2.5"));
+		SetWindowText(_T("About WinTedplay 1.3.0"));
 		return TRUE;
 	}
 

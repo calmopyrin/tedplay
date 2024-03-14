@@ -227,3 +227,4 @@ win/TedPlayWTL.VS10.sln.old
 *.db-shm
 *.db-wal
 *.dll
+*.vsidx

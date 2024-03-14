@@ -781,9 +781,9 @@ void tedPlayChannelEnable(unsigned int channel, bool enable)
 	ted->enableChannel(channel, enable);
 }
 
-void tedPlaySidEnable(bool enable, unsigned int disableMask)
+unsigned int tedPlaySidEnable(unsigned int typeEnabled, unsigned int disableMask)
 {
-	ted->enableSidCard(enable, disableMask);
+	return ted->enableSidCard(typeEnabled, disableMask);
 }
 
 bool tedPlayCreateWav(const char *fileName)

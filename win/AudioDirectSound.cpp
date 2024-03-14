@@ -10,7 +10,7 @@
 static void CALLBACK TimerProcess(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD dw1, DWORD dw2)
 {
 	AudioDirectSound *pDDS = (AudioDirectSound *)dwUser;
-	pDDS->TimerCallback();	
+	pDDS->TimerCallback();
 }
 
 HRESULT WINAPI AudioDirectSound::cb(LPBYTE lpDesBuf, const DWORD dwRequiredSamples, DWORD &dwRetSamples, LPVOID lpData)
@@ -177,6 +177,12 @@ void AudioDirectSound::SetFormat(WAVEFORMATEX WFE)
 }
 //</SetFormat>
 
+VOID CALLBACK WaitOrTimerCallback(PVOID lpParameter, BOOLEAN TimerOrWaitFired)
+{
+	AudioDirectSound* pDDS = (AudioDirectSound*)lpParameter;
+	pDDS->TimerCallback();
+}
+
 void AudioDirectSound::play()
 {
 	//Check if the DirectSound was created successfully
@@ -201,8 +207,13 @@ void AudioDirectSound::play()
 	paused = false;
 	// Start playing
 	m_lpDSB->Play(0, 0, DSBPLAY_LOOPING);
-	m_timerID = timeSetEvent(5, 5, (LPTIMECALLBACK) TimerProcess, 
+#if 1
+	m_timerID = timeSetEvent(1, 0, (LPTIMECALLBACK) TimerProcess, 
 		(DWORD_PTR)this, TIME_PERIODIC | TIME_CALLBACK_FUNCTION | TIME_KILL_SYNCHRONOUS);
+#else
+	HANDLE mHnd;
+	CreateTimerQueueTimer(&mHnd, NULL, (WAITORTIMERCALLBACK) WaitOrTimerCallback, this, 1, 1, 0);
+#endif
 }
 //</Play>
 

@@ -17,6 +17,7 @@
 #include "Audio.h"
 #include "Psid.h"
 #include "TedPlay.h"
+#include "SIDSoundLib.h"
 
 #include "registry.h"
 #ifdef _DEBUG
@@ -75,6 +76,8 @@ LRESULT CMainFrame::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	//	IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_LOADTRANSPARENT);
 	//btnTemp.Attach(GetDlgItem(IDC_BUTTON_TEST));
 	//btnTemp.SetIcon(hicon);
+	if (SIDSoundLib::connect())
+		EnableMenuItem(GetMenu(), ID_TOOLS_SID_RESID, MF_ENABLED);
 
 	// Edit controls
 	stTitle.Attach(GetDlgItem(IDC_EDIT_MODULE));
@@ -127,6 +130,11 @@ LRESULT CMainFrame::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 		
 	// Read settings
 	unsigned int regVal = 0;
+	if (getRegistryValue(_T("EnableSid"), regVal)) {
+		if (regVal > 2) regVal = 0;
+		::CheckMenuItem(GetMenu(), ID_TOOLS_DISABLESID + regVal, MF_CHECKED);
+	} else
+		::CheckMenuItem(GetMenu(), ID_TOOLS_SID_YAPE, MF_CHECKED);
 	if (getRegistryValue(_T("ShowPlayList"), regVal) && regVal) {
 		playListViewDialog.ShowWindow(SW_NORMAL);
 		::CheckMenuItem(GetMenu(), IDM_VIEW_PLAYLIST, MF_CHECKED);
@@ -177,8 +185,9 @@ LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	setRegistryValue(_T("ShowPlayList"), regVal);
 	regVal = ::IsWindowVisible(GetDlgItem(IDC_WAVEOUT));
 	setRegistryValue(_T("ShowWavePlotter"), regVal);
-	regVal = GetMenuState(GetMenu(), ID_TOOLS_DISABLESID, MF_BYCOMMAND) == MF_CHECKED;
-	setRegistryValue(_T("DisableSID"), regVal);
+	regVal = GetMenuState(GetMenu(), ID_TOOLS_SID_YAPE, MF_BYCOMMAND) == MF_CHECKED ? 1 :0 +
+		GetMenuState(GetMenu(), ID_TOOLS_SID_RESID, MF_BYCOMMAND) == MF_CHECKED ? 2 : 0;
+	setRegistryValue(_T("EnableSid"), regVal);
 	//
 	bHandled = FALSE;
 	DestroyWindow();
@@ -705,19 +714,25 @@ LRESULT CMainFrame::OnToolsResetplayer(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 	return 0;
 }
 
-LRESULT CMainFrame::OnToolsDisablesid(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT CMainFrame::OnToolsSetSid(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	bool wasPlaying = tedPlayGetState() == 1;
 	if (wasPlaying) tedplayPause();
-	if (!GetMenuState(GetMenu(), ID_TOOLS_DISABLESID, MF_BYCOMMAND)) {
-		tedPlaySidEnable(false, 0);
+	if (wID == ID_TOOLS_DISABLESID) {
+		tedPlaySidEnable(0, 0);
 		::CheckMenuItem(GetMenu(), ID_TOOLS_DISABLESID, MF_CHECKED);
+		::CheckMenuItem(GetMenu(), ID_TOOLS_SID_YAPE, MF_UNCHECKED);
+		::CheckMenuItem(GetMenu(), ID_TOOLS_SID_RESID, MF_UNCHECKED);
 	} else {
+		unsigned int type = wID - ID_TOOLS_DISABLESID;
 		unsigned int enabled = cbChannels[0].GetCheck();
 		enabled = enabled|(cbChannels[1].GetCheck() << 1);
 		enabled = enabled|(cbChannels[2].GetCheck() << 2);
-		tedPlaySidEnable(true, ~enabled);
+		unsigned int r = tedPlaySidEnable(type, ~enabled);
 		::CheckMenuItem(GetMenu(), ID_TOOLS_DISABLESID, MF_UNCHECKED);
+		::CheckMenuItem(GetMenu(), ID_TOOLS_SID_YAPE, MF_UNCHECKED);
+		::CheckMenuItem(GetMenu(), ID_TOOLS_SID_RESID, MF_UNCHECKED);
+		::CheckMenuItem(GetMenu(), ID_TOOLS_DISABLESID + r, MF_CHECKED);
 	}
 	if (wasPlaying) tedplayPlay();
 	return 0;

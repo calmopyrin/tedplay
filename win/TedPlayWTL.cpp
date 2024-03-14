@@ -85,9 +85,13 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 		// Read settings
 		// probably no race condition yet...
 		unsigned int regVal = 0;
-		if (getRegistryValue(_T("DisableSID"), regVal) && regVal) {
-			tedPlaySidEnable(false, 0);
-			::CheckMenuItem(dlgMain.GetMenu(), ID_TOOLS_DISABLESID, MF_CHECKED);
+		if (getRegistryValue(_T("EnableSID"), regVal)) {
+			unsigned int r = tedPlaySidEnable(regVal, 0);
+			::CheckMenuItem(dlgMain.GetMenu(), ID_TOOLS_DISABLESID + r, MF_CHECKED);
+		}
+		else {
+			tedPlaySidEnable(1, 0);
+			::CheckMenuItem(dlgMain.GetMenu(), ID_TOOLS_SID_YAPE, MF_CHECKED);
 		}
 		regVal = 0;
 		// read waveform settings
@@ -112,7 +116,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 			dlgMain.UpdateSubsong();
 		}
 	} catch (_TCHAR *str) {
-		MessageBox(NULL, str, _T("Exception occured."), MB_OK | MB_ICONERROR);
+		MessageBox(NULL, str, _T("Exception occurred."), MB_OK | MB_ICONERROR);
 	}
 	int nRet = dlgMain.ShowWindow(SW_NORMAL);
 
@@ -146,7 +150,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 
 	HANDLE m_hMutex = ::CreateMutex(NULL, FALSE, _T("WinTedPlayInstance"));
 	if( m_hMutex != NULL ) { // indicates running instance
-		if(::GetLastError() == ERROR_ALREADY_EXISTS)
+		if (::GetLastError() == ERROR_ALREADY_EXISTS)
 			return FALSE;   // forbid further processing
 	}
 

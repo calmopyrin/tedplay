@@ -117,7 +117,7 @@ class TED : public MemoryHandler {
 	unsigned int getTimeSinceLastReset();
 	void resetCycleCounter() { lastResetCycle = CycleCounter; }
 	SIDsound *getSidCard() { return sidCard; };
-	void enableSidCard(bool enable, unsigned int disableMask);
+	unsigned int enableSidCard(unsigned int sidEmuType, unsigned int disableMask);
 	static unsigned int masterVolume;
 
   private:
@@ -186,6 +186,7 @@ class TED : public MemoryHandler {
 	unsigned int sampleRate;
 	unsigned int filterOrder;
 	SIDsound *sidCard;
+	unsigned int sidEmuType;
 
 	friend class Vic2mem;
 };
