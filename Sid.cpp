@@ -202,7 +202,7 @@ void SIDsound::reset(void)
 		voice[v].freq = voice[v].pw = 0;
 		voice[v].envCurrLevel = voice[v].envSustainLevel = 0;
 		voice[v].gate = voice[v].ring = voice[v].test = 0;
-		voice[v].filter = voice[v].sync = false;
+		voice[v].filter = voice[v].sync = 0;
 		voice[v].muted = 0;
 		// Initial value of internal shift register
 		voice[v].shiftReg = 0x7FFFFC;
@@ -245,7 +245,7 @@ inline int SIDsound::getWaveSample(SIDVoice &v)
 		case WAVE_NONE:
 			if (v.accu) {
 				int rv = (v.accu >> 12);
-				v.accu >>= 1;
+				//v.accu >>= 1;
 				//return rv;
 			}
 		default:
@@ -305,15 +305,13 @@ void SIDsound::write(unsigned int adr, unsigned char value)
 		case 2:
 		case 9:
 		case 16:
-			v.pw >>= 12;
-			v.pw = ((v.pw & 0x0f00) | value) << 12;
+			v.pw = (v.pw & 0xf00000) | (value << 12);
 			break;
 
 		case 3:
 		case 10:
 		case 17:
-			v.pw >>= 12;
-			v.pw = ((v.pw & 0xff) | ((value & 0xf) << 8)) << 12;
+			v.pw = (v.pw & 0x0ff000) | ((value & 0xf) << 20);
 			break;
 
 		case 4:
@@ -331,7 +329,7 @@ void SIDsound::write(unsigned int adr, unsigned char value)
 				}
 				v.gate = value & 1;
 			}
-			v.modulatedBy->sync = value & 2;
+			v.sync = value & 2;
 			v.ring = value & 4;
 			if ((value & 8) && !v.test) {
 				v.accu = 0; //(model_ >= SID8580) ? 0 : 0;
@@ -442,7 +440,7 @@ inline unsigned int SIDsound::clock()
 // simplified version of http://bel.fi/~alankila/c64-sw/index-cpp.html
 inline int SIDsound::filterOutput(unsigned int cycles, int Vi)
 {
-	int w0deltaTime = w0 >> 6;
+	const int w0deltaTime = w0 >> 6;
 	Vi >>= 7;
 	unsigned int count = cycles;
 
@@ -563,9 +561,9 @@ void SIDsound::calcSamples(short *buf, long accu)
 				v.accu += add;
 				// FIXME Apply syncing
 #if 1
-				if (v.sync && !(accPrev & 0x800000) && (v.accu & 0x800000)
+				if (v.modulatesThis->sync && !(v.accPrev & 0x800000) && (v.accu & 0x800000)
            			)
-					v.modulatesThis->accu = 0;
+					v.modulatesThis->accu = (v.accu - 0x800000) & 0xFFFFFF;
 #else
 				if (v.sync && !(accPrev & 0x800000) && (v.accu & 0x800000)
 					/*&& !(v.modulatedBy->sync && !(v.modulatedBy->accPrev & 0x80000) &&
