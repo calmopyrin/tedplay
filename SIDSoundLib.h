@@ -9,7 +9,7 @@ public:
 	virtual ~SIDSoundLib();
 	virtual void reset();
 	virtual void setSampleRate(unsigned int sampleRate);
-	void SetModel(unsigned int model);
+	virtual void setModel(unsigned int model);
 	virtual void setFrequency(unsigned int);
 	unsigned char read(unsigned int adr);
 	void write(unsigned int adr, unsigned char byte);

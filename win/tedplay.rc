@@ -8,8 +8,7 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include <windows.h>
-#include <atlres.h>
-
+#include <atlres.h>
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -163,7 +162,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,86,176,50,14
     ICON            IDI_APPICON,IDC_STATIC,7,34,20,20
     LTEXT           "Commodore 264 TED+SID TMF/C8M/PSID/PRG format player",IDC_STATIC,14,8,194,13,SS_CENTERIMAGE
-    LTEXT           "© 2012-2015,2021-2023 Attila Grósz\nhttps://github.com/calmopyrin/tedplay",IDC_STATIC,60,23,127,21
+    LTEXT           "© 2012-2015,2021-2024 Attila Grósz\nhttps://github.com/calmopyrin/tedplay",IDC_STATIC,60,23,127,21
     LTEXT           "This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 2 of the License, or (at your option) any later version.",IDC_STATIC,40,48,176,42
     LTEXT           "This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.",IDC_STATIC,40,92,176,43
     LTEXT           "You should have received a copy of the GNU General Public License along with this program.  If not, see http://www.gnu.org/licenses/",IDC_STATIC,40,139,176,30
@@ -230,6 +229,17 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_ABOUTBOX AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Menu
 //
 
@@ -240,7 +250,7 @@ BEGIN
         MENUITEM "&Open...\tCtrl+O",            IDM_FILE_OPEN
         MENUITEM SEPARATOR
         MENUITEM "&Save to WAV...\tCtrl+S",     IDM_FILE_CREATEWAV
-        MENUITEM "&Memory dump",                ID_FILE_MEMORYDUMP
+        MENUITEM "&Memory Dump",                ID_FILE_MEMORYDUMP
         MENUITEM SEPARATOR
         POPUP "&Control"
         BEGIN
@@ -258,12 +268,13 @@ BEGIN
     END
     POPUP "&View"
     BEGIN
-        MENUITEM "Show &playlist",              IDM_VIEW_PLAYLIST, GRAYED
-        MENUITEM "Show &waveplotter",           ID_VIEW_SHOWWAVEPLOTTER
+        MENUITEM "Show &Playlist",              IDM_VIEW_PLAYLIST, GRAYED
+        MENUITEM "Show &Waveplotter",           ID_VIEW_SHOWWAVEPLOTTER
+        MENUITEM "Show &Screen",                ID_VIEW_SHOWSCREEN
     END
     POPUP "&Tools"
     BEGIN
-        POPUP "TED channel &1"
+        POPUP "TED Channel &1"
         BEGIN
             MENUITEM "&Square wave",                ID_TEDCHANNEL1_SQUAREWAVE
             MENUITEM "S&awtooth-ish wave",          ID_TEDCHANNEL1_SAWTOOTHWAVE
@@ -273,7 +284,7 @@ BEGIN
             MENUITEM "Sa&wtooth+triangle",          ID_TEDCHANNEL1_SAWTOOTHTRI
             MENUITEM "Squa&re+sawtooth+triangle",   ID_TEDCHANNEL1_SQUSAWTRIAN
         END
-        POPUP "TED channel &2"
+        POPUP "TED Channel &2"
         BEGIN
             MENUITEM "&Square wave",                ID_TEDCHANNEL2_SQUAREWAVE
             MENUITEM "S&awtooth-ish wave",          ID_TEDCHANNEL2_SAWTOOTHWAVE
@@ -283,16 +294,22 @@ BEGIN
             MENUITEM "Sa&wtooth+triangle",          ID_TEDCHANNEL2_SAWTOOTHTRI
             MENUITEM "Squa&re+sawtooth+triangle",   ID_TEDCHANNEL2_SQUSAWTRIAN
         END
-        POPUP "&SID emulation"
+        POPUP "&SID Emulation"
         BEGIN
             MENUITEM "Disable &SID",                ID_TOOLS_DISABLESID
             MENUITEM "&YAPE SID engine",            ID_TOOLS_SID_YAPE
             MENUITEM "&reSID DLL",                  ID_TOOLS_SID_RESID, GRAYED
         END
+        POPUP "SID &Model"
+        BEGIN
+            MENUITEM "&Auto",                       ID_SIDMODEL_AUTO
+            MENUITEM "Force &6581",                 ID_SIDMODEL_FORCE6581
+            MENUITEM "Force &8580",                 ID_SIDMODEL_FORCE8580
+        END
         MENUITEM SEPARATOR
         MENUITEM "&Options...",                 IDM_TOOLS_OPTIONS
         MENUITEM SEPARATOR
-        MENUITEM "&Reset player",               ID_TOOLS_RESETPLAYER
+        MENUITEM "&Reset Player",               ID_TOOLS_RESETPLAYER
     END
     POPUP "&Help"
     BEGIN
@@ -349,14 +366,23 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_APPICON             ICON                    "chip.ico"
+
 IDI_ICON_OPEN           ICON                    "open.ico"
+
 IDI_ICON_SAVE           ICON                    "save.ico"
+
 IDI_ICON_PLAY           ICON                    "play.ico"
+
 IDI_ICON_PAUSE          ICON                    "pause.ico"
+
 IDI_ICON_PREV           ICON                    "prev.ico"
+
 IDI_ICON_NEXT           ICON                    "next.ico"
+
 IDI_ICON_STOP           ICON                    "stop.ico"
+
 IDI_PROPPAGEAUDIO       ICON                    "audio.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

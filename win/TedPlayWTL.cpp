@@ -85,14 +85,20 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 		// Read settings
 		// probably no race condition yet...
 		unsigned int regVal = 0;
-		if (getRegistryValue(_T("EnableSID"), regVal)) {
-			unsigned int r = tedPlaySidEnable(regVal, 0);
-			::CheckMenuItem(dlgMain.GetMenu(), ID_TOOLS_DISABLESID + r, MF_CHECKED);
+		if (getRegistryValue(_T("EnableSid"), regVal)) {
+			if (regVal > 2) regVal = 0;
+			::CheckMenuItem(dlgMain.GetMenu(), ID_TOOLS_DISABLESID + regVal, MF_CHECKED);
+			if (regVal) tedPlaySidEnable(regVal, 0);
 		}
-		else {
-			tedPlaySidEnable(1, 0);
+		else
 			::CheckMenuItem(dlgMain.GetMenu(), ID_TOOLS_SID_YAPE, MF_CHECKED);
+		if (getRegistryValue(_T("SidModel"), regVal)) {
+			if (regVal > 2) regVal = 0;
+			::CheckMenuItem(dlgMain.GetMenu(), ID_SIDMODEL_AUTO + regVal, MF_CHECKED);
 		}
+		else
+			::CheckMenuItem(dlgMain.GetMenu(), ID_SIDMODEL_AUTO, MF_CHECKED);
+		tedPlaySidModelSelection(regVal);
 		regVal = 0;
 		// read waveform settings
 		if (getRegistryValue(_T("TedChannel1WaveForm"), regVal) && regVal) {

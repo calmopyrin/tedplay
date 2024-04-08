@@ -88,6 +88,7 @@ static CPU *cpu;
 static Audio *player;
 static PsidHeader psidHdr;
 static int playState = 0;
+static unsigned int sidModelSelect = 0;
 
 PsidHeader &getPsidHeader()
 {
@@ -133,6 +134,23 @@ static void copyPetsciiToAsc(char* to, char* from, unsigned int size)
 			to[i] = convertToAscii((unsigned char)from[i], false);
 		} while (i--);
 	}
+}
+
+void tedShowScreenData(char* out)
+{
+	const bool isCaps = !(ted->Read(0xFF13) & 4);
+	const unsigned int pageAddr = (ted->Read(0xFF14) & 0xF8) << 8;
+	unsigned char* in = ted->Ram + (pageAddr | 0x400);
+	unsigned int i, j;
+	for (i = 0; i < 25; i++) {
+		for (j = 0; j < 40; j++) {
+			*out++ = convertToAscii(*in, isCaps);
+			in++;
+		}
+		*out++ = '\r';
+		*out++ = '\n';
+	}
+	*out++ = 0;
 }
 
 char *trimTrailingSpace(char* str, unsigned int maxSize)
@@ -207,7 +225,10 @@ void getPsidProperties(PsidHeader &psidHdr_, char *os)
 	}
 	sprintf(temp,   "Type         :%s\r\n", mType.c_str());
 	strcat(os, temp);
-	sprintf(temp, "Chip         :%s\r\n", psidHdr_.model);
+	sprintf(temp, "Chip (song)  :%s\r\n", psidHdr_.model);
+	strcat(os, temp);
+	sprintf(temp, "Chip (player):%s\r\n", sidModelSelect ?
+		(sidModelSelect == 1 ? "SID6581" : "SID8580") : psidHdr_.model);
 	strcat(os, temp);
 	sprintf(temp, "Module       :%s\r\n", psidHdr_.title);
 	strcat(os, temp);
@@ -551,10 +572,16 @@ int tedplayMain(char *fileName, Audio *player_)
 				ted->ChangeMemBankSetup(true);
 				// v2 SID files have flags
 				if (psidHdr.version == 2 && (readPsid16(buf, PSID_FLAGS) & 0x20)) {
-					sid->setModel(SID8580);
+					if (sidModelSelect != SID6581 + 1)
+						sid->setModel(SID8580);
+					else
+						sid->setModel(SID6581);
 					strcpy(psidHdr.model, "SID8580");
 				} else {
-					sid->setModel(SID6581);
+					if (sidModelSelect != SID8580 + 1)
+						sid->setModel(SID6581);
+					else
+						sid->setModel(SID8580);
 					strcpy(psidHdr.model, "SID6581");
 				}
 			} else {
@@ -665,8 +692,12 @@ int tedplayMain(char *fileName, Audio *player_)
 			strcpy(psidHdr.model, "TED8360");
 			if (buf[38] & 2) {
 				SIDsound* sid = ted->getSidCard();
-				if (sid)
-					sid->setModel(SID8580);
+				if (sid) {
+					if (sidModelSelect != SID6581 + 1)
+						sid->setModel(SID8580);
+					else
+						sid->setModel(SID6581);
+				}
 			}
 
 		} else if (!strncmp((const char *) buf, "CBM8M", 5)) {
@@ -723,8 +754,12 @@ int tedplayMain(char *fileName, Audio *player_)
 			ted->injectCodeToRAM(psidHdr.loadAddress, buf + 2, bufLength - 2);
 			ted->writeProtectedPlayerMemory(playerStartAddress, prgPlayer, sizeof(prgPlayer));
 			SIDsound *sid = ted->getSidCard();
-			if (sid)
-				sid->setModel(SID8580);
+			if (sid) {
+				if (sidModelSelect != SID6581 + 1)
+					sid->setModel(SID8580);
+				else
+					sid->setModel(SID6581);
+			}
 		}
 #if 1
 		cpu->setPC(playerStartAddress);
@@ -795,4 +830,10 @@ void tedPlayCloseWav()
 {
 	if (player)
 		player->closeWav();
+}
+
+void tedPlaySidModelSelection(unsigned int model)
+{
+	// 0 - Auto, 1 - force 6581, 2 - force 8580
+	sidModelSelect = model;
 }

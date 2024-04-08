@@ -90,6 +90,9 @@
     <ClInclude Include="..\SIDSoundLib.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="ScrnFrm.h">
+      <Filter>Headers\Win</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="audio.ico">

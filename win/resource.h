@@ -23,6 +23,7 @@
 #define IDI_ICON_STOP                   116
 #define IDD_TOOLS_OPTIONS_AUDIO         117
 #define IDI_PROPPAGEAUDIO               120
+#define IDD_DIALOG_SCREEN				121
 #define IDR_MAINFRAME                   1000
 #define IDC_BUTTON_PREV                 1000
 #define IDR_MENU                        1000
@@ -83,8 +84,8 @@
 #define IDC_PLAY_TUNE                   40016
 #define ID_ROOT_OPENFILELOCATION        40017
 #define ID_TOOLS_DISABLESID             40018
-#define ID_TOOLS_SID_YAPE				40019
-#define ID_TOOLS_SID_RESID				40020
+#define ID_TOOLS_SID_YAPE               40019
+#define ID_TOOLS_SID_RESID              40020
 #define ID_TEDCHANNEL1_SQUAREWAVE       40022
 #define ID_TEDCHANNEL1_SAWTOOTHWAVE     40023
 #define ID_TEDCHANNEL1_SQUARESAW        40024
@@ -101,13 +102,18 @@
 #define ID_TEDCHANNEL2_SQUSAWTRIAN      40035
 #define IDM_FILE_CREATEWAV              40036
 #define ID_VIEW_SHOWWAVEPLOTTER         40037
+#define ID_TOOLS_SIDMODEL               40038
+#define ID_SIDMODEL_AUTO                40039
+#define ID_SIDMODEL_FORCE6581           40040
+#define ID_SIDMODEL_FORCE8580           40041
+#define ID_VIEW_SHOWSCREEN              40042
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        122
-#define _APS_NEXT_COMMAND_VALUE         40038
+#define _APS_NEXT_COMMAND_VALUE         40043
 #define _APS_NEXT_CONTROL_VALUE         1031
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

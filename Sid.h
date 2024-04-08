@@ -20,7 +20,7 @@ public:
 	virtual void setReplayFreq() {
 		calcEnvelopeTable();
 	};
-	void setModel(unsigned int model);
+	virtual void setModel(unsigned int model);
 	virtual void setFrequency(unsigned int sid_frequency);
 	virtual void setSampleRate(unsigned int sampleRate_);
 	void calcEnvelopeTable();

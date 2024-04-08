@@ -13,6 +13,7 @@
 #include "CFileOpenDialog.h"
 #include "PropertiesDlg.h"
 #include "PropSheet.h"
+#include "ScrnFrm.h"
 
 #include "Audio.h"
 #include "Psid.h"
@@ -130,11 +131,6 @@ LRESULT CMainFrame::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 		
 	// Read settings
 	unsigned int regVal = 0;
-	if (getRegistryValue(_T("EnableSid"), regVal)) {
-		if (regVal > 2) regVal = 0;
-		::CheckMenuItem(GetMenu(), ID_TOOLS_DISABLESID + regVal, MF_CHECKED);
-	} else
-		::CheckMenuItem(GetMenu(), ID_TOOLS_SID_YAPE, MF_CHECKED);
 	if (getRegistryValue(_T("ShowPlayList"), regVal) && regVal) {
 		playListViewDialog.ShowWindow(SW_NORMAL);
 		::CheckMenuItem(GetMenu(), IDM_VIEW_PLAYLIST, MF_CHECKED);
@@ -188,6 +184,9 @@ LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	regVal = GetMenuState(GetMenu(), ID_TOOLS_SID_YAPE, MF_BYCOMMAND) == MF_CHECKED ? 1 :0 +
 		GetMenuState(GetMenu(), ID_TOOLS_SID_RESID, MF_BYCOMMAND) == MF_CHECKED ? 2 : 0;
 	setRegistryValue(_T("EnableSid"), regVal);
+	regVal = GetMenuState(GetMenu(), ID_SIDMODEL_FORCE6581, MF_BYCOMMAND) == MF_CHECKED ? 1 : 0 +
+		GetMenuState(GetMenu(), ID_SIDMODEL_FORCE8580, MF_BYCOMMAND) == MF_CHECKED ? 2 : 0;
+	setRegistryValue(_T("SidModel"), regVal);
 	//
 	bHandled = FALSE;
 	DestroyWindow();
@@ -818,5 +817,25 @@ LRESULT CMainFrame::OnViewShowwaveplotter(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 		::ShowWindow(wpHwnd, SW_SHOWNA);
 	}
 	::CheckMenuItem(GetMenu(), ID_VIEW_SHOWWAVEPLOTTER, wasVisible ? MF_UNCHECKED : MF_CHECKED);
+	return 0;
+}
+
+LRESULT CMainFrame::OnSetSidModel(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	unsigned int selection = GetMenuState(GetMenu(), ID_SIDMODEL_FORCE6581, MF_BYCOMMAND) == MF_CHECKED ? 1 : 0 +
+		GetMenuState(GetMenu(), ID_SIDMODEL_FORCE8580, MF_BYCOMMAND) == MF_CHECKED ? 2 : 0;
+	::CheckMenuItem(GetMenu(), ID_SIDMODEL_AUTO + selection, MF_UNCHECKED);
+	::CheckMenuItem(GetMenu(), wID, MF_CHECKED);
+
+	tedPlaySidModelSelection(wID - ID_SIDMODEL_AUTO);
+
+	return 0;
+}
+
+LRESULT CMainFrame::OnViewShowscreen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	// TODO: Add your command handler code here
+	CScreenDlg scrnDlg;
+	scrnDlg.DoModal();
 	return 0;
 }
