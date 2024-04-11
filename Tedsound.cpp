@@ -7,7 +7,7 @@
 #endif
 
 #define PRECISION 0
-#define OSCRELOADVAL (0x3FF << PRECISION)
+#define OSCRELOADVAL (0x400 << PRECISION)
 #define AMP(X) ((unsigned int)(17.0f * pow(double(X), 1.5f)))
 
 unsigned int		   TED::masterVolume;
@@ -248,12 +248,20 @@ void TED::renderSound(unsigned int nrsamples, short *buffer)
 				oscCount[0] = OscReload[0] + (oscCount[0] - OSCRELOADVAL);
 			}
 			// Channel 2
+			static bool channelOverFlow = false;
 			if (dcOutput[1]) {
 				FlipFlop[1] = 1;
-			} else if ((oscCount[1] += oscStep) >= OSCRELOADVAL) {
-				NoiseCounter = (NoiseCounter + 1) % 255;
-				FlipFlop[1] ^= 1;
-				oscCount[1] = OscReload[1] + (oscCount[1] - OSCRELOADVAL);
+			}
+			else {
+				if (channelOverFlow)
+					NoiseCounter = (NoiseCounter + 1) % 255;
+				if ((oscCount[1] += oscStep) >= OSCRELOADVAL) {
+					channelOverFlow = true;
+					FlipFlop[1] ^= 1;
+					oscCount[1] = OscReload[1] + (oscCount[1] - OSCRELOADVAL);
+				}
+				else
+					channelOverFlow = false;
 			}
 			int s1on = (Snd1Status && FlipFlop[0]);
 			int s2on = (Snd2Status && FlipFlop[1]);
