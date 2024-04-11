@@ -774,7 +774,7 @@ LRESULT CMainFrame::OnToolsOptions(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 				SetTimer(0, vAutoSkipInterval * 1000);
 		}
 		if (restartReqd) {
-			MessageBox(_T("For the changes to take effect you have restart the application!"), _T("Warning!"), 
+			MessageBox(_T("For the changes to take effect you must restart the application!"), _T("Warning!"), 
 				MB_OK | MB_ICONINFORMATION);
 		} else {
 			//
@@ -810,7 +810,7 @@ LRESULT CMainFrame::OnViewShowwaveplotter(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 {
 	HWND wpHwnd = GetDlgItem(IDC_WAVEOUT);
 	BOOL wasVisible = ::IsWindowVisible(wpHwnd);
-	// TODO: Add your command handler code here
+
 	if (wasVisible) {
 		::ShowWindow(wpHwnd, SW_HIDE);
 	} else {
@@ -834,7 +834,6 @@ LRESULT CMainFrame::OnSetSidModel(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 
 LRESULT CMainFrame::OnViewShowscreen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	// TODO: Add your command handler code here
 	CScreenDlg scrnDlg;
 	scrnDlg.DoModal();
 	return 0;
