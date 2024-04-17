@@ -320,7 +320,11 @@ bool psidChangeTrack(int direction)
 		ted->writeProtectedPlayerMemory(playerStartAddress, tmfPlayer, sizeof(tmfPlayer));
 	}
 	else {
-		ted->writeProtectedPlayerMemory(playerStartAddress, psidPlayer, sizeof(psidPlayer));
+		//ted->writeProtectedPlayerMemory(playerStartAddress, psidPlayer, sizeof(psidPlayer));
+		unsigned short timer = (TED_SOUND_CLOCK * 4) / (psidHdr.speed & (1 << (psidHdr.current - 1)) ? 60 : 50);
+		tmfPlayer[11] = timer & 0xFF;
+		tmfPlayer[16] = timer >> 8;
+		ted->writeProtectedPlayerMemory(playerStartAddress, tmfPlayer, sizeof(tmfPlayer));
 	}
 	cpu->setPC(playerStartAddress);
 	return true;
@@ -489,16 +493,18 @@ void tedPlayGetInfo(void *file, PsidHeader &hdr)
 	strcpy(hdr.copyright, "Unknown");
 
 	if (fread(buf, 1, 256, fp) >= 64) {
-		if (!strncmp((const char *) buf + 1, "SID", 3)) {
+		if (!strncmp((const char*)buf + 1, "SID", 3)) {
 			parsePsid(buf, hdr);
 			hdr.loadAddress = buf[PSID_START + 1] + (buf[PSID_START] << 8);
 			if (!hdr.loadAddress)
 				hdr.loadAddress = buf[PSID_MAX_HEADER_LENGTH] + (buf[PSID_MAX_HEADER_LENGTH + 1] << 8);
 			if (buf[0] == 'P') {
 				hdr.typeName = "PSID";
-			} else {
+			}
+			else {
 				hdr.typeName = "RSID";
 			}
+			return;
 		}
 		else if (!strncmp((const char*)buf + 17, "TEDMUSIC", 8)) {
 			hdr.typeName = "TMF";
@@ -506,15 +512,17 @@ void tedPlayGetInfo(void *file, PsidHeader &hdr)
 			copyPetsciiToAsc(hdr.title, trimTrailingSpace((char*)buf + 65, 32), 32);
 			copyPetsciiToAsc(hdr.author, trimTrailingSpace((char*)buf + 97, 32), 32);
 			copyPetsciiToAsc(hdr.copyright, trimTrailingSpace((char*)buf + 129, 32), 32);
-		} else if (!strncmp((const char *) buf, "CBM8M", 5)) {
+			return;
+		}
+		else if (!strncmp((const char*)buf, "CBM8M", 5)) {
 			CbmTune tune;
 			//tune.parse(
 			hdr.typeName = "CBM8M";
-		} else {
-			hdr.typeName = "PRG";
-			hdr.loadAddress = buf[0] + (buf[1] << 8);
+			return;
 		}
 	}
+	hdr.typeName = "PRG";
+	hdr.loadAddress = buf[0] + (buf[1] << 8);
 }
 
 int tedplayMain(char *fileName, Audio *player_)
@@ -602,17 +610,32 @@ int tedplayMain(char *fileName, Audio *player_)
 				psidPlayer[0xA5] = (psidHdr.speed >> 16) & 0xFF;
 				psidPlayer[0xA6] = (psidHdr.speed >> 24) & 0xFF;
 #else
+				ted->Write(0xFF0A, 0x00); // no IRQ allowed
+				ted->Write(0xFF09, ted->Read(0xFF09)); // ack IRQ
+#if 1
+				tmfPlayer[1] = psidHdr.defaultTune - 1;
+				tmfPlayer[3] = psidHdr.initAddress & 0xff;
+				tmfPlayer[4] = psidHdr.initAddress >> 8;
+				tmfPlayer[6] = 0x00;
+				// 60 Hz or Vblank based - we use timers anyway
+				unsigned short timer = (TED_SOUND_CLOCK * 4) / (psidHdr.speed & (1 << tmfPlayer[1]) ? 60 : 50);
+				tmfPlayer[11] = timer & 0xFF;
+				tmfPlayer[16] = timer >> 8;
+				tmfPlayer[32] = psidHdr.replayAddress & 0xff;
+				tmfPlayer[33] = psidHdr.replayAddress >> 8;
+
+				ted->writeProtectedPlayerMemory(playerStartAddress, tmfPlayer, sizeof(tmfPlayer));
+#else
 				psidPlayer[1] = psidHdr.defaultTune - 1;
 				psidPlayer[3] = psidHdr.initAddress & 0xff;
 				psidPlayer[4] = psidHdr.initAddress >> 8;
 				psidPlayer[22] = psidHdr.replayAddress & 0xff;
 				psidPlayer[23] = psidHdr.replayAddress >> 8;
-				ted->Write(0xFF13, 0xD3); // slow mode to match C64 frequency better
-				ted->Write(0xFF0A, 0x00); // no IRQ allowed
-				ted->Write(0xFF09, ted->Read(0xFF09)); // ack IRQ
-#endif
 				ted->writeProtectedPlayerMemory(playerStartAddress, psidPlayer, sizeof(psidPlayer));
+#endif
+#endif
 			} else if (buf[0] == 'R') { // RSID/RTED
+				ted->Write(0xFF13, 0xD3); // slow mode to match C64 frequency better
 				psidHdr.type = 1;
 				rsidPlayer[1] = psidHdr.defaultTune - 1;
 				rsidPlayer[3] = psidHdr.initAddress & 0xff;
@@ -641,9 +664,12 @@ int tedplayMain(char *fileName, Audio *player_)
 			memset(psidHdr.title, 0, sizeof(psidHdr.title));
 			memset(psidHdr.author, 0, sizeof(psidHdr.author));
 			memset(psidHdr.copyright, 0, sizeof(psidHdr.copyright));
-			copyPetsciiToAsc(psidHdr.title, trimTrailingSpace((char*)buf + 65, 32), 32);
-			copyPetsciiToAsc(psidHdr.author, trimTrailingSpace((char*)buf + 97, 32), 32);
-			copyPetsciiToAsc(psidHdr.copyright, trimTrailingSpace((char*)buf + 129, 32), 32);
+			copyPetsciiToAsc(psidHdr.title, (char*)buf + 65, 32);
+			trimTrailingSpace(psidHdr.title, 32);
+			copyPetsciiToAsc(psidHdr.author, (char*)buf + 97, 32);
+			trimTrailingSpace(psidHdr.author, 32);
+			copyPetsciiToAsc(psidHdr.copyright, (char*)buf + 129, 32);
+			trimTrailingSpace(psidHdr.copyright, 32);
 			psidHdr.loadAddress = buf[0] + (buf[1] << 8);
 			psidHdr.initAddress = buf[30] + (buf[31] << 8);
 			psidHdr.replayAddress = buf[32] + (buf[33] << 8);
@@ -784,6 +810,11 @@ int tedplayMain(char *fileName, Audio *player_)
 			dumpMem(fn);
 		}
 #endif
+		return 0;
+	}
+	if (fileName) {
+		std::cerr << "Error opening: " << fileName << std::endl;
+		return 1;
 	}
 	return 0;
 }
