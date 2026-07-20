@@ -21,6 +21,9 @@
     <ClInclude Include="Sid.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="SIDSoundLib.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Audio.cpp" />
@@ -33,5 +36,6 @@
     <ClCompile Include="tedmem.cpp" />
     <ClCompile Include="tedplay.cpp" />
     <ClCompile Include="tedsound.cpp" />
+    <ClCompile Include="SIDSoundLib.cpp" />
   </ItemGroup>
 </Project>

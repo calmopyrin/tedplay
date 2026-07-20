@@ -8,7 +8,8 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include <windows.h>
-#include <atlres.h>
+#include <atlres.h>
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -162,7 +163,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,86,176,50,14
     ICON            IDI_APPICON,IDC_STATIC,7,34,20,20
     LTEXT           "Commodore 264 TED+SID TMF/C8M/PSID/PRG format player",IDC_STATIC,14,8,194,13,SS_CENTERIMAGE
-    LTEXT           "© 2012-2015,2021-2024 Attila Grósz\nhttps://github.com/calmopyrin/tedplay",IDC_STATIC,60,23,127,21
+    LTEXT           "© 2012-2015,2021-2026 Attila Grósz\nhttps://github.com/calmopyrin/tedplay",IDC_STATIC,60,23,127,21
     LTEXT           "This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 2 of the License, or (at your option) any later version.",IDC_STATIC,40,48,176,42
     LTEXT           "This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.",IDC_STATIC,40,92,176,43
     LTEXT           "You should have received a copy of the GNU General Public License along with this program.  If not, see http://www.gnu.org/licenses/",IDC_STATIC,40,139,176,30
@@ -391,9 +392,12 @@ IDI_PROPPAGEAUDIO       ICON                    "audio.ico"
 
 IDR_ACCELERATORS ACCELERATORS
 BEGIN
-    "O",            IDM_FILE_OPEN,          VIRTKEY, CONTROL, NOINVERT
+    VK_PAUSE,       ID_CONTROL_PAUSE,       VIRTKEY, NOINVERT
     "A",            ID_PLAYLIST_SELECTALL,  VIRTKEY, CONTROL, NOINVERT
     "S",            IDM_FILE_CREATEWAV,     VIRTKEY, CONTROL, NOINVERT
+    "O",            IDM_FILE_OPEN,          VIRTKEY, CONTROL, NOINVERT
+    VK_MEDIA_STOP,  ID_CONTROL_STOP,        VIRTKEY, NOINVERT
+    VK_MEDIA_PLAY_PAUSE, ID_CONTROL_PLAY,   VIRTKEY, NOINVERT
 END
 
 IDR_ACCELERATORS_PLAYLIST ACCELERATORS

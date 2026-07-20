@@ -26,7 +26,7 @@
 #endif
 
 #define APPNAME _T("WinTedPlay")
-#define UPDATE_FREQ_MS 40
+#define UPDATE_FREQ_MS 16
 
 //Get EXE directory.
 void CMainFrame::MakePathName(LPTSTR lpFileName)
@@ -301,127 +301,129 @@ LRESULT CMainFrame::OnPaint(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& b
 void CMainFrame::updateWaveOutWindow(bool updatePosition)
 {
 	RECT rc;
-	static unsigned int wWidth = -1;
-	static unsigned int wHeight = -1;
-	static short *sampHist = NULL;
+	static unsigned int wWidth = 0;
+	static unsigned int wHeight = 0;
+	static short* sampHist = nullptr;
 	HWND uwHwnd = GetDlgItem(IDC_WAVEOUT);
-	HDC hdc = ::GetDC(uwHwnd);
+	if (!uwHwnd) return;
 
 	// get window metrics
 	::GetClientRect(uwHwnd, &rc);
-	wWidth = rc.right - rc.left;
-	wHeight = rc.bottom - rc.top;
-	// fill with black
-	int r = ::FillRect(hdc, &rc, (HBRUSH)GetStockObject(DKGRAY_BRUSH));
+	unsigned int newW = rc.right - rc.left;
+	unsigned int newH = rc.bottom - rc.top;
 
-	// set up
-	if (wWidth == -1 || !sampHist) {
-		if (sampHist) {
-			delete[] sampHist;
-			sampHist = NULL;
-		}
-		else {
-			sampHist = new short[wWidth + 1];
-			// pre-fill with "silence"
-			for (unsigned int i = 0; i <= wWidth; i++)
-				sampHist[i] = wHeight / 2;
-		}
+	// reallocate history if size changed
+	if (newW == 0 || newH == 0) return;
+	if (newW != wWidth || newH != wHeight || !sampHist) {
+		delete[] sampHist;
+		wWidth = newW;
+		wHeight = newH;
+		sampHist = new short[wWidth + 1];
+		for (unsigned int i = 0; i <= wWidth; ++i) sampHist[i] = (short)(wHeight / 2);
 	}
-	// update sample history, convert to coordinate
+
+	// double buffer to avoid flicker
+	HDC hdc = ::GetDC(uwHwnd);
+	HDC memDC = CreateCompatibleDC(hdc);
+	HBITMAP hBmp = CreateCompatibleBitmap(hdc, (int)wWidth, (int)wHeight);
+	HBITMAP hOldBmp = (HBITMAP)SelectObject(memDC, hBmp);
+
+	// fill background
+	HBRUSH hbr = (HBRUSH)GetStockObject(DKGRAY_BRUSH);
+	FillRect(memDC, &rc, hbr);
+
+	// inside updateWaveOutWindow, after creating memDC and selecting bitmap
+	bool drewSomething = false;
+
 	if (updatePosition && tedPlayGetState() == 1) {
-#if 0
-		unsigned int i;
-		int sample = ((tedPlayGetLastSample() + 8192) * wHeight) / 16384;
-		sample = sample <= 0 ? 1 : (sample >= (int)wHeight ? wHeight - 2 : sample);
-
-		sampPos = (sampPos + 1) % wWidth;
-		// create pen
-		COLORREF qLineColor = RGB(0, 255, 0);
-		HPEN hLinePen = ::CreatePen(PS_SOLID, 1, qLineColor);
-		::SelectObject(hdc, GetStockObject(COLOR_WINDOW + 1));
-		// draw wave
-		unsigned int plotPos = sampPos;
-		::MoveToEx(hdc, 0, sampHist[plotPos], NULL);
-		for(i = 0; i < wWidth; i++) {
-			short s = sampHist[plotPos];
-			plotPos = (plotPos + 1) % wWidth;
-			::LineTo(hdc, i, s);
-		}
-		// last plot
-		//HPEN hPenOld = (HPEN) ::SelectObject(hdc, hLinePen);
-		LineTo(hdc, wWidth, sampHist[plotPos]);
-		//::SetPixel(hdc, wWidth, sampHist[plotPos], RGB(0, 255, 0));
-		//::SelectObject(hdc, hPenOld);
-		//
-		::DeleteObject(hLinePen);
-#else
-		unsigned int i;
-		size_t size;
-		unsigned int lastNegative = 0;
-		unsigned int waveStart = 0;
-		short delta = 0;
-		short prevSample = 0;
-		short minSample = 0;
-		short maxSample = 0;
-		
-		bool firstWaveFound = false;
-		unsigned int waveFound = 0;
-		const int ZEROTHRESHOLD = 0;
+		size_t size = 0;
 		short* buf = tedPlayGetLastBuffer(size);
-		i = 0;
-		do {
-			delta = buf[i] - prevSample;
-			if (buf[i] < -ZEROTHRESHOLD) {
-				if (!waveStart)
-					lastNegative = i;
-				if (waveStart == 2 && delta < 0)
-					waveStart = 3;
-			} else if (buf[i] >= ZEROTHRESHOLD) {
-				if (!waveStart && delta > 0) {
-					waveStart = 1;
-					firstWaveFound = true;
-				}
-				if (waveStart == 1 && delta < 0)
-					waveStart = 2;
-				else if (waveStart == 3 && delta >= 0) {
-					waveStart = 0;
-					waveFound++;
-				}
-			}
-			if (firstWaveFound) {
-				if (buf[i] < minSample)
-					minSample = buf[i];
-				if (buf[i] > maxSample)
-					maxSample = buf[i];
-			}
-			prevSample = buf[i];
-		} while (!(++i == size || waveFound >= 5));
-		int samples = i - lastNegative - 1;
-		int absMin = (minSample < 0 ? -minSample : minSample);
-		int absMax = (maxSample < 0 ? -maxSample : maxSample);
-		int dynRange = (absMax > absMin ? absMax : absMin) * 2;
+		if (buf && size > 0) {
+			// existing analysis code but with safe clamps
+			unsigned int lastNegative = 0;
+			unsigned int waveStart = 0;
+			short prevSample = buf[0];
+			short minSample = 0, maxSample = 0;
+			bool firstWaveFound = false;
+			unsigned int waveFound = 0;
+			const int ZEROTHRESHOLD = 0;
 
-		// draw wave
-		::MoveToEx(hdc, -1, wHeight / 2, NULL);
-		for (i = 0; i <= wWidth; i++) {
-			const int sampPos = lastNegative + 1 + (samples * i) / wWidth;
-			const int w = (dynRange ? (int(buf[sampPos]) * int(wHeight)) / (dynRange) : 0);
-			const int s = int(wHeight / 2) - w;
-			// select pen
-			/*::SelectObject(hdc, (HBRUSH)GetStockObject(DKGRAY_BRUSH));
-			::LineTo(hdc, i, sampHist[i]);*/
-			// select pen
-			::SelectObject(hdc, (HBRUSH)GetStockObject(COLOR_WINDOW + 1));
-			::LineTo(hdc, i, s);
-			sampHist[i] = s;
-		}
-		tedPlayStopUsingLastBuffer();
-		// last plot
-#endif
+			for (unsigned int i = 1; i < size && waveFound < 5; ++i) {
+				short cur = buf[i];
+				short delta = cur - prevSample;
+				if (cur < -ZEROTHRESHOLD) {
+					if (!waveStart) lastNegative = i;
+					if (waveStart == 2 && delta < 0) waveStart = 3;
+				}
+				else {
+					if (!waveStart && delta > 0) {
+						waveStart = 1;
+						firstWaveFound = true;
+					}
+					if (waveStart == 1 && delta < 0) waveStart = 2;
+					else if (waveStart == 3 && delta >= 0) {
+						waveStart = 0;
+						++waveFound;
+					}
+				}
+				if (firstWaveFound) {
+					if (cur < minSample) minSample = cur;
+					if (cur > maxSample) maxSample = cur;
+				}
+				prevSample = cur;
+			}
+
+			if (lastNegative >= size) lastNegative = 0;
+			int samples = (int)size - (int)lastNegative - 1;
+			if (samples <= 0) samples = (int)size;
+
+			int absMin = (minSample < 0 ? -minSample : minSample);
+			int absMax = (maxSample < 0 ? -maxSample : maxSample);
+			int dynRange = (absMax > absMin ? absMax : absMin);
+			if (dynRange == 0) dynRange = 1;
+
+			// draw waveform
+			HPEN hPen = CreatePen(PS_SOLID, 1, GetSysColor(COLOR_HIGHLIGHTTEXT));
+			HPEN hOldPen = (HPEN)SelectObject(memDC, hPen);
+			MoveToEx(memDC, 0, wHeight / 2, NULL);
+
+			for (unsigned int x = 0; x < wWidth; ++x) {
+				uint64_t idx64 = (uint64_t)samples * x / (wWidth ? wWidth : 1);
+				unsigned int sampIndex = lastNegative + 1 + (unsigned int)idx64;
+				if (sampIndex >= size) sampIndex = (unsigned int)size - 1;
+				int sample = buf[sampIndex];
+				int y = (int)((double)sample * (double)(wHeight / 2) / (double)dynRange);
+				int plotY = (wHeight / 2) - y;
+				LineTo(memDC, x, plotY);
+				sampHist[x] = (short)plotY;
+			}
+
+			SelectObject(memDC, hOldPen);
+			DeleteObject(hPen);
+			tedPlayStopUsingLastBuffer();
+			drewSomething = true;
+		} // end if buf
 	}
-	// clean up
+
+	// fallback: if nothing drawn, draw center line so window isn't blank
+	if (!drewSomething) {
+		HPEN hPen = CreatePen(PS_SOLID, 1, RGB(128, 128, 128));
+		HPEN hOldPen = (HPEN)SelectObject(memDC, hPen);
+		MoveToEx(memDC, 0, wHeight / 2, NULL);
+		LineTo(memDC, wWidth, wHeight / 2);
+		SelectObject(memDC, hOldPen);
+		DeleteObject(hPen);
+	}
+
+	// blit and cleanup (always executed)
+	BitBlt(hdc, 0, 0, wWidth, wHeight, memDC, 0, 0, SRCCOPY);
+	SelectObject(memDC, hOldBmp);
+	DeleteObject(hBmp);
+	DeleteDC(memDC);
 	::ReleaseDC(uwHwnd, hdc);
+
 }
+
 
 LRESULT CMainFrame::OnResetAutoSkipTimerFromChildWnd(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {

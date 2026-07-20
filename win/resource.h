@@ -23,7 +23,7 @@
 #define IDI_ICON_STOP                   116
 #define IDD_TOOLS_OPTIONS_AUDIO         117
 #define IDI_PROPPAGEAUDIO               120
-#define IDD_DIALOG_SCREEN				121
+#define IDD_DIALOG_SCREEN               121
 #define IDR_MAINFRAME                   1000
 #define IDC_BUTTON_PREV                 1000
 #define IDR_MENU                        1000
@@ -112,8 +112,8 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        122
-#define _APS_NEXT_COMMAND_VALUE         40043
+#define _APS_NEXT_RESOURCE_VALUE        123
+#define _APS_NEXT_COMMAND_VALUE         40050
 #define _APS_NEXT_CONTROL_VALUE         1031
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
