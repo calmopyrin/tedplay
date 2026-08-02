@@ -407,7 +407,7 @@ void CMainFrame::updateWaveOutWindow(bool updatePosition)
 
 	// fallback: if nothing drawn, draw center line so window isn't blank
 	if (!drewSomething) {
-		HPEN hPen = CreatePen(PS_SOLID, 1, RGB(128, 128, 128));
+		HPEN hPen = CreatePen(PS_SOLID, 1, GetSysColor(COLOR_HIGHLIGHTTEXT));
 		HPEN hOldPen = (HPEN)SelectObject(memDC, hPen);
 		MoveToEx(memDC, 0, wHeight / 2, NULL);
 		LineTo(memDC, wWidth, wHeight / 2);
